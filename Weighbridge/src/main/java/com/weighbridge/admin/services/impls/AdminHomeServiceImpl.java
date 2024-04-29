@@ -9,11 +9,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class AdminHomeServiceImpl implements AdminHomeService {
 
-    @Autowired
-    private VehicleMasterRepository vehicleMasterRepository;
+    private final VehicleMasterRepository vehicleMasterRepository;
+    private final UserMasterRepository userMasterRepository;
 
-    @Autowired
-    private UserMasterRepository userMasterRepository;
+    public AdminHomeServiceImpl(VehicleMasterRepository vehicleMasterRepository, UserMasterRepository userMasterRepository) {
+        this.vehicleMasterRepository = vehicleMasterRepository;
+        this.userMasterRepository = userMasterRepository;
+    }
+
     @Override
     public long findNoOfActiveUsers() {
         return userMasterRepository.countByUserStatus("ACTIVE");

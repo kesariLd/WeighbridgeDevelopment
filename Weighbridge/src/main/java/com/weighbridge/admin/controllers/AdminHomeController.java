@@ -11,17 +11,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/home")
 public class AdminHomeController {
 
-    @Autowired
-    private AdminHomeService adminHomeService;
+    private final AdminHomeService adminHomeService;
 
-    @GetMapping("/activeUsers")
+    public AdminHomeController(AdminHomeService adminHomeService) {
+        this.adminHomeService = adminHomeService;
+    }
+
+    @GetMapping("/active-users")
     public ResponseEntity<Long> findNoOfActiveUsers(){
         long noOfActiveUsers = adminHomeService.findNoOfActiveUsers();
         return ResponseEntity.ok(noOfActiveUsers);
     }
 
 
-    @GetMapping("/inActiveUsers")
+    @GetMapping("/inactive-users")
     public ResponseEntity<Long> findNoOfInActiveUsers(){
         long noOfInActiveUsers = adminHomeService.findNoOfInActiveUsers();
         return ResponseEntity.ok(noOfInActiveUsers);
