@@ -208,12 +208,13 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
         // Process the result to aggregate transporter names into a single array
         List<String> transporterNames = new ArrayList<>();
         for (Object[] vehicleInfo : vehicleObject) {
-            transporterNames.add((String) vehicleInfo[3]); // Assuming transporter name is at index 3
+            transporterNames.add((String) vehicleInfo[4]); // Assuming transporter name is at index 3
         }
         VehicleGateEntryResponse vehicleGateEntryResponse = new VehicleGateEntryResponse();
         vehicleGateEntryResponse.setVehicleNo(vehicleObject.iterator().next()[0].toString());
         vehicleGateEntryResponse.setVehicleWheelsNo((Integer) vehicleObject.iterator().next()[1]);
         vehicleGateEntryResponse.setVehicleFitnessUpTo((Date) vehicleObject.iterator().next()[2]);
+        vehicleGateEntryResponse.setVehicleType((String) vehicleObject.iterator().next()[3]);
         vehicleGateEntryResponse.setTransporter(transporterNames);
         return vehicleGateEntryResponse;
 
