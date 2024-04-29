@@ -78,5 +78,12 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
         return supplierNames;
     }
 
+    @Override
+    public String getAddressOfSupplier(String supplierName) {
+
+        String supplierAddressBySupplierName = supplierMasterRepository.findSupplierAddressBySupplierName(supplierName);
+        return supplierAddressBySupplierName;
+    }
+
 
 }

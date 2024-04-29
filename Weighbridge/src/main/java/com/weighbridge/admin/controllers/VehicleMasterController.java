@@ -2,6 +2,7 @@ package com.weighbridge.admin.controllers;
 
 import com.weighbridge.admin.dtos.VehicleMasterDto;
 import com.weighbridge.admin.entities.VehicleMaster;
+import com.weighbridge.admin.payloads.VehicleGateEntryResponse;
 import com.weighbridge.admin.payloads.VehicleRequest;
 import com.weighbridge.admin.payloads.VehicleResponse;
 import com.weighbridge.admin.repsitories.VehicleMasterRepository;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/vehicles")
@@ -31,6 +33,10 @@ public class VehicleMasterController {
     public ResponseEntity<String> addVehicle(@RequestBody VehicleRequest vehicleRequest, @PathVariable String transporterName) {
         String response = vehicleMasterService.addVehicle(vehicleRequest, transporterName);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+    @GetMapping("/vehicle/{vehicleNo}")
+    public ResponseEntity<VehicleGateEntryResponse> getTransporterNamesByVehicle(@PathVariable String vehicleNo){
+       return new ResponseEntity<>(vehicleMasterService.getTransporterDetailByVehicle(vehicleNo),HttpStatus.OK);
     }
 
 

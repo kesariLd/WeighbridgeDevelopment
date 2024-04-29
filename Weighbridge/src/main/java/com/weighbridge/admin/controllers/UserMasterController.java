@@ -78,6 +78,40 @@ public class UserMasterController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * http://localhost:8080/api/v1/users/userStatus?userStatus=INACTIVE --> API is like this
+     * Param userStatus here added to get all the user by userStatus
+     * @param page
+     * @param size
+     * @param sortField
+     * @param sortOrder
+     * @param userStatus
+     * @return
+     */
+    @GetMapping("/userStatus")
+    public ResponseEntity<List<UserResponse>> getAllUsersByUserStatus(
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "10", required = false) int size,
+            @RequestParam(required = false, defaultValue = "userModifiedDate") String sortField,
+            @RequestParam(defaultValue = "desc", required = false) String sortOrder,
+            @RequestParam(required = false) String userStatus)  {
+
+        Pageable pageable;
+
+        if (sortField != null && !sortField.isEmpty()) {
+            Sort.Direction direction = sortOrder.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+            Sort sort = Sort.by(direction, sortField);
+            pageable = PageRequest.of(page, size, sort);
+        } else {
+            pageable = PageRequest.of(page, size);
+        }
+
+        Page<UserResponse> userPage = userMasterService.getAllUsersbyUserStatus(pageable,userStatus);
+
+        List<UserResponse> userLists = userPage.getContent();
+        return ResponseEntity.ok(userLists);
+    }
+
 
 
 }

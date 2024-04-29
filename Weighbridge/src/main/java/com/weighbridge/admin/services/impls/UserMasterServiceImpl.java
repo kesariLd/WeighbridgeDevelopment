@@ -213,6 +213,41 @@ public class UserMasterServiceImpl implements UserMasterService {
     }
 
     @Override
+    public Page<UserResponse> getAllUsersbyUserStatus(Pageable pageable, String userStatus) {
+        System.out.println("pageable = " + pageable);
+        // to find by user Status whether it's "ACTIVE" or "INACTIVE"
+        Page<UserMaster> userPage = userMasterRepository.findAllByUserStatus(pageable,userStatus);
+        System.out.println(userPage);
+
+        Page<UserResponse> responsePage = userPage.map(userMaster -> {
+            UserResponse userResponse = new UserResponse();
+            userResponse.setUserId(userMaster.getUserId());
+            userResponse.setFirstName(userMaster.getUserFirstName());
+            userResponse.setMiddleName(userMaster.getUserMiddleName());
+            userResponse.setLastName(userMaster.getUserLastName());
+            userResponse.setEmailId(userMaster.getUserEmailId());
+            userResponse.setContactNo(userMaster.getUserContactNo());
+
+            System.out.println("-----------1----------");
+            CompanyMaster company = userMaster.getCompany();
+            userResponse.setCompany(company != null ? company.getCompanyName() : null);
+            System.out.println("-----------2----------");
+            SiteMaster site = userMaster.getSite();
+            String siteAddress = site.getSiteName() + "," + site.getSiteAddress();
+            userResponse.setSite(site != null ? siteAddress : null);
+
+            Set<RoleMaster> roleMasters = userAuthenticationRepository.findRolesByUserId(userMaster.getUserId());
+            Set<String> roleNames = roleMasters.stream().map(RoleMaster::getRoleName).collect(Collectors.toSet());
+            userResponse.setRole(roleNames);
+            userResponse.setStatus(userMaster.getUserStatus());
+
+            return userResponse;
+        });
+
+        return responsePage;
+    }
+
+    @Override
     public UserResponse getSingleUser(String userId) {
         UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 

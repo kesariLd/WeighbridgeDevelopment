@@ -1,6 +1,7 @@
 package com.weighbridge.admin.services.impls;
 
 import com.weighbridge.admin.dtos.VehicleMasterDto;
+import com.weighbridge.admin.payloads.VehicleGateEntryResponse;
 import com.weighbridge.admin.payloads.VehicleRequest;
 import com.weighbridge.admin.payloads.VehicleResponse;
 import com.weighbridge.admin.repsitories.TransporterMasterRepository;
@@ -200,6 +201,24 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
         } else throw new ResourceNotFoundException("Vehicle", "vehicle no", vehicleNo);
 
     }
+
+    @Override
+    public VehicleGateEntryResponse getTransporterDetailByVehicle(String vehicleNo) {
+        Set<Object[]> vehicleObject = vehicleMasterRepository.findVehicleInfoByVehicleNo(vehicleNo);
+        // Process the result to aggregate transporter names into a single array
+        List<String> transporterNames = new ArrayList<>();
+        for (Object[] vehicleInfo : vehicleObject) {
+            transporterNames.add((String) vehicleInfo[3]); // Assuming transporter name is at index 3
+        }
+        VehicleGateEntryResponse vehicleGateEntryResponse = new VehicleGateEntryResponse();
+        vehicleGateEntryResponse.setVehicleNo(vehicleObject.iterator().next()[0].toString());
+        vehicleGateEntryResponse.setVehicleWheelsNo((Integer) vehicleObject.iterator().next()[1]);
+        vehicleGateEntryResponse.setVehicleFitnessUpTo((Date) vehicleObject.iterator().next()[2]);
+        vehicleGateEntryResponse.setTransporter(transporterNames);
+        return vehicleGateEntryResponse;
+
+    }
+
 
 
     private VehicleResponse getVehicleResponse(VehicleMaster vehicleMaster) {
