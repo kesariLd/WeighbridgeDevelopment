@@ -24,5 +24,5 @@ public interface UserMasterRepository extends JpaRepository<UserMaster, String> 
     Optional<UserMaster> findByUserIdWithCompanyAndSite(@Param("userId") String userId);
 
 
-
+    long countByUserStatus(String active);
 }

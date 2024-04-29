@@ -1,14 +1,14 @@
 package com.weighbridge.admin.services;
 
-import com.weighbridge.admin.dtos.CompanyMasterDto;
+import com.weighbridge.admin.payloads.CompanyMasterRequest;
 
 import java.util.List;
 
 public interface CompanyMasterService {
 
-    CompanyMasterDto createCompany(CompanyMasterDto companyMasterDto);
+    String createCompany(CompanyMasterRequest companyMasterRequest);
 
-    List<CompanyMasterDto> getAllCompany();
+    List<CompanyMasterRequest> getAllCompany();
 
     List<String> getAllCompanyNameOnly();
 }

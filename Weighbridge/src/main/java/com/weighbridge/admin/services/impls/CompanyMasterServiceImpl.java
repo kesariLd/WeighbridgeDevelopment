@@ -1,6 +1,6 @@
 package com.weighbridge.admin.services.impls;
 
-import com.weighbridge.admin.dtos.CompanyMasterDto;
+import com.weighbridge.admin.payloads.CompanyMasterRequest;
 import com.weighbridge.admin.entities.CompanyMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
@@ -35,14 +35,14 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
 
     /**
      * createCompany method for createCompany it takes the argument of CompanyMasterDto
-     * @param companyMasterDto
+     * @param companyMasterRequest
      * @return
      */
     @Override
-    public CompanyMasterDto createCompany(CompanyMasterDto companyMasterDto) {
+    public String createCompany(CompanyMasterRequest companyMasterRequest) {
         try {
             // Check if the company name already exists
-            CompanyMaster existingCompany = companyMasterRepository.findByCompanyName(companyMasterDto.getCompanyName());
+            CompanyMaster existingCompany = companyMasterRepository.findByCompanyName(companyMasterRequest.getCompanyName());
             if (existingCompany != null) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists");
             }
@@ -56,17 +56,18 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
             else {
                 throw new SessionExpiredException( "Session Expired, Login again !");
             }
-            companyMasterDto.setCompanyId(generateCompanyId(companyMasterDto.getCompanyName()));
-            companyMasterDto.setCompanyCreatedBy(userId);
-            companyMasterDto.setCompanyModifiedBy(userId);
-            companyMasterDto.setCompanyCreatedDate(LocalDateTime.now());
-            companyMasterDto.setCompanyModifiedDate(LocalDateTime.now());
 
-            // Map DTO to entity and save
-            CompanyMaster company = modelMapper.map(companyMasterDto, CompanyMaster.class);
-            CompanyMaster savedCompany = companyMasterRepository.save(company);
+            CompanyMaster newCompany = new CompanyMaster();
+            newCompany.setCompanyId(generateCompanyId(companyMasterRequest.getCompanyName()));
+            newCompany.setCompanyName(companyMasterRequest.getCompanyName());
+            newCompany.setCompanyCreatedBy(userId);
+            newCompany.setCompanyCreatedDate(LocalDateTime.now());
+            newCompany.setCompanyModifiedBy(userId);
+            newCompany.setCompanyModifiedDate(LocalDateTime.now());
 
-            return modelMapper.map(savedCompany, CompanyMasterDto.class);
+            CompanyMaster savedCompany = companyMasterRepository.save(newCompany);
+
+            return "Company created successfully";
         } catch (ResponseStatusException e) {
             // If the company name already exists, rethrow the exception
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Session Expired, Login again");
@@ -105,9 +106,9 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
     }
 
     @Override
-    public List<CompanyMasterDto> getAllCompany() {
+    public List<CompanyMasterRequest> getAllCompany() {
         List<CompanyMaster> companies = companyMasterRepository.findAll();
-        return companies.stream().map(company -> modelMapper.map(company, CompanyMasterDto.class)).collect(Collectors.toList());
+        return companies.stream().map(company -> modelMapper.map(company, CompanyMasterRequest.class)).collect(Collectors.toList());
     }
 
     @Override
