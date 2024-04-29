@@ -32,7 +32,7 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
 
     VehicleMaster findByVehicleNo(String vehicleNo);
 
-    @Query("SELECT v.vehicleNo, v.vehicleWheelsNo, v.vehicleFitnessUpTo, t.transporterName " +
+    @Query("SELECT v.vehicleNo, v.vehicleWheelsNo, v.vehicleFitnessUpTo,v.vehicleType, t.transporterName " +
             "FROM VehicleMaster v JOIN v.transporter t WHERE v.vehicleNo = :vehicleNo")
     Set<Object[]> findVehicleInfoByVehicleNo(String vehicleNo);
 
