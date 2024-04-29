@@ -9,8 +9,9 @@ import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
-import com.weighbridge.weighbridgeoperator.payloads.InboundWeighmentRequest;
 
+
+import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.services.WeighmentTransactionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,22 +26,22 @@ import java.util.Optional;
 @Service
 public class WeighmentTransactionServiceImpl implements WeighmentTransactionService{
     @Autowired
-    WeighmentTransactionRepository weighmentTransactionRepository;
+    private WeighmentTransactionRepository weighmentTransactionRepository;
 
     @Autowired
-    GateEntryTransactionRepository gateEntryTransactionRepository;
+    private GateEntryTransactionRepository gateEntryTransactionRepository;
 
     @Autowired
-    HttpServletRequest httpServletRequest;
+    private HttpServletRequest httpServletRequest;
 
     @Autowired
-    VehicleTransactionStatusRepository vehicleTransactionStatusRepository;
+    private VehicleTransactionStatusRepository vehicleTransactionStatusRepository;
 
     @Autowired
-    TransactionLogRepository transactionLogRepository;
+    private TransactionLogRepository transactionLogRepository;
 
     @Override
-    public String inboundWeight(InboundWeighmentRequest weighmentRequest) {
+    public String saveWeight(WeighmentRequest weighmentRequest) {
         // Set user session details
         HttpSession session = httpServletRequest.getSession();
         String userId;
@@ -55,11 +56,11 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             throw new SessionExpiredException("Session Expired, Login again !");
         }
         GateEntryTransaction byId = gateEntryTransactionRepository.findById(weighmentRequest.getTicketNo()).get();
-        WeighmentTransaction byTicketTicketNo = weighmentTransactionRepository.findByTicketTicketNo(weighmentRequest.getTicketNo());
+        WeighmentTransaction byTicketTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(weighmentRequest.getTicketNo());
         System.out.println(byTicketTicketNo);
         if(byTicketTicketNo==null){
             WeighmentTransaction weighmentTransaction=new WeighmentTransaction();
-            weighmentTransaction.setTicket(byId);
+            weighmentTransaction.setGateEntryTransaction(byId);
             weighmentTransaction.setMachineId(weighmentRequest.getMachineId());
             weighmentTransaction.setTemporaryWeight(weighmentRequest.getWeight());
             weighmentTransactionRepository.save(weighmentTransaction);

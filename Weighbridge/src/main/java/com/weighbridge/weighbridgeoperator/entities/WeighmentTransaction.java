@@ -23,5 +23,5 @@ public class WeighmentTransaction {
 
     @OneToOne
     @JoinColumn(name="ticketNo",referencedColumnName = "ticketNo")
-    private GateEntryTransaction ticket;
+    private GateEntryTransaction gateEntryTransaction;
 }
