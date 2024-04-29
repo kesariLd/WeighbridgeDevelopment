@@ -1,7 +1,7 @@
 package com.weighbridge.admin.controllers;
 
 import com.weighbridge.admin.services.CompanyMasterService;
-import com.weighbridge.admin.dtos.CompanyMasterDto;
+import com.weighbridge.admin.payloads.CompanyMasterRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +18,14 @@ public class CompanyMasterController {
    private final CompanyMasterService companyMasterService;
 
     @PostMapping
-    public ResponseEntity<String> createCompany(@Validated @RequestBody CompanyMasterDto companyMasterDto){
-        CompanyMasterDto savedCompany = companyMasterService.createCompany(companyMasterDto);
-        return new ResponseEntity<>("Company added Successfully", HttpStatus.CREATED);
+    public ResponseEntity<String> createCompany(@Validated @RequestBody CompanyMasterRequest companyMasterRequest){
+        String response = companyMasterService.createCompany(companyMasterRequest);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<CompanyMasterDto>> GetAllCompany(){
-        List<CompanyMasterDto> savedCompany = companyMasterService.getAllCompany();
+    public ResponseEntity<List<CompanyMasterRequest>> GetAllCompany(){
+        List<CompanyMasterRequest> savedCompany = companyMasterService.getAllCompany();
         return ResponseEntity.ok(savedCompany);
     }
 
