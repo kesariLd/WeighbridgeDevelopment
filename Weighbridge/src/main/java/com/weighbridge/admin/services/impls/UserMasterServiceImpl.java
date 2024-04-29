@@ -316,6 +316,7 @@ public class UserMasterServiceImpl implements UserMasterService {
                 userMaster.setUserLastName(updateRequest.getLastName());
                 userMaster.setUserModifiedBy(modifiedUser);
                 userMaster.setUserModifiedDate(currentDateTime);
+                userMaster.setUserStatus(updateRequest.getUserStatus());
 
                 Set<RoleMaster> updatedRoles = updateRoles(userAuthentication, updateRequest.getRole());
 
