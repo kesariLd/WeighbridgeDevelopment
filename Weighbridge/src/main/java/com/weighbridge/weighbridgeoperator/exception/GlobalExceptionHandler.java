@@ -1,4 +1,4 @@
-package com.weighbridge.admin.exceptions;
+package com.weighbridge.weighbridgeoperator.exception;
 
 import com.weighbridge.admin.payloads.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -7,7 +7,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@RestControllerAdvice
+
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -88,18 +87,5 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .build();
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
-
-
-    @ExceptionHandler(SessionExpiredException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public  ResponseEntity<ApiResponse> handleSessionExpiredException(SessionExpiredException exception){
-        String message=exception.getMessage();
-
-        ApiResponse response = ApiResponse.builder()
-                .message(message)
-                .status(HttpStatus.BAD_REQUEST)
-                .build();
-        return  new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
     }
 }

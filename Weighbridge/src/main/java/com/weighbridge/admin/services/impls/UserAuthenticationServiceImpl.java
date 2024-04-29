@@ -55,7 +55,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is inactive");
             }
 
-        if (userAuthentication.getUserPassword()==null&&userAuthentication.getDefaultPassword()!=null) {
+        if (userAuthentication.getUserPassword()==null && userAuthentication.getDefaultPassword()!=null) {
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setMessage("Please reset your password.");
             loginResponse.setUserId(dto.getUserId());

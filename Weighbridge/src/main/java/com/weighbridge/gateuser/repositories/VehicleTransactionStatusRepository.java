@@ -8,4 +8,6 @@ public interface VehicleTransactionStatusRepository extends JpaRepository<Vehicl
 
 
     VehicleTransactionStatus findByTicketNo(Integer ticketNo);
+
+    VehicleTransactionStatus findByTicketNoAndStatusCode(Integer ticketNo, String gnt);
 }
