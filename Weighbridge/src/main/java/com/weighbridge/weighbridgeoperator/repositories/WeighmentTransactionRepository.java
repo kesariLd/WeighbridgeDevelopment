@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.Query;
 public interface WeighmentTransactionRepository extends JpaRepository<WeighmentTransaction,Integer> {
 
 
-   WeighmentTransaction findByTicketTicketNo(Integer ticketNo);
+   WeighmentTransaction findByGateEntryTransactionTicketNo(Integer ticketNo);
 }

@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
- public class InboundWeighmentRequest {
+ public class WeighmentRequest {
     @NotBlank
     private double Weight;
 

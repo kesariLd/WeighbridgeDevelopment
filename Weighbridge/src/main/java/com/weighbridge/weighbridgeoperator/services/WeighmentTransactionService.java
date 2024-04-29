@@ -1,9 +1,10 @@
 package com.weighbridge.weighbridgeoperator.services;
 
-import com.weighbridge.weighbridgeoperator.payloads.InboundWeighmentRequest;
+
+import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 
 
 public interface WeighmentTransactionService {
 
-    public  String inboundWeight(InboundWeighmentRequest weighmentRequest);
+    String saveWeight(WeighmentRequest weighmentRequest);
 }
