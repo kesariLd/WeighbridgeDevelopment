@@ -16,13 +16,13 @@ public interface UserMasterRepository extends JpaRepository<UserMaster, String> 
 
     Page<UserMaster> findAll(Pageable pageable);
 
-    boolean existsByUserEmailIdAndUserContactNo(String emailId, String contactNo);
-
     boolean existsByUserEmailIdAndUserIdNotOrUserContactNoAndUserIdNot(String emailId, String userId, String contactNo, String userId1);
 
     @Query("SELECT um FROM UserMaster um JOIN FETCH um.company JOIN FETCH um.site WHERE um.userId = :userId")
     Optional<UserMaster> findByUserIdWithCompanyAndSite(@Param("userId") String userId);
-
-
+    
     long countByUserStatus(String active);
+
+    @Query("SELECT 1 FROM UserMaster um WHERE um.userEmailId = :emailId")
+    boolean existsByUserEmailId(@Param("emailId") String emailId);
 }

@@ -1,12 +1,11 @@
-package com.weighbridge.admin.payloads;
+package com.weighbridge.admin.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
-public class CompanyMasterRequest {
+public class CompanyDto {
+    private String companyId;
     @NotBlank(message = "Company is required")
     private String companyName;
     @NotBlank(message = "Email is required")

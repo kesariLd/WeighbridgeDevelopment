@@ -23,6 +23,17 @@ public class CompanyMaster {
     @Column(name = "company_name")
     private String companyName;
 
+    @NotBlank(message = "Email is required")
+    @Column(name = "company_email")
+    private String companyEmail;
+
+    @NotBlank(message = "Contact No is required")
+    @Column(name = "company_contact_no")
+    private String companyContactNo;
+
+    @Column(name = "company_address")
+    private String companyAddress;
+
     @Column(name = "company_status")
     private String companyStatus="ACTIVE";
 
