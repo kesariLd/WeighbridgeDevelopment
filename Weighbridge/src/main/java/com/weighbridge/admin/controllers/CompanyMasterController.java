@@ -1,7 +1,7 @@
 package com.weighbridge.admin.controllers;
 
-import com.weighbridge.admin.services.CompanyMasterService;
 import com.weighbridge.admin.dtos.CompanyDto;
+import com.weighbridge.admin.services.CompanyMasterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +30,7 @@ public class CompanyMasterController {
     }
 
     @GetMapping("/names")
-    public ResponseEntity<List<String>> getAllListStringCompanyName(){
+    public ResponseEntity<List<String>> getAllCompanyNames(){
         List<String> allCompanyNameOnly = companyMasterService.getAllCompanyNameOnly();
         return ResponseEntity.ok(allCompanyNameOnly);
     }

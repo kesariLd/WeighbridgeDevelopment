@@ -7,10 +7,9 @@ import java.util.List;
 public interface RoleMasterService {
     RoleMasterDto createRole(RoleMasterDto role);
 
-    void deleteRole(int roleId);
+    boolean deleteRole(String roleName);
 
-
-    List<String> getAllStringRole();
+    List<String> getAllRoleNames();
 
     List<RoleMasterDto> getAllRole();
 }

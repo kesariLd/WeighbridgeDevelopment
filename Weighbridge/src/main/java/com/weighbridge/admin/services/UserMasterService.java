@@ -14,7 +14,7 @@ public interface UserMasterService {
     Page<UserResponse> getAllUsers(Pageable pageable);
     UserResponse getSingleUser(String userId);
 
-    String deleteUserById(String userId);
+    boolean deleteUserById(String userId);
 
     UserResponse updateUserById(UpdateRequest updateRequest, String userId,HttpSession session);
 
