@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Long> {
 
@@ -25,9 +26,15 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
 //
 //    boolean existsByVehicleNo(String vehicleNo);
 
-    List<VehicleMaster> findVehicleMastersByTransporterId(Long transporterId);
+//    List<VehicleMaster> findVehicleMastersByTransporterId(Long transporterId);
 
     VehicleMaster findByVehicleNo(String vehicleNo);
+
+    @Query("SELECT v.vehicleNo, v.vehicleWheelsNo, v.vehicleFitnessUpTo,v.vehicleType, t.transporterName " +
+            "FROM VehicleMaster v JOIN v.transporter t WHERE v.vehicleNo = :vehicleNo")
+    Set<Object[]> findVehicleInfoByVehicleNo(String vehicleNo);
+
+
 
 
 }

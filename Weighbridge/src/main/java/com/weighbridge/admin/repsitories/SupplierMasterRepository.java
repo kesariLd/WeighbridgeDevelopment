@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,Long> {
 
 
@@ -17,4 +19,7 @@ public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,L
 
     @Query("SELECT s.supplierName,s.supplierAddressLine1 from SupplierMaster s where s.supplierId =:supplierId")
     Object[] findSupplierNameBySupplierId(@Param("supplierId") long supplierId);
+
+    @Query("SELECT s.supplierAddressLine1,s.supplierAddressLine2 from SupplierMaster s where s.supplierName =:supplierName")
+    String findSupplierAddressBySupplierName(@Param("supplierName") String supplierName);
 }

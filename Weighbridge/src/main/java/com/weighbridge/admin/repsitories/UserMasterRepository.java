@@ -15,6 +15,7 @@ import java.util.Optional;
 public interface UserMasterRepository extends JpaRepository<UserMaster, String> {
 
     Page<UserMaster> findAll(Pageable pageable);
+    Page<UserMaster> findAllByUserStatus(Pageable pageable,String userStatus);
 
     boolean existsByUserEmailIdAndUserIdNotOrUserContactNoAndUserIdNot(String emailId, String userId, String contactNo, String userId1);
 
