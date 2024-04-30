@@ -12,6 +12,8 @@ public interface UserMasterService {
     String createUser(UserRequest userRequest, HttpSession session);
 
     Page<UserResponse> getAllUsers(Pageable pageable);
+
+    Page<UserResponse> getAllUsersbyUserStatus(Pageable pageable,String userStatus);
     UserResponse getSingleUser(String userId);
 
     boolean deleteUserById(String userId);

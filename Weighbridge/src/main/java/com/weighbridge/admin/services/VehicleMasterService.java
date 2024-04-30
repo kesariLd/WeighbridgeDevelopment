@@ -2,11 +2,15 @@ package com.weighbridge.admin.services;
 
 import com.weighbridge.admin.dtos.VehicleMasterDto;
 import com.weighbridge.admin.entities.VehicleMaster;
+import com.weighbridge.admin.payloads.VehicleGateEntryResponse;
 import com.weighbridge.admin.payloads.VehicleRequest;
 import com.weighbridge.admin.payloads.VehicleResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Set;
 
 @Service
 public interface VehicleMasterService {
@@ -20,5 +24,7 @@ public interface VehicleMasterService {
     String updateVehicleByVehicleNo(String vehicleNo, VehicleRequest vehicleRequest);
 
     String deleteVehicleByVehicleNo(String vehicleNo);
+
+    VehicleGateEntryResponse getTransporterDetailByVehicle(String vehicleNo);
 
 }
