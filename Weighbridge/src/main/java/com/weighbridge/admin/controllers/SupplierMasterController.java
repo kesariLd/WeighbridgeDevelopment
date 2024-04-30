@@ -36,8 +36,8 @@ public class SupplierMasterController {
     }
 
     @GetMapping("/get/{supplierName}")
-    public ResponseEntity<String> getSupplierAddressBySupplierName(@PathVariable String supplierName){
-        String addressOfSupplier = supplierMasterService.getAddressOfSupplier(supplierName);
+    public ResponseEntity<List<String>> getSupplierAddressBySupplierName(@PathVariable String supplierName){
+        List<String> addressOfSupplier = supplierMasterService.getAddressOfSupplier(supplierName);
         return new ResponseEntity<>(addressOfSupplier,HttpStatus.OK);
     }
 }

@@ -79,9 +79,9 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
     }
 
     @Override
-    public String getAddressOfSupplier(String supplierName) {
+    public List<String> getAddressOfSupplier(String supplierName) {
 
-        String supplierAddressBySupplierName = supplierMasterRepository.findSupplierAddressBySupplierName(supplierName);
+        List<String> supplierAddressBySupplierName = supplierMasterRepository.findSupplierAddressBySupplierName(supplierName);
         return supplierAddressBySupplierName;
     }
 

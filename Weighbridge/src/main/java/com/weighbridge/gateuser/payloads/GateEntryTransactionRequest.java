@@ -4,11 +4,15 @@ import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * GateEntryTransactionRequest class for take the request data from GateEntryTransactionRequest Form from frontend
+ */
 @Data
 public class GateEntryTransactionRequest {
 
     private String ticketNo;
     private String supplier;
+    private String supplierAddressLine1;
     private String transporter;
     private String material;
     private String vehicle;

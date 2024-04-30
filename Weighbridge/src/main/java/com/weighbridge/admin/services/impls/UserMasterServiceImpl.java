@@ -278,7 +278,7 @@ public class UserMasterServiceImpl implements UserMasterService {
     }
 
     @Override
-    public UserResponse updateUserById(UpdateRequest updateRequest, String userId, HttpSession session) {
+    public String updateUserById(UpdateRequest updateRequest, String userId, HttpSession session) {
         try {
             // Fetch the existing user from the database
             UserMaster userMaster = userMasterRepository.findById(userId)
@@ -352,21 +352,7 @@ public class UserMasterServiceImpl implements UserMasterService {
                 // Save the history
                 userHistoryRepository.save(userHistory);
 
-
-                // Prepare the response object
-                UserResponse userResponse = new UserResponse();
-                userResponse.setUserId(updatedUser.getUserId());
-                userResponse.setFirstName(updatedUser.getUserFirstName());
-                userResponse.setMiddleName(updatedUser.getUserMiddleName());
-                userResponse.setLastName(updatedUser.getUserLastName());
-                userResponse.setEmailId(updatedUser.getUserEmailId());
-                userResponse.setContactNo(updatedUser.getUserContactNo());
-                userResponse.setCompany(updatedUser.getCompany().getCompanyName());
-                userResponse.setSite(updatedUser.getSite().getSiteName());
-                userResponse.setRole(getRoleNames(updatedAuthUser.getRoles()));
-                //            userResponse.setStatus(updatedUser.getUserStatus());
-
-                return userResponse;
+                return "User Updated Succesfully";
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
             }
