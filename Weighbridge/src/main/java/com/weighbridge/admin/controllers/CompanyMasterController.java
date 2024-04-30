@@ -1,7 +1,7 @@
 package com.weighbridge.admin.controllers;
 
 import com.weighbridge.admin.services.CompanyMasterService;
-import com.weighbridge.admin.payloads.CompanyMasterRequest;
+import com.weighbridge.admin.dtos.CompanyDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,20 +18,31 @@ public class CompanyMasterController {
    private final CompanyMasterService companyMasterService;
 
     @PostMapping
-    public ResponseEntity<String> createCompany(@Validated @RequestBody CompanyMasterRequest companyMasterRequest){
-        String response = companyMasterService.createCompany(companyMasterRequest);
+    public ResponseEntity<String> createCompany(@Validated @RequestBody CompanyDto companyDto) {
+        String response = companyMasterService.createCompany(companyDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<CompanyMasterRequest>> GetAllCompany(){
-        List<CompanyMasterRequest> savedCompany = companyMasterService.getAllCompany();
+    public ResponseEntity<List<CompanyDto>> GetAllCompany() {
+        List<CompanyDto> savedCompany = companyMasterService.getAllCompany();
         return ResponseEntity.ok(savedCompany);
     }
 
-    @GetMapping("/get/list")
+    @GetMapping("/names")
     public ResponseEntity<List<String>> getAllListStringCompanyName(){
         List<String> allCompanyNameOnly = companyMasterService.getAllCompanyNameOnly();
         return ResponseEntity.ok(allCompanyNameOnly);
+    }
+
+    @DeleteMapping("{companyName}")
+    public ResponseEntity<Void> deleteCompany(@PathVariable("companyName") String companyName) {
+        boolean deleted = companyMasterService.deleteCompanyByName(companyName);
+
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

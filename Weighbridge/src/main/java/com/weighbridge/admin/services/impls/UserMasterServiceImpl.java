@@ -56,13 +56,11 @@ public class UserMasterServiceImpl implements UserMasterService {
 
 
         // Check if email or contact number already exists
-        if (userMasterRepository.existsByUserEmailIdAndUserContactNo(userRequest.getEmailId(), userRequest.getContactNo())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email Id or Contact No is already taken");
+        if (userMasterRepository.existsByUserEmailId(userRequest.getEmailId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email Id is already taken");
         }
 
         // Fetch company and site details if provided
-
-
         CompanyMaster companyMaster = companyMasterRepository.findByCompanyName(userRequest.getCompany());
         if (companyMaster == null) {
             throw new ResourceNotFoundException("CompanyMaster", "companyName", userRequest.getCompany());

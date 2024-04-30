@@ -20,4 +20,10 @@ public interface CompanyMasterRepository extends JpaRepository<CompanyMaster, St
 
     @Query("SELECT c.companyName FROM CompanyMaster c WHERE c.companyId = :companyId")
     String findCompanyNameByCompanyId(@Param("companyId") String companyId);
+
+    @Query("SELECT 1 FROM CompanyMaster cm WHERE cm.companyName = :companyName")
+    boolean existsByCompanyName(@Param("companyName") String companyName);
+
+    @Query("DELETE FROM CompanyMaster cm WHERE cm.companyName = :companyName")
+    void deleteByCompanyName(@Param("companyName") String companyName);
 }
