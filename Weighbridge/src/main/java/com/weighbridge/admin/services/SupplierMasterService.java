@@ -11,5 +11,5 @@ public interface SupplierMasterService {
     List<SupplierMasterDto> getAllSupplier();
     List<String> getAllSupplierAsString();
 
-    String getAddressOfSupplier(String supplierName);
+    List<String> getAddressOfSupplier(String supplierName);
 }
