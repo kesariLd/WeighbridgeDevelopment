@@ -41,4 +41,6 @@ public class UserAuthentication {
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "role_id")
     )
     private Set<RoleMaster> roles;
+
+    private String otp;
 }

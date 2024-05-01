@@ -1,8 +1,11 @@
 package com.weighbridge.admin.services.impls;
 
+import ch.qos.logback.classic.Logger;
 import com.weighbridge.admin.entities.RoleMaster;
 import com.weighbridge.admin.entities.UserAuthentication;
 import com.weighbridge.admin.entities.UserMaster;
+import com.weighbridge.admin.exceptions.UserNotFoundException;
+import com.weighbridge.admin.payloads.ResetRequest;
 import com.weighbridge.admin.repsitories.SiteMasterRepository;
 import com.weighbridge.admin.repsitories.UserAuthenticationRepository;
 import com.weighbridge.admin.services.UserAuthenticationService;
@@ -14,6 +17,7 @@ import com.weighbridge.admin.payloads.LoginResponse;
 import com.weighbridge.admin.repsitories.UserMasterRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +25,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class UserAuthenticationServiceImpl implements UserAuthenticationService {
     @Autowired
@@ -31,6 +37,8 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
     @Autowired
     private UserMasterRepository userMasterRepository;
 
+    @Autowired
+    private EmailService emailService;
     @Value("${app.default-password}")
     private String defaultPassword;
 
@@ -111,4 +119,63 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
         UserAuthentication saveUser = userAuthenticationRepository.save(userAuthentication);
         return saveUser;
     }
+
+    @Override
+    public boolean forgotPassword(String emailId) {
+        String otp = generateOtp();
+        // Save the token in the database
+        saveResetToken(emailId, otp);
+        // Send the token to the user via email
+        return emailService.sendPasswordResetEmail(emailId, otp);
+    }
+
+    @Override
+    public boolean ResetPassword(ResetRequest resetRequest) {
+        // Verify the token provided by the user
+        Optional<UserMaster> userMasterOptional = userMasterRepository.findByUserEmailId(resetRequest.getEmailId());
+
+        if (userMasterOptional.isPresent()) {
+            UserAuthentication user = userAuthenticationRepository.findByUserId(userMasterOptional.get().getUserId());
+
+            log.info("user:", userMasterOptional.get().getUserId());
+            if (user == null) {
+                throw new UserNotFoundException("User is not found");
+            }
+
+            log.info("UserId :", user.getUserId());
+            String savedOtp = user.getOtp();
+            if (!savedOtp.equals(resetRequest.getOtp())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is incorrect");
+            }
+
+            user.setUserPassword(resetRequest.getNewPassword());
+            user.setOtp(null);
+
+            userAuthenticationRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    private String generateOtp() {
+        UUID uuid = UUID.randomUUID();
+        String otp = uuid.toString().substring(0, 6);
+        otp = otp.replaceAll("[^0-9]", "");
+        return otp;
+    }
+
+    public void saveResetToken(String emailId, String resetToken) {
+        Optional<UserMaster> userMasterOptional = userMasterRepository.findByUserEmailId(emailId);
+        if (userMasterOptional.isPresent()) {
+            UserAuthentication user = userAuthenticationRepository.findByUserId(userMasterOptional.get().getUserId());
+            if (user == null) {
+                throw new UserNotFoundException("User is not found");
+            }
+            user.setOtp(resetToken);
+            userAuthenticationRepository.save(user);
+        } else {
+            throw new UserNotFoundException("User with EmailId " + emailId + " not found");
+        }
+    }
+
 }

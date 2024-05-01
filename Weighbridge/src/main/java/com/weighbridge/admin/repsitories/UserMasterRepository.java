@@ -29,4 +29,5 @@ public interface UserMasterRepository extends JpaRepository<UserMaster, String> 
 
     long countByCompanyCompanyId(String companyId);
 
+    Optional<UserMaster> findByUserEmailId(String emailId);
 }
