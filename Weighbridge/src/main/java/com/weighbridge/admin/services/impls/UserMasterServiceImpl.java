@@ -41,7 +41,6 @@ public class UserMasterServiceImpl implements UserMasterService {
     private final SiteMasterRepository siteMasterRepository;
     private final RoleMasterRepository roleMasterRepository;
     private final UserAuthenticationRepository userAuthenticationRepository;
-    private final SequenceGeneratorRepository sequenceGeneratorRepository;
     private final UserHistoryRepository userHistoryRepository;
 
     @Autowired

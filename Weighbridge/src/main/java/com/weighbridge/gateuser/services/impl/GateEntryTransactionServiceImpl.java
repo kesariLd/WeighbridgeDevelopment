@@ -140,7 +140,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             gateEntryTransaction.setTpNo(gateEntryTransactionRequest.getTpNo());
             gateEntryTransaction.setChallanNo(gateEntryTransactionRequest.getChallanNo());
             gateEntryTransaction.setEwaybillNo(gateEntryTransactionRequest.getEwayBillNo());
-            gateEntryTransaction.setTransactionType("Inbound");
+            gateEntryTransaction.setTransactionType(gateEntryTransactionRequest.getTransactionType());
 
             // Save gate entry transaction
             GateEntryTransaction savedGateEntryTransaction = gateEntryTransactionRepository.save(gateEntryTransaction);

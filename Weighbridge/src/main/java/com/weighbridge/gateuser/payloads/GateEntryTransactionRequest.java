@@ -17,7 +17,7 @@ public class GateEntryTransactionRequest {
     private String material;
     private String vehicle;
     private String site;
-
+    private String transactionType;
     private String company;
     private String dlNo;
     private String driverName;
