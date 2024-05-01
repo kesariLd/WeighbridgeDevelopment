@@ -35,7 +35,7 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
             // Check if the supplier contact number or email already exists
             boolean exists = supplierMasterRepository.existsBySupplierContactNoOrSupplierEmail(
                     supplierMasterDto.getSupplierContactNo(),
-                    supplierMasterDto.getEmailId()
+                    supplierMasterDto.getSupplierEmail()
 
             );
             if (exists) {

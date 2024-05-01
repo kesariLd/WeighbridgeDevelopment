@@ -71,9 +71,13 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
             CompanyMaster savedCompany = companyMasterRepository.save(newCompany);
 
             return "Company created successfully";
-        } catch (ResponseStatusException e) {
+        }
+        catch (SessionExpiredException se){
+            throw se;
+        }
+        catch (ResponseStatusException e) {
             // If the company name already exists, rethrow the exception
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Session Expired, Login again");
+            throw e;
         }
         catch (Exception e) {
             // If any other unexpected error occurs, handle it and provide a generic error message
