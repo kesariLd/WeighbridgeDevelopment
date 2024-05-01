@@ -8,6 +8,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+/**
+ * GateEntryTransaction class for entity where gateEntry transaction data is stored
+ */
 @Entity
 @Data
 public class GateEntryTransaction {
@@ -32,7 +35,6 @@ public class GateEntryTransaction {
     private String challanNo;
     private String ewaybillNo;
     private String transactionType;
-   /* private LocalDateTime vehicleInTime;
-    private LocalDateTime vehicleOutTime;// may be change,it's not the effective way to do---could be in another table*/
+
 
 }

@@ -18,7 +18,7 @@ public interface UserMasterService {
 
     boolean deleteUserById(String userId);
 
-    UserResponse updateUserById(UpdateRequest updateRequest, String userId,HttpSession session);
+    String updateUserById(UpdateRequest updateRequest, String userId,HttpSession session);
 
 
 

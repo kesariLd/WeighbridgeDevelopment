@@ -71,9 +71,13 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
             CompanyMaster savedCompany = companyMasterRepository.save(newCompany);
 
             return "Company created successfully";
-        } catch (ResponseStatusException e) {
+        }
+        catch (SessionExpiredException se){
+            throw se;
+        }
+        catch (ResponseStatusException e) {
             // If the company name already exists, rethrow the exception
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Session Expired, Login again");
+            throw e;
         }
         catch (Exception e) {
             // If any other unexpected error occurs, handle it and provide a generic error message
@@ -93,7 +97,9 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
             companyAbbreviation = companyName.substring(0, 1).toUpperCase();
         }
         // Concatenate the abbreviation and unique identifier
-        long siteCount = companyMasterRepository.countByCompanyNameStartingWith(companyAbbreviation);
+        long siteCount = companyMasterRepository.countByCompanyIdStartingWith(companyAbbreviation);
+        System.out.println("site count "+siteCount);
+        System.out.println("abbrevation "+companyAbbreviation);
 
         // Generate the site ID based on the count
         String companyId;
