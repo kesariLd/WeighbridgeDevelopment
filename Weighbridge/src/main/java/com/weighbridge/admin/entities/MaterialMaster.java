@@ -24,7 +24,7 @@ public class MaterialMaster {
     private String materialName;
 
     @Column(name = "material_status")
-    private String materialStatus="ACTIVE";
+    private String materialStatus = "ACTIVE";
 
     @Column(name = "material_created_by")
     private String materialCreatedBy;

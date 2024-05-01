@@ -9,7 +9,6 @@ import java.util.Properties;
 
 @Configuration
 public class EmailConfiguration {
-
     private final Environment environment;
 
     public EmailConfiguration(Environment environment) {
@@ -18,14 +17,14 @@ public class EmailConfiguration {
 
     @Bean
     public EmailService emailService() {
-        Properties props = new Properties();
-        props.put("spring.mail.host", environment.getProperty("spring.mail.host"));
-        props.put("spring.mail.port", environment.getProperty("spring.mail.port"));
-        props.put("spring.mail.username", environment.getProperty("spring.mail.username"));
-        props.put("spring.mail.password", environment.getProperty("spring.mail.password"));
-        props.put("spring.mail.properties.mail.smtp.auth", environment.getProperty("spring.mail.properties.mail.smtp.auth"));
-        props.put("spring.mail.properties.mail.smtp.starttls.enable", environment.getProperty("spring.mail.properties.mail.smtp.starttls.enable"));
+        Properties properties = new Properties();
+        properties.put("spring.mail.host", environment.getProperty("spring.mail.host"));
+        properties.put("spring.mail.port", environment.getProperty("spring.mail.port"));
+        properties.put("spring.mail.username", environment.getProperty("spring.mail.username"));
+        properties.put("spring.mail.password", environment.getProperty("spring.mail.password"));
+        properties.put("spring.mail.properties.mail.smtp.auth", environment.getProperty("spring.mail.properties.mail.smtp.auth"));
+        properties.put("spring.mail.properties.mail.smtp.starttls.enable", environment.getProperty("spring.mail.properties.mail.smtp.starttls.enable"));
 
-        return new EmailService(props);
+        return new EmailService(properties);
     }
 }
