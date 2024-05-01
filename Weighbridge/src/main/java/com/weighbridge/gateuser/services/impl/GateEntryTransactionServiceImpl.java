@@ -269,7 +269,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             }
 
             // Retrieve all gate entry transactions based on user site and company
-            List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyId(userSite, userCompany);
+            List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany);
             List<GateEntryTransactionResponse> responseList = new ArrayList<>();
             for (GateEntryTransaction transaction : allTransactions) {
                 GateEntryTransactionResponse response = new GateEntryTransactionResponse();

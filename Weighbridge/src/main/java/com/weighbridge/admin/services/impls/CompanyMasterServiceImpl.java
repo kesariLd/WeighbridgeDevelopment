@@ -93,7 +93,9 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
             companyAbbreviation = companyName.substring(0, 1).toUpperCase();
         }
         // Concatenate the abbreviation and unique identifier
-        long siteCount = companyMasterRepository.countByCompanyNameStartingWith(companyAbbreviation);
+        long siteCount = companyMasterRepository.countByCompanyIdStartingWith(companyAbbreviation);
+        System.out.println("site count "+siteCount);
+        System.out.println("abbrevation "+companyAbbreviation);
 
         // Generate the site ID based on the count
         String companyId;

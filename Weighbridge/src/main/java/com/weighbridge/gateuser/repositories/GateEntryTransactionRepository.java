@@ -18,6 +18,6 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
      * @param companyId The ID of the company to filter gate entry transactions.
      * @return A list of gate entry transactions matching the provided site ID and company ID.
      */
-    List<GateEntryTransaction> findBySiteIdAndCompanyId(String siteId, String companyId);
+    List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTicketNoDesc(String siteId, String companyId);
 }
 

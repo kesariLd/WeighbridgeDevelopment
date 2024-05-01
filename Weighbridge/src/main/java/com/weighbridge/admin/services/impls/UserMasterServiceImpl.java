@@ -54,8 +54,6 @@ public class UserMasterServiceImpl implements UserMasterService {
 
     @Override
     public String createUser(UserRequest userRequest, HttpSession session) {
-        String defaultPassword = generateRandomPassword();
-
 
         // Check if email or contact number already exists
         if (userMasterRepository.existsByUserEmailId(userRequest.getEmailId())) {
@@ -82,7 +80,9 @@ public class UserMasterServiceImpl implements UserMasterService {
 
         // Create UserMaster instance and set properties
         UserMaster userMaster = new UserMaster();
-        String userId = generateUserId(companyMaster.getCompanyId(), siteMaster.getSiteId());
+
+        String userId = generateUserId(companyMaster.getCompanyId());
+        System.out.println("userId  "+userId);
         userMaster.setUserId(userId);
         userMaster.setCompany(companyMaster);
         userMaster.setSite(siteMaster);
@@ -116,6 +116,7 @@ public class UserMasterServiceImpl implements UserMasterService {
                 }
             });
         }
+        String defaultPassword = generateRandomPassword();
         userAuthentication.setRoles(roles);
         String hashedPassword = BCrypt.hashpw(defaultPassword, BCrypt.gensalt());
         userAuthentication.setDefaultPassword(hashedPassword);
@@ -144,27 +145,20 @@ public class UserMasterServiceImpl implements UserMasterService {
         // Generate a random password of length 10
         return RandomStringUtils.randomAlphanumeric(8);
     }
+    /* todo
+        if company id is all than handle
+     */
 
+    public synchronized String generateUserId(String companyId) {
+        // Count the number of users for the given company ID
+        long userCount = userMasterRepository.countByCompanyCompanyId(companyId) + 1;
 
-    public synchronized String generateUserId(String companyId, String siteId) {
-        // Retrieve the current value of the unique identifier from the database for the given company and site
-
-        SequenceGenerator sequenceGenerator = sequenceGeneratorRepository.findByCompanyIdAndSiteId(companyId, siteId).orElse(new SequenceGenerator(companyId, siteId, 1)); // Initialize to 1 if not found
-        int uniqueIdentifier = sequenceGenerator.getNextValue();
-
-        // Concatenate company ID, site ID, and unique identifier
-        String userId = companyId + "_" + siteId + "_" + String.format("%02d", uniqueIdentifier);
-
-        // Increment the unique identifier
-        uniqueIdentifier = (uniqueIdentifier + 1) % 1000; // Ensure it's always 3 digits
-
-        // Update the unique identifier value in the database
-        sequenceGenerator.setNextValue(uniqueIdentifier);
-        sequenceGeneratorRepository.save(sequenceGenerator);
+        // Generate the user ID
+        String userId = companyId + "@" + String.format("%02d", userCount);
 
         return userId;
-
     }
+
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
