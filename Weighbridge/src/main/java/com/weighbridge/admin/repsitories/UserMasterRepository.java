@@ -24,6 +24,9 @@ public interface UserMasterRepository extends JpaRepository<UserMaster, String> 
     
     long countByUserStatus(String active);
 
-    @Query("SELECT 1 FROM UserMaster um WHERE um.userEmailId = :emailId")
+    @Query("SELECT COUNT(um) > 0 FROM UserMaster um WHERE um.userEmailId = :emailId")
     boolean existsByUserEmailId(@Param("emailId") String emailId);
+
+    long countByCompanyCompanyId(String companyId);
+
 }

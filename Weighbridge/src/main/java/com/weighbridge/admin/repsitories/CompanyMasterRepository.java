@@ -13,7 +13,7 @@ public interface CompanyMasterRepository extends JpaRepository<CompanyMaster, St
     @Query("SELECT c.companyName FROM CompanyMaster c")
     List<String> findAllCompanyListName();
 
-    long countByCompanyNameStartingWith(String companyAbbreviation);
+    long countByCompanyIdStartingWith(String companyAbbreviation);
 
     @Query("SELECT c.companyId FROM CompanyMaster c WHERE c.companyName = :companyName")
     String findCompanyIdByCompanyName(@Param("companyName") String companyName);
