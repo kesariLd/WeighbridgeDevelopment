@@ -5,7 +5,9 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 import java.util.Properties;
@@ -67,4 +69,23 @@ public class EmailService {
         }
 
     }
+
+    public boolean sendPasswordResetEmail(String toEmail, String resetToken) {
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+        try {
+
+            String fromEmail = "spring.mail.username";
+            helper.setFrom(new InternetAddress(fromEmail));
+            helper.setTo(toEmail);
+            helper.setSubject("Password Reset Request");
+            helper.setText("Dear user,\n\nPlease use the following token to reset your password: " + resetToken + "For RegeneratePassword");
+            javaMailSender.send(message);
+            return true;
+        } catch (MessagingException | MailException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
+
