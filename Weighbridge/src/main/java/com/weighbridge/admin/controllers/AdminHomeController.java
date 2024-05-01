@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/home")
 public class AdminHomeController {
-
     private final AdminHomeService adminHomeService;
 
     public AdminHomeController(AdminHomeService adminHomeService) {
