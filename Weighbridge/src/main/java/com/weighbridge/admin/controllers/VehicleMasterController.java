@@ -99,18 +99,15 @@ public class VehicleMasterController {
         return ResponseEntity.ok(response);
     }
 
-
-
     /**
      * Endpoint for deleting a vehicle by vehicle number.
      * @param vehicleNo The vehicle number.
      * @return ResponseEntity containing a success message and HTTP status OK.
      */
+
     @DeleteMapping("/delete/{vehicleNo}")
     public ResponseEntity<String> deleteVehicle(@PathVariable String vehicleNo){
         String deletedVehicle = vehicleMasterService.deleteVehicleByVehicleNo(vehicleNo);
         return ResponseEntity.ok(deletedVehicle);
     }
-
-
 }
