@@ -339,7 +339,6 @@ public class UserMasterServiceImpl implements UserMasterService {
                 userMaster.setUserLastName(updateRequest.getLastName());
                 userMaster.setUserModifiedBy(modifiedUser);
                 userMaster.setUserModifiedDate(currentDateTime);
-                userMaster.setUserStatus(updateRequest.getUserStatus());
 
                 Set<RoleMaster> updatedRoles = updateRoles(userAuthentication, updateRequest.getRole());
 
@@ -384,6 +383,18 @@ public class UserMasterServiceImpl implements UserMasterService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to Update User", e);
         }
 
+    }
+
+    @Override
+    public boolean activateUser(String userId) {
+        UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+        if (userMaster.getUserStatus().equals("INACTIVE")) {
+            userMaster.setUserStatus("ACTIVE");
+            userMasterRepository.save(userMaster);
+            return true;
+        }
+        return false;
     }
 
 
