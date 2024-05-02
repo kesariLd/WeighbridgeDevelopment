@@ -25,5 +25,5 @@ public interface SiteMasterRepository extends JpaRepository<SiteMaster, String> 
     String findSiteNameBySiteId(@Param("siteId") String siteId);
 
 
-
+    SiteMaster findBySiteNameAndSiteAddressAndCompanyCompanyId(String siteName, String siteAddress, String companyId);
 }

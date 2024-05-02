@@ -73,14 +73,9 @@ public class VehicleMasterController {
         return ResponseEntity.ok(response);
     }
 
-
-
-
     @DeleteMapping("/delete/{vehicleNo}")
     public ResponseEntity<String> deleteVehicle(@PathVariable String vehicleNo){
         String deletedVehicle = vehicleMasterService.deleteVehicleByVehicleNo(vehicleNo);
         return ResponseEntity.ok(deletedVehicle);
     }
-
-
 }

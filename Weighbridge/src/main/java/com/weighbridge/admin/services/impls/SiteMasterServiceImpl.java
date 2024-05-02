@@ -46,10 +46,8 @@ public class SiteMasterServiceImpl implements SiteMasterService {
             siteId = siteAbbreviation + "01";
             ;
         }
-
         return siteId;
     }
-
 
     @Override
     public List<SiteMasterDto> getAllSite() {
@@ -70,18 +68,17 @@ public class SiteMasterServiceImpl implements SiteMasterService {
         try {
             if (siteName != null && siteAddress != null) {
                 // Check if a site with the same name and address exists
-                SiteMaster existingSite = siteMasterRepository.findBySiteNameAndSiteAddress(siteName, siteAddress);
+                SiteMaster existingSite = siteMasterRepository.findBySiteNameAndSiteAddressAndCompanyCompanyId(siteName, siteAddress,company.getCompanyId());
                 if (existingSite != null) {
                     // Associate the company with the existing site(s)
-                    if(!existingSite.getCompany().getCompanyId().equals(company.getCompanyId())) {
+                 /*   if(!existingSite.getCompany().getCompanyId().equals(company.getCompanyId())) {
                         existingSite.setCompany(company);
                         siteMasterRepository.save(existingSite);
                         return "Site(s) assigned to company successfully";
                     }
-                    else {
+                    else {*/
                         return "company already assigned to this site";
-                    }
-
+                  //  }
                 } else {
                     // Create a new site if it doesn't exist
                     SiteMaster newSite = new SiteMaster();
@@ -99,7 +96,6 @@ public class SiteMasterServiceImpl implements SiteMasterService {
                     siteMasterRepository.save(newSite);
                     return "Site(s) assigned to company successfully";
                 }
-
             }
             else{
                 return "Site and company are null";

@@ -44,11 +44,11 @@ public class UserMasterServiceImpl implements UserMasterService {
     private final UserHistoryRepository userHistoryRepository;
 
     @Autowired
-    HttpServletRequest request;
+   private HttpServletRequest request;
 
 
     @Autowired
-    EmailService emailService;
+    private EmailService emailService;
 
 
     @Override
@@ -64,24 +64,24 @@ public class UserMasterServiceImpl implements UserMasterService {
         if (companyMaster == null) {
             throw new ResourceNotFoundException("CompanyMaster", "companyName", userRequest.getCompany());
         }
-
-
         String[] siteInfoParts = userRequest.getSite().split(",", 2);
+        String siteName=null;
+        String siteAddress="";
         if (siteInfoParts.length != 2) {
-            throw new IllegalArgumentException("Invalid format for site info: " + userRequest.getSite());
+            //throw new IllegalArgumentException("Invalid format for site info: " + userRequest.getSite());
+         siteName = siteInfoParts[0].trim();
         }
-        String siteName = siteInfoParts[0].trim();
-        String siteAddress = siteInfoParts[1].trim();
-        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(siteName, siteAddress);
+        else {
+           siteName = siteInfoParts[0].trim();
+           siteAddress = siteInfoParts[1].trim();
+        }
+        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddressAndCompanyCompanyId(siteName, siteAddress,companyMaster.getCompanyId());
         if (siteMaster == null) {
             throw new ResourceNotFoundException("SiteMaster", "siteName", siteName);
         }
-
         // Create UserMaster instance and set properties
         UserMaster userMaster = new UserMaster();
-
         String userId = generateUserId(companyMaster.getCompanyId());
-        System.out.println("userId  "+userId);
         userMaster.setUserId(userId);
         userMaster.setCompany(companyMaster);
         userMaster.setSite(siteMaster);
@@ -97,7 +97,6 @@ public class UserMasterServiceImpl implements UserMasterService {
         userMaster.setUserCreatedDate(currentDateTime);
         userMaster.setUserModifiedBy(createdBy);
         userMaster.setUserModifiedDate(currentDateTime);
-
 
         // Create UserAuthentication instance and set properties
         UserAuthentication userAuthentication = new UserAuthentication();
@@ -123,7 +122,6 @@ public class UserMasterServiceImpl implements UserMasterService {
 
         // Convert Set<String> to comma-separated String
         String rolesString = String.join(",", getRoleNames(roles));
-
 
         // Save user and user authentication
         try {
@@ -157,7 +155,6 @@ public class UserMasterServiceImpl implements UserMasterService {
 
         return userId;
     }
-
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
@@ -287,7 +284,7 @@ public class UserMasterServiceImpl implements UserMasterService {
 
             // Fetch company and site details
             String[] siteInfoParts = updateRequest.getSite().split(",", 2);
-            if (siteInfoParts.length != 2) {
+            if (siteInfoParts.length != 2){
                 throw new IllegalArgumentException("Invalid format for site info: " + updateRequest.getSite());
             }
 
