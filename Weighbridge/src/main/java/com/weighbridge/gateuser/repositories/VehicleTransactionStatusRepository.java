@@ -17,13 +17,19 @@ public interface VehicleTransactionStatusRepository extends JpaRepository<Vehicl
      */
     VehicleTransactionStatus findByTicketNo(Integer ticketNo);
 
-    /**
-     * Retrieves a vehicle transaction status entry based on the specified ticket number and status code.
-     *
-     * @param ticketNo   The ticket number to search for.
-     * @param statusCode The status code to search for.
-     * @return The vehicle transaction status entry corresponding to the provided ticket number and status code, if found.
-     */
-    VehicleTransactionStatus findByTicketNoAndStatusCode(Integer ticketNo, String statusCode);
+    VehicleTransactionStatus findByTicketNoAndStatusCode(Integer ticketNo, String gnt);
+
+    @Query(value = "select count(status_code) FROM `weighbridge-test`.vehicle_transaction_status as ts inner join `weighbridge-test`.gate_entry_transaction as g on ts.ticket_no=g.ticket_no where ts.status_code='GNT' and g.transaction_type='Inbound'",nativeQuery = true)
+    Long countInboundPendingGrossWeight();
+
+    @Query(value = "select count(status_code) FROM `weighbridge-test`.vehicle_transaction_status as ts inner join `weighbridge-test`.gate_entry_transaction as g on ts.ticket_no=g.ticket_no where ts.status_code='GWT' and g.transaction_type='Inbound'",nativeQuery = true)
+    Long countInboundPendingTareWeight();
+
+
+    @Query(value = "select count(status_code) FROM `weighbridge-test`.vehicle_transaction_status as ts inner join `weighbridge-test`.gate_entry_transaction as g on ts.ticket_no=g.ticket_no where ts.status_code='TWT' and g.transaction_type='Outbound'",nativeQuery = true)
+    Long countOutboundPendingGrossWeight();
+
+    @Query(value = "select count(status_code) FROM `weighbridge-test`.vehicle_transaction_status as ts inner join `weighbridge-test`.gate_entry_transaction as g on ts.ticket_no=g.ticket_no where ts.status_code='GNT' and g.transaction_type='Outbound'",nativeQuery = true)
+    Long countOutboundPendingTareWeight();
 }
 
