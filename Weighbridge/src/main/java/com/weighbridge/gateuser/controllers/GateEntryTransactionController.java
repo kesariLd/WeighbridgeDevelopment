@@ -28,9 +28,8 @@ public class GateEntryTransactionController {
      * @return The ID of the saved gate entry transaction.
      */
     @PostMapping
-
-    public ResponseEntity<GateEntryTransaction> saveTransaction(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest) {
-        GateEntryTransaction gateEntryResponse = gateEntryTransactionService.saveGateEntryTransaction(gateEntryTransactionRequest);
+    public ResponseEntity<Integer> saveTransaction(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest) {
+        Integer gateEntryResponse = gateEntryTransactionService.saveGateEntryTransaction(gateEntryTransactionRequest);
         return new ResponseEntity<>(gateEntryResponse, HttpStatus.OK);
     }
 
