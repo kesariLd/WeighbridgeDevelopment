@@ -154,7 +154,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
         }
-        List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyId(userSite,userCompany);
+        List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite,userCompany);
         System.out.println("GateEntryTransactionServiceImpl.getAllGateEntryTransaction"+allTransactions);
         List<GateEntryTransactionResponse> responseList = new ArrayList<>();
         for (GateEntryTransaction transaction : allTransactions) {

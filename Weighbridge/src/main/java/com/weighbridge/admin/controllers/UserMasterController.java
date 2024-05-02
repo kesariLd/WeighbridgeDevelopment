@@ -16,7 +16,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+/**
+ * REST controller for managing user-related operations.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
@@ -24,14 +26,26 @@ public class UserMasterController {
 
     private final UserMasterService userMasterService;
 
-    // Create new user
+    /**
+     * Endpoint for creating a new user.
+     * @param userRequest The request body containing user information.
+     * @param httpSession The HTTP session associated with the request.
+     * @return ResponseEntity containing a success message and HTTP status CREATED.
+     */
     @PostMapping
     public ResponseEntity<String> createUser(@Validated @RequestBody UserRequest userRequest, HttpSession httpSession) {
         String response = userMasterService.createUser(userRequest, httpSession);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // Get all users
+    /**
+     * Endpoint for retrieving all users.
+     * @param page The page number for pagination (default: 0).
+     * @param size The size of each page for pagination (default: 10).
+     * @param sortField The field to sort by (default: userModifiedDate).
+     * @param sortOrder The sort order (default: desc).
+     * @return ResponseEntity containing a list of users and HTTP status OK.
+     */
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers(@RequestParam(defaultValue = "0", required = false) int page, @RequestParam(defaultValue = "10", required = false) int size, @RequestParam(required = false, defaultValue = "userModifiedDate") String sortField, @RequestParam(defaultValue = "desc", required = false) String sortOrder) {
 
@@ -52,14 +66,22 @@ public class UserMasterController {
     }
 
 
-    //     Get single user by userId
+    /**
+     * Endpoint for retrieving a single user by userId.
+     * @param userId The ID of the user to retrieve.
+     * @return ResponseEntity containing the requested user and HTTP status OK.
+     */
     @GetMapping("/{userId}")
     public ResponseEntity<UserResponse> getSingleUser(@PathVariable("userId") String userId) {
         UserResponse user = userMasterService.getSingleUser(userId);
         return ResponseEntity.ok(user);
     }
 
-    // To deactivate user
+    /**
+     * Endpoint for deactivating a user by userId.
+     * @param userId The ID of the user to deactivate.
+     * @return ResponseEntity with HTTP status NO_CONTENT if user is successfully deactivated, otherwise NOT_FOUND.
+     */
     @DeleteMapping("/{userId}/deactivate")
     public ResponseEntity<Void> deleteUserById(@PathVariable String userId) {
         boolean deleted = userMasterService.deleteUserById(userId);
@@ -70,7 +92,11 @@ public class UserMasterController {
         }
     }
 
-    // To activate user
+    /**
+     * Endpoint for activating a user by userId.
+     * @param userId The ID of the user to activate.
+     * @return ResponseEntity with HTTP status OK if user is successfully activated, otherwise NOT_FOUND.
+     */
     @PutMapping("/{userId}/activate")
     public ResponseEntity<Void> activateUser(@PathVariable String userId) {
         boolean activated = userMasterService.activateUser(userId);
@@ -81,7 +107,13 @@ public class UserMasterController {
         }
     }
 
-    // Update user by userId
+    /**
+     * Endpoint for updating a user by userId.
+     * @param updateRequest The request body containing updated user information.
+     * @param userId The ID of the user to update.
+     * @param httpSession The HTTP session associated with the request.
+     * @return ResponseEntity containing a success message and HTTP status OK.
+     */
     @PutMapping("/updateUser/{userId}")
     public ResponseEntity<String> updateUserById(@Validated @RequestBody UpdateRequest updateRequest, @PathVariable String userId, HttpSession httpSession) {
 

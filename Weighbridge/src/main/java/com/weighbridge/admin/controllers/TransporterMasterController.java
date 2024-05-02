@@ -7,7 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+/**
+ * REST controller for managing transporter-related operations.
+ */
 @RestController
 @RequestMapping("/api/v1/transporter")
 public class TransporterMasterController {
@@ -26,7 +28,10 @@ public class TransporterMasterController {
         return ResponseEntity.ok(response);
     }
 
-
+    /**
+     * Endpoint for retrieving all transporter names.
+     * @return ResponseEntity containing a list of transporter names and HTTP status OK.
+     */
     @GetMapping()
     public ResponseEntity<List<String>> getAllTransporterName(){
         List<String> allTransporter = transporterService.getAllTransporter();

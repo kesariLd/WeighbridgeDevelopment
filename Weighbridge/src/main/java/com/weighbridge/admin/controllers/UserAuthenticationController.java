@@ -12,26 +12,47 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controller class for managing user authentication operations. :: Login, Reset Password,
+ */
+/**
+ * Controller class for managing user authentication operations.
+ */
 @RestController
-@RequestMapping ("/api/v1/auths")
+@RequestMapping("/api/v1/auths")
 public class UserAuthenticationController {
+
     @Autowired
     private UserAuthenticationService userAuthenticationService;
 
-
+    /**
+     * Logs in a user.
+     * @param loginDto The DTO containing user login credentials.
+     * @return ResponseEntity containing the login response and HTTP status OK.
+     */
     @PostMapping("/logIn")
     public ResponseEntity<LoginResponse> loginUser(@RequestBody LoginDto loginDto){
         LoginResponse response = userAuthenticationService.loginUser(loginDto);
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Resets the password for a user.
+     * @param userId The ID of the user whose password is to be reset.
+     * @param resetPasswordDto The DTO containing the new password information.
+     * @return ResponseEntity with a success message and HTTP status OK.
+     */
     @PostMapping("/reset/{userId}")
     public ResponseEntity<String> resetPassword(@PathVariable String userId,@RequestBody ResetPasswordDto resetPasswordDto){
         UserAuthentication userAuthentication=userAuthenticationService.resetPassword(userId,resetPasswordDto);
         return new ResponseEntity<>("Password Reset Succesful!",HttpStatus.OK);
     }
 
-    // http://localhost:8080/api/v1/auths/forgot?emailId=<your-email-id>
+    /**
+     * Sends password reset instructions to a user's email.
+     * @param emailId The email ID of the user requesting the password reset.
+     * @return ResponseEntity with a success or error message and appropriate HTTP status.
+     */
     @PostMapping("/forgot")
     public ResponseEntity<String> forgotPassword(@RequestParam String emailId){
         boolean passwordResetSent = userAuthenticationService.forgotPassword(emailId);
@@ -42,8 +63,14 @@ public class UserAuthenticationController {
                     .body("Failed to send password reset instructions.");
         }
     }
-    @PostMapping("/reset-password")
-    public ResponseEntity<String>ResetPassword(@RequestBody ResetRequest resetRequest) {
+
+    /**
+     * Resets the user's password when user click forget password than , to reset in that time using a reset token.
+     * @param resetRequest The request containing the reset token and new password.
+     * @return ResponseEntity with a success or error message and appropriate HTTP status.
+     */
+    @PostMapping("/forget/reset-password")
+    public ResponseEntity<String> forgetResetPassword(@RequestBody ResetRequest resetRequest) {
         boolean passwordReset = userAuthenticationService.ResetPassword(resetRequest);
         if (passwordReset) {
             return ResponseEntity.ok("Password reset successful.");
@@ -52,6 +79,6 @@ public class UserAuthenticationController {
                     .body("Invalid reset token or user ID. Password reset failed.");
         }
     }
-
-
 }
+
+
