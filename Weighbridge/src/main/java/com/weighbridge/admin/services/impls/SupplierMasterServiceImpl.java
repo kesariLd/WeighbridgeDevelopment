@@ -35,7 +35,7 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
             // Check if the supplier contact number or email already exists
             boolean exists = supplierMasterRepository.existsBySupplierContactNoOrSupplierEmail(
                     supplierMasterDto.getSupplierContactNo(),
-                    supplierMasterDto.getEmailId()
+                    supplierMasterDto.getSupplierEmail()
 
             );
             if (exists) {
@@ -79,9 +79,9 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
     }
 
     @Override
-    public String getAddressOfSupplier(String supplierName) {
+    public List<String> getAddressOfSupplier(String supplierName) {
 
-        String supplierAddressBySupplierName = supplierMasterRepository.findSupplierAddressBySupplierName(supplierName);
+        List<String> supplierAddressBySupplierName = supplierMasterRepository.findSupplierAddressBySupplierName(supplierName);
         return supplierAddressBySupplierName;
     }
 

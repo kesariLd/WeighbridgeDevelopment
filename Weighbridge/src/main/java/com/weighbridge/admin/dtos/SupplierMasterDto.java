@@ -10,8 +10,6 @@ public class SupplierMasterDto {
 
     @NotBlank(message = "supplier Name is required")
     private String supplierName;
-
-    private String emailId;
     private String supplierEmail;
     private String supplierContactNo;
     private String supplierAddressLine1;

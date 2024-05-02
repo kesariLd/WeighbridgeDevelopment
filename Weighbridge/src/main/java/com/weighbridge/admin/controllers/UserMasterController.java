@@ -26,18 +26,14 @@ public class UserMasterController {
 
     // Create new user
     @PostMapping
-    public ResponseEntity<String> createUser(@Validated @RequestBody UserRequest userRequest, HttpSession httpSession){
-        String response = userMasterService.createUser(userRequest,httpSession);
+    public ResponseEntity<String> createUser(@Validated @RequestBody UserRequest userRequest, HttpSession httpSession) {
+        String response = userMasterService.createUser(userRequest, httpSession);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // Get all users
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers(
-            @RequestParam(defaultValue = "0", required = false) int page,
-            @RequestParam(defaultValue = "10", required = false) int size,
-            @RequestParam(required = false, defaultValue = "userModifiedDate") String sortField,
-            @RequestParam(defaultValue = "desc", required = false) String sortOrder) {
+    public ResponseEntity<List<UserResponse>> getAllUsers(@RequestParam(defaultValue = "0", required = false) int page, @RequestParam(defaultValue = "10", required = false) int size, @RequestParam(required = false, defaultValue = "userModifiedDate") String sortField, @RequestParam(defaultValue = "desc", required = false) String sortOrder) {
 
         Pageable pageable;
 
@@ -56,26 +52,41 @@ public class UserMasterController {
     }
 
 
-//     Get single user by userId
+    //     Get single user by userId
     @GetMapping("/{userId}")
-    public ResponseEntity<UserResponse> getSingleUser(@PathVariable("userId") String userId){
+    public ResponseEntity<UserResponse> getSingleUser(@PathVariable("userId") String userId) {
         UserResponse user = userMasterService.getSingleUser(userId);
         return ResponseEntity.ok(user);
     }
 
-    // Delete user by userId
-    @DeleteMapping("/deleteUser/{userId}")
-    public ResponseEntity<String> deleteUserById(@PathVariable String userId){
-        String response = userMasterService.deleteUserById(userId);
-        return ResponseEntity.ok(response);
+    // To deactivate user
+    @DeleteMapping("/{userId}/deactivate")
+    public ResponseEntity<Void> deleteUserById(@PathVariable String userId) {
+        boolean deleted = userMasterService.deleteUserById(userId);
+        if (deleted) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // To activate user
+    @PutMapping("/{userId}/activate")
+    public ResponseEntity<Void> activateUser(@PathVariable String userId) {
+        boolean activated = userMasterService.activateUser(userId);
+        if (activated) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // Update user by userId
     @PutMapping("/updateUser/{userId}")
-    public ResponseEntity<UserResponse> updateUserById(@Validated @RequestBody UpdateRequest updateRequest, @PathVariable String userId,HttpSession httpSession){
+    public ResponseEntity<String> updateUserById(@Validated @RequestBody UpdateRequest updateRequest, @PathVariable String userId, HttpSession httpSession) {
 
-        UserResponse response = userMasterService.updateUserById(updateRequest, userId,httpSession);
-        return ResponseEntity.ok(response);
+        String userResponse = userMasterService.updateUserById(updateRequest, userId, httpSession);
+        return ResponseEntity.ok(userResponse);
     }
 
     /**
@@ -111,7 +122,6 @@ public class UserMasterController {
         List<UserResponse> userLists = userPage.getContent();
         return ResponseEntity.ok(userLists);
     }
-
 
 
 }

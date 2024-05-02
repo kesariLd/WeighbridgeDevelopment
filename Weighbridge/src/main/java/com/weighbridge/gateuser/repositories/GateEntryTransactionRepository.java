@@ -6,7 +6,20 @@ import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 
 import java.util.List;
 
-public interface GateEntryTransactionRepository extends JpaRepository<GateEntryTransaction,Integer> {
+/**
+ * Repository interface for accessing gate entry transaction data.
+ */
+public interface GateEntryTransactionRepository extends JpaRepository<GateEntryTransaction, Integer> {
 
-    List<GateEntryTransaction> findBySiteIdAndCompanyId(String siteId,String companyId);
+    /**
+     * Retrieves a list of gate entry transactions based on the specified site ID and company ID.
+     *
+     * @param siteId    The ID of the site to filter gate entry transactions.
+     * @param companyId The ID of the company to filter gate entry transactions.
+     * @return A list of gate entry transactions matching the provided site ID and company ID.
+     */
+    List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTicketNoDesc(String siteId, String companyId);
+
+    List<GateEntryTransaction> findBySiteIdAndCompanyId(String userSite, String userCompany);
 }
+

@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * GateEntryTransactionResponse class for to return necessary details to frontend
+ */
 @Data
 public class GateEntryTransactionResponse {
 

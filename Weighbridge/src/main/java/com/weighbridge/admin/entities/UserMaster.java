@@ -1,8 +1,16 @@
 package com.weighbridge.admin.entities;
 
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,9 +25,9 @@ import java.time.LocalDateTime;
 public class UserMaster {
 
     @Id
-    @Column(name = "user_id", unique = true)
     @NotBlank(message = "UserId is required")
     @Size(min=5, max = 15, message = "UserId id must be between 5 and 15 characters")
+    @Column(name = "user_id", unique = true)
     private String userId;
 
     //@NotNull(message = "Site is required")
@@ -34,7 +42,9 @@ public class UserMaster {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid Email format")
-    @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", message = "EmailId does not match the required format")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@(?:gmail\\.com|gmail\\.in)$",
+            flags = Pattern.Flag.CASE_INSENSITIVE,
+            message = "EmailId does not match the required format")
     @Column(name = "user_email_id", unique = true )
     private String userEmailId;
 
