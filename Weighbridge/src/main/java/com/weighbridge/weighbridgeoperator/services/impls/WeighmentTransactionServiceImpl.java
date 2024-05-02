@@ -122,7 +122,6 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             transactionLogRepository.save(transactionLog);
             return "Second weight saved";
         }
-
     }
 
     @Override
@@ -174,7 +173,6 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                 response.setSupplierName((String) row[10]);
                 response.setTransporterName((String) row[11]);
                 response.setMaterialName((String) row[12]);
-
                 // Set other fields similarly
                 responses.add(response);
             }
