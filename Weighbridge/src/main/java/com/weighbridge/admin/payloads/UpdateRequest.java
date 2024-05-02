@@ -10,10 +10,6 @@ import java.util.Set;
 
 @Data
 public class UpdateRequest {
-    /*@NotBlank(message = "User id is required")
-    @Size(min=5, max = 15, message = "UserId id must be between 5 and 15 characters")
-    private String userId;*/
-
     @NotBlank(message = "Site is required")
     private String site;
 
@@ -41,5 +37,4 @@ public class UpdateRequest {
     @Size(min = 2, max = 50, message = "Firstname must be between 2 and 50 characters")
     private String lastName;
 
-    private String userStatus;
 }

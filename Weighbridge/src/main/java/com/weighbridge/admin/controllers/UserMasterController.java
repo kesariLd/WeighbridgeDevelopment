@@ -59,12 +59,23 @@ public class UserMasterController {
         return ResponseEntity.ok(user);
     }
 
-    // Delete user by userId
-    @DeleteMapping("/{userId}")
+    // To deactivate user
+    @DeleteMapping("/{userId}/deactivate")
     public ResponseEntity<Void> deleteUserById(@PathVariable String userId) {
         boolean deleted = userMasterService.deleteUserById(userId);
         if (deleted) {
             return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // To activate user
+    @PutMapping("/{userId}/activate")
+    public ResponseEntity<Void> activateUser(@PathVariable String userId) {
+        boolean activated = userMasterService.activateUser(userId);
+        if (activated) {
+            return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.notFound().build();
         }

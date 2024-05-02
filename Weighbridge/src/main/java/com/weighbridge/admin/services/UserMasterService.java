@@ -21,5 +21,5 @@ public interface UserMasterService {
     String updateUserById(UpdateRequest updateRequest, String userId,HttpSession session);
 
 
-
+    boolean activateUser(String userId);
 }
