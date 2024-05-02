@@ -1,16 +1,13 @@
 package com.weighbridge.admin.services.impls;
 
-import com.weighbridge.admin.repsitories.RoleMasterRepository;
-import com.weighbridge.admin.services.RoleMasterService;
 import com.weighbridge.admin.dtos.RoleMasterDto;
 import com.weighbridge.admin.entities.RoleMaster;
 import com.weighbridge.admin.exceptions.ResourceCreationException;
-import com.weighbridge.admin.exceptions.ResourceNotFoundException;
+import com.weighbridge.admin.repsitories.RoleMasterRepository;
+import com.weighbridge.admin.services.RoleMasterService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,14 +17,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class RoleMasterServiceImpl implements RoleMasterService {
 
     private final RoleMasterRepository roleMasterRepository;
     private final ModelMapper modelMapper;
+    private final HttpServletRequest request;
 
-    @Autowired
-    HttpServletRequest request;
+    public RoleMasterServiceImpl(RoleMasterRepository roleMasterRepository,
+                                 ModelMapper modelMapper,
+                                 HttpServletRequest request) {
+        this.roleMasterRepository = roleMasterRepository;
+        this.modelMapper = modelMapper;
+        this.request = request;
+    }
+
     @Override
     public RoleMasterDto createRole(RoleMasterDto roleDto) {
         try {
@@ -65,46 +68,35 @@ public class RoleMasterServiceImpl implements RoleMasterService {
         }
     }
 
-
-
-
     @Override
-    public void deleteRole(int roleId) {
-        try {
-            RoleMaster roleMaster = roleMasterRepository.findById(roleId).get();
-            if(roleMaster.getRoleStatus()=="ACTIVE"){
+    public boolean deleteRole(String roleName) {
+        RoleMaster roleMaster = roleMasterRepository.findByRoleName(roleName);
+        if (roleMaster != null && roleMaster.getRoleStatus() == "ACTIVE") {
                 roleMaster.setRoleStatus("INACTIVE");
                 roleMasterRepository.save(roleMaster);
-
-            }
-        } catch (Exception e) {
-            throw new ResourceNotFoundException("Role","roleName", roleMasterRepository.findRoleNameByRoleId(roleId));
+            return true;
         }
+        return false;
     }
 
     @Override
-    public List<String> getAllStringRole() {
-
-        try{
-            List<String> allRoleListName = roleMasterRepository.findAllRoleListName();
-            return allRoleListName;
+    public List<String> getAllRoleNames() {
+        List<String> allRoleNames = roleMasterRepository.findAllRoleListName();
+        if (allRoleNames == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No roles names found");
         }
-        catch (Exception e){
-            throw new ResourceNotFoundException("Failed to retrieve roles");
-        }
-
+        return allRoleNames;
     }
 
     @Override
     public List<RoleMasterDto> getAllRole() {
-        try {
-            List<RoleMaster> allRoles = roleMasterRepository.findAll();
-            return allRoles.stream()
-                    .map(roleMaster -> modelMapper.map(roleMaster, RoleMasterDto.class))
-                    .collect(Collectors.toList());
-        } catch (Exception e) {
-            throw new ResourceNotFoundException("Failed to retrieve roles");
+        List<RoleMaster> allRoles = roleMasterRepository.findAll();
+        if (allRoles == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No roles found");
         }
 
+        return allRoles.stream()
+                .map(roleMaster -> modelMapper.map(roleMaster, RoleMasterDto.class))
+                .collect(Collectors.toList());
     }
 }

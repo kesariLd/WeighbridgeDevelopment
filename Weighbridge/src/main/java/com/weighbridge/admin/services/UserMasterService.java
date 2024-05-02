@@ -16,10 +16,10 @@ public interface UserMasterService {
     Page<UserResponse> getAllUsersbyUserStatus(Pageable pageable,String userStatus);
     UserResponse getSingleUser(String userId);
 
-    String deleteUserById(String userId);
+    boolean deleteUserById(String userId);
 
-    UserResponse updateUserById(UpdateRequest updateRequest, String userId,HttpSession session);
+    String updateUserById(UpdateRequest updateRequest, String userId,HttpSession session);
 
 
-
+    boolean activateUser(String userId);
 }

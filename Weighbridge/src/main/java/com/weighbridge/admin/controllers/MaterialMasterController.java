@@ -1,7 +1,7 @@
 package com.weighbridge.admin.controllers;
 
-import com.weighbridge.admin.services.MaterialMasterService;
 import com.weighbridge.admin.dtos.MaterialMasterDto;
+import com.weighbridge.admin.services.MaterialMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
