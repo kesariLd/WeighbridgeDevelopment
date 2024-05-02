@@ -28,5 +28,4 @@ public class WeighmentTransactionController {
         List<WeighmentTransactionResponse> response=weighmentTransactionService.getAllGateDetails();
         return ResponseEntity.ok(response);
     }
-
 }
