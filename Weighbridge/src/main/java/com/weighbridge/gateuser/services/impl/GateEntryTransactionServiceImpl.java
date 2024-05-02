@@ -115,6 +115,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         transactionLogRepository.save(transactionLog);
         return savedGateEntryTransaction;
     }
+  
     @Override
     public String setOutTime(Integer ticketNo) {
         VehicleTransactionStatus vehicleTransactionStatus = vehicleTransactionStatusRepository.findByTicketNo(ticketNo);
