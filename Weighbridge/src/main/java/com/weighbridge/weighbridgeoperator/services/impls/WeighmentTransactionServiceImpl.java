@@ -70,8 +70,6 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             weighmentTransaction.setTemporaryWeight(weighmentRequest.getWeight());
             weighmentTransactionRepository.save(weighmentTransaction);
 
-
-
             //History save with vehicle intime and vehicle out time
             TransactionLog transactionLog = new TransactionLog();
             transactionLog.setUserId(userId);
@@ -162,21 +160,25 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                 response.setWeighmentNo(String.valueOf(row[1]));
                 response.setTransactionType((String) row[2]);
                 response.setTransactionDate((Date) row[3]);
-                response.setGrossWeight(String.valueOf(row[4])+"/"+timestamp);
-                response.setTareWeight(String.valueOf(row[5])+"/"+timestamp1);
+                if(((String) row[2]).equalsIgnoreCase("Inbound")){
+                    response.setGrossWeight(String.valueOf(row[7])+"/"+timestamp);
+                    response.setTareWeight(row[5]+"/"+timestamp1);
+                }
+                else{
+                    response.setTareWeight(String.valueOf(row[7])+"/"+timestamp1);
+                    response.setGrossWeight(row[4]+"/"+timestamp);
+                }
                 response.setNetWeight(String.valueOf(row[6]+"/"+timestamp1));
-                response.setVehicleNo((String) row[7]);
-                response.setVehicleFitnessUpTo((Date) row[8]);
-                response.setSupplierName((String) row[9]);
-                response.setTransporterName((String) row[10]);
-                response.setMaterialName((String) row[11]);
+                response.setVehicleNo((String) row[8]);
+                response.setVehicleFitnessUpTo((Date) row[9]);
+                response.setSupplierName((String) row[10]);
+                response.setTransporterName((String) row[11]);
+                response.setMaterialName((String) row[12]);
 
                 // Set other fields similarly
                 responses.add(response);
-
             }
             return responses;
         }
     }
-
 }

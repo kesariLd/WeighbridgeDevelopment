@@ -1,5 +1,6 @@
 package com.weighbridge.gateuser.controllers;
 
+import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
 import com.weighbridge.gateuser.services.GateEntryTransactionService;
@@ -27,9 +28,8 @@ public class GateEntryTransactionController {
      * @return The ID of the saved gate entry transaction.
      */
     @PostMapping
-
-    public ResponseEntity<Integer> saveTransaction(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest) {
-        Integer gateEntryResponse = gateEntryTransactionService.saveGateEntryTransaction(gateEntryTransactionRequest);
+    public ResponseEntity<GateEntryTransaction> saveTransaction(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest) {
+        GateEntryTransaction gateEntryResponse = gateEntryTransactionService.saveGateEntryTransaction(gateEntryTransactionRequest);
         return new ResponseEntity<>(gateEntryResponse, HttpStatus.OK);
     }
 
