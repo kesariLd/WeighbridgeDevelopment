@@ -49,7 +49,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     @Autowired
     private HttpServletRequest httpServletRequest;
     @Override
-    public GateEntryTransaction saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest) {
+    public Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest) {
         // Set user session details
         HttpSession session = httpServletRequest.getSession();
         String userId;
@@ -113,7 +113,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         transactionLog.setTimestamp(LocalDateTime.now());
         transactionLog.setStatusCode("GNT");
         transactionLogRepository.save(transactionLog);
-        return savedGateEntryTransaction;
+        return ticketNo;
     }
   
     @Override

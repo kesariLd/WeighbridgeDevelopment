@@ -19,7 +19,7 @@ public interface GateEntryTransactionService {
      * @param gateEntryTransactionRequest The request containing the details of the gate entry transaction.
      * @return The ticket number of the saved gate entry transaction.
      */
-    GateEntryTransaction saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest);
+    Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest);
 
     /**
      * Sets the out time for a vehicle associated with the specified ticket number.
