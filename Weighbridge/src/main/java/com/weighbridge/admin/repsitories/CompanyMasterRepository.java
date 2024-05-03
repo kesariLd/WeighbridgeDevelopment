@@ -26,4 +26,7 @@ public interface CompanyMasterRepository extends JpaRepository<CompanyMaster, St
 
     @Query("DELETE FROM CompanyMaster cm WHERE cm.companyName = :companyName")
     void deleteByCompanyName(@Param("companyName") String companyName);
+
+    @Query("SELECT COUNT(c) FROM CompanyMaster c WHERE c.companyName <> 'ALL_COMP'")
+    long countByCompanyNameNot();
 }
