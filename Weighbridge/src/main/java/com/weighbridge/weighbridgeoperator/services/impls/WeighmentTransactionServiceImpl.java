@@ -169,14 +169,14 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     response.setTicketNo(String.valueOf(row[0]));
                     TransactionLog byTicketNo = transactionLogRepository.findByTicketNoAndStatusCode((Integer) row[0], "GWT");
                     TransactionLog byTicketNo2 = transactionLogRepository.findByTicketNoAndStatusCode((Integer) row[0], "TWT");
-                    LocalDateTime timestamp = null, timestamp1 = null,resTimeStamp=null,resTimeStamp1=null;
+                    LocalDateTime timestamp = null, timestamp1 = null, resTimeStamp = null, resTimeStamp1 = null;
                     if (byTicketNo != null) {
                         timestamp = byTicketNo.getTimestamp();
                         resTimeStamp = timestamp.withSecond(0).withNano(0);
                     }
                     if (byTicketNo2 != null) {
                         timestamp1 = byTicketNo2.getTimestamp();
-                        resTimeStamp1=timestamp1.withSecond(0).withNano(0);
+                        resTimeStamp1 = timestamp1.withSecond(0).withNano(0);
                     }
                     response.setWeighmentNo(String.valueOf(row[1]));
                     response.setTransactionType((String) row[2]);
@@ -198,9 +198,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     responses.add(response);
                 }
 
-            }
-            catch (Exception e){
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,e.getMessage());
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
             return responses;
         }
@@ -208,25 +207,34 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
 
     @Override
     public TicketResponse getResponseByTicket(Integer ticketNo) {
-        GateEntryTransaction gateEntryTransaction=gateEntryTransactionRepository.findById(ticketNo).get();
-        if(gateEntryTransaction==null){
-            throw new ResourceNotFoundException("ticket","ticketNo",ticketNo.toString());
-        }
-        else{
-           TicketResponse ticketResponse=new TicketResponse();
-           ticketResponse.setPoNo(gateEntryTransaction.getPoNo());
-           ticketResponse.setTpN0(gateEntryTransaction.getTpNo());
-           ticketResponse.setChallanNo(gateEntryTransaction.getChallanNo());
-           ticketResponse.setMaterial(materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId()));
-           ticketResponse.setTransporter(transporterMasterRepository.findTransporterNameByTransporterId(gateEntryTransaction.getTransporterId()));
-           ticketResponse.setDriverName(gateEntryTransaction.getDriverName());
-           VehicleMaster vehicleMaster = vehicleMasterRepository.findById(gateEntryTransaction.getVehicleId()).orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
+        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo).get();
+        if (gateEntryTransaction == null) {
+            throw new ResourceNotFoundException("ticket", "ticketNo", ticketNo.toString());
+        } else {
+            System.out.println("site id"+gateEntryTransaction.getSupplierId());
+            TicketResponse ticketResponse = new TicketResponse();
+            ticketResponse.setPoNo(gateEntryTransaction.getPoNo());
+            ticketResponse.setTpN0(gateEntryTransaction.getTpNo());
+            ticketResponse.setChallanNo(gateEntryTransaction.getChallanNo());
+            ticketResponse.setMaterial(materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId()));
+            ticketResponse.setTransporter(transporterMasterRepository.findTransporterNameByTransporterId(gateEntryTransaction.getTransporterId()));
+            ticketResponse.setDriverName(gateEntryTransaction.getDriverName());
+            VehicleMaster vehicleMaster = vehicleMasterRepository.findById(gateEntryTransaction.getVehicleId()).orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
 
             ticketResponse.setVehicleNo(vehicleMaster.getVehicleNo());
-           ticketResponse.setSupplier(supplierMasterRepository.findSupplierNameBySupplierId(gateEntryTransaction.getSupplierId()).toString());
-           ticketResponse.setDriverDlNo(gateEntryTransaction.getDlNo());
-           ticketResponse.setSupplierAddress(supplierMasterRepository.findSupplierAddressBySupplierName(supplierMasterRepository.findSupplierNameBySupplierId(gateEntryTransaction.getSupplierId()).toString()).toString());
-           return ticketResponse;
+            Object[] supplierInfo = supplierMasterRepository.findSupplierNameBySupplierId(gateEntryTransaction.getSupplierId());
+            Object[] supplierData = (Object[]) supplierInfo[0];
+            if (supplierData != null && supplierData.length >= 2) {
+                String supplierName = (String) supplierData[0];
+                String supplierAddress = (String) supplierData[1];
+                System.out.println(supplierName + " " + supplierAddress);
+                ticketResponse.setSupplierName(supplierName);
+                ticketResponse.setSupplierAddress(supplierAddress);
+            }
+//            ticketResponse.setSupplierName(supplierName);
+            ticketResponse.setDriverDlNo(gateEntryTransaction.getDlNo());
+//            ticketResponse.setSupplierAddress(supplierAddress);
+            return ticketResponse;
         }
     }
 }

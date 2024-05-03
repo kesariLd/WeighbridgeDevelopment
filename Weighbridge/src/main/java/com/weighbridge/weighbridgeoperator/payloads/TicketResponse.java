@@ -8,7 +8,7 @@ public class TicketResponse {
     private String poNo;
     private String challanNo;
     private String vehicleNo;
-    private String supplier;
+    private String supplierName;
     private String supplierAddress;
     private String transporter;
     private String driverDlNo;
