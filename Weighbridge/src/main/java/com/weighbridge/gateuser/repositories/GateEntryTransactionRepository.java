@@ -20,6 +20,8 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
      */
     List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTicketNoDesc(String siteId, String companyId);
 
+    GateEntryTransaction findByTicketNo(Integer ticketNo);
+
 //    List<GateEntryTransaction> findBySiteIdAndCompanyId(String userSite, String userCompany);
 }
 
