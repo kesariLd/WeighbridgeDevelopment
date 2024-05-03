@@ -1,12 +1,13 @@
 package com.weighbridge.admin.payloads;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.Date;
 
-@Getter
-@Setter
+@Data
 public class VehicleRequest {
     private String vehicleNo;
     private String vehicleType;
@@ -14,5 +15,5 @@ public class VehicleRequest {
     private Integer vehicleWheelsNo;
     private Double vehicleTareWeight;
     private Double vehicleLoadCapacity;
-    private Date vehicleFitnessUpTo;
+    private LocalDate vehicleFitnessUpTo;
 }
