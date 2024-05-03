@@ -48,6 +48,15 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     private TransactionLogRepository transactionLogRepository;
     @Autowired
     private HttpServletRequest httpServletRequest;
+
+    /**
+     * Saves a gate entry transaction based on the provided request data.
+     *
+     * @param gateEntryTransactionRequest The request data containing gate entry transaction details.
+     * @return The ticket number of the saved gate entry transaction.
+     * @throws ResourceNotFoundException If the supplier does not exist.
+     * @throws ResponseStatusException If the session is expired and login is required.
+     */
     @Override
     public Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest) {
         // Set user session details
@@ -69,11 +78,27 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         String vehicleNo = gateEntryTransactionRequest.getVehicle();
         String transporterName = gateEntryTransactionRequest.getTransporter();
         String supplierName = gateEntryTransactionRequest.getSupplier();
+        String supplierAddress = gateEntryTransactionRequest.getSupplierAddressLine1();
+        String supplierAddressLine1;
+        String supplierAddressLine2;
+        if (supplierAddress != null && supplierAddress.contains(",")) {
+            String[] parts = supplierAddress.split(",", 2); // Split into two parts
+            supplierAddressLine1 = parts[0].trim(); // Trim to remove leading/trailing spaces
+            supplierAddressLine2 = parts[1].trim();
+        } else {
+            // If there's no comma, store everything in supplierAddressLine1
+            supplierAddressLine1 = supplierAddress;
+            supplierAddressLine2 = null; // Set supplierAddressLine2 to null
+        }
         //finding the entities by names from database
         long materialId = materialMasterRepository.findByMaterialIdByMaterialName(materialName);
         long vehicleId = vehicleMasterRepository.findVehicleIdByVehicleNo(vehicleNo);
         long transporterId = transporterMasterRepository.findTransporterIdByTransporterName(transporterName);
-        long supplierId = supplierMasterRepository.findSupplierIdBySupplierName(supplierName);
+        Long supplierId = supplierMasterRepository.findSupplierIdBySupplierNameAndAddressLines(
+                supplierName, supplierAddressLine1, supplierAddressLine2);
+        if (supplierId == null) {
+            throw new ResourceNotFoundException("Supplier not exist");
+        }
         String dlNo = gateEntryTransactionRequest.getDlNo();
         String driverName = gateEntryTransactionRequest.getDriverName();
         Double supplyConsignment = gateEntryTransactionRequest.getSupplyConsignmentWeight();
@@ -98,6 +123,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         gateEntryTransaction.setChallanNo(challanNo);
         gateEntryTransaction.setEwaybillNo(ewaybillNo);
         gateEntryTransaction.setTransactionType(gateEntryTransactionRequest.getTransactionType());
+        LocalDateTime now = LocalDateTime.now();
+        // Round up the seconds
+        LocalDateTime vehicleInTime = now.withSecond(0).withNano(0);
+        gateEntryTransaction.setVehicleIn(vehicleInTime);
         //save gate entry transaction
         GateEntryTransaction savedGateEntryTransaction = gateEntryTransactionRepository.save(gateEntryTransaction);
         //vehicle transaction status to know where the vehicle is
@@ -110,16 +139,23 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         TransactionLog transactionLog = new TransactionLog();
         transactionLog.setUserId(userId);
         transactionLog.setTicketNo(ticketNo);
-        transactionLog.setTimestamp(LocalDateTime.now());
+        transactionLog.setTimestamp(vehicleInTime);
         transactionLog.setStatusCode("GNT");
         transactionLogRepository.save(transactionLog);
         return ticketNo;
     }
-  
+    /**
+     * Sets the out time for a vehicle based on its ticket number.
+     *
+     * @param ticketNo The ticket number of the vehicle.
+     * @return A message indicating whether the vehicle can exit or not.
+     * @throws ResponseStatusException If the session is expired and login is required, or if the vehicle's tare weight is not measured yet.
+     */
     @Override
     public String setOutTime(Integer ticketNo) {
         VehicleTransactionStatus vehicleTransactionStatus = vehicleTransactionStatusRepository.findByTicketNo(ticketNo);
         HttpSession session = httpServletRequest.getSession();
+        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
         if (!Objects.equals(vehicleTransactionStatus.getStatusCode(), "TWT")) {
             return "vehicle TareWeight is not measured yet!";
         }
@@ -136,6 +172,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         transactionLog.setStatusCode("GXT");
         transactionLogRepository.save(transactionLog);
         vehicleTransactionStatus.setStatusCode("GXT");
+        LocalDateTime now = LocalDateTime.now();
+        // Round up the seconds
+        LocalDateTime vehicleOutTime = now.withSecond(0).withNano(0);
+        gateEntryTransaction.setVehicleOut(vehicleOutTime);
         vehicleTransactionStatusRepository.save(vehicleTransactionStatus);
         return "Vehicle Can exit";
     }
@@ -150,21 +190,28 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             userId = session.getAttribute("userId").toString();
             userSite = session.getAttribute("userSite").toString();
             userCompany = session.getAttribute("userCompany").toString();
-        }
-        else {
+        } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
         }
-        List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite,userCompany);
-        System.out.println("GateEntryTransactionServiceImpl.getAllGateEntryTransaction"+allTransactions);
+
+        List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany);
+        System.out.println("GateEntryTransactionServiceImpl.getAllGateEntryTransaction" + allTransactions);
         List<GateEntryTransactionResponse> responseList = new ArrayList<>();
         for (GateEntryTransaction transaction : allTransactions) {
+            // Fetch status code for the current transaction ticket number
+            String statusCode = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo()).getStatusCode();
+            // Skip processing and printing the transaction if its status code is "GXT"
+            if ("GXT".equals(statusCode)) {
+                continue;
+            }
+
             GateEntryTransactionResponse response = new GateEntryTransactionResponse();
             // Fetching associated entity names
             String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
-            System.out.println("vehicle id"+transaction.getVehicleId());
-            System.out.println(" hasg"+vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId()));
+            System.out.println("vehicle id" + transaction.getVehicleId());
+            System.out.println(" hasg" + vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId()));
             Object[] vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId = vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId());
-            System.out.println("vehicle "+vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId[0]);
+            System.out.println("vehicle " + vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId[0]);
             String transporterName = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getTransporterId());
             Object[] supplierNameBySupplierId = supplierMasterRepository.findSupplierNameBySupplierId(transaction.getSupplierId());
             // Setting values to response object
@@ -196,8 +243,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 response.setVehicleType(null);
                 response.setVehicleWheelsNo(null);
             }
-            TransactionLog transactionLogVehicleIn = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(),"GNT");
-            TransactionLog transactionLogVehicleOut = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(),"GXT");
+            TransactionLog transactionLogVehicleIn = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), "GNT");
+            TransactionLog transactionLogVehicleOut = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), "GXT");
             // Check if vehicle out transaction log exists
             if (transactionLogVehicleIn != null) {
                 // Vehicle out transaction log exists
@@ -221,5 +268,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         }
         return responseList;
     }
+
 }
  
