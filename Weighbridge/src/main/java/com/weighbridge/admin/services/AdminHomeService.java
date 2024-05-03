@@ -7,4 +7,14 @@ public interface AdminHomeService {
     long findNoOfInActiveUsers();
 
     long findNoOfRegisteredVehicle();
+
+    long findNoOfAllUsers();
+
+    long findNoOfRegisteredCustomers();
+
+    long findNoOfRegisteredSuppliers();
+
+    long findNoOfRegisteredTransporters();
+
+    long findNoOfRegisteredCompanies();
 }

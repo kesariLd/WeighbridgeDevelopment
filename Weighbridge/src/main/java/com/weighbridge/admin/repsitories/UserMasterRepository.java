@@ -21,7 +21,8 @@ public interface UserMasterRepository extends JpaRepository<UserMaster, String> 
 
     @Query("SELECT um FROM UserMaster um JOIN FETCH um.company JOIN FETCH um.site WHERE um.userId = :userId")
     Optional<UserMaster> findByUserIdWithCompanyAndSite(@Param("userId") String userId);
-    
+
+    @Query("SELECT COUNT(um) FROM UserMaster um WHERE um.userStatus = :active AND um.userId <> 'admin'")
     long countByUserStatus(String active);
 
     @Query("SELECT COUNT(um) > 0 FROM UserMaster um WHERE um.userEmailId = :emailId")
