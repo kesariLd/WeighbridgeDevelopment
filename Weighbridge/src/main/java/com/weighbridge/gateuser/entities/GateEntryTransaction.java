@@ -25,7 +25,8 @@ public class GateEntryTransaction {
     private long vehicleId;
     private String siteId;
     private String companyId;
-
+    private LocalDateTime vehicleIn;
+    private LocalDateTime vehicleOut;
     private LocalDate transactionDate;
     private String dlNo;
     private String driverName;
