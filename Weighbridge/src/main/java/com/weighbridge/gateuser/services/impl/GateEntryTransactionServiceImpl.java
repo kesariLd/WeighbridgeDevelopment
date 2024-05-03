@@ -97,7 +97,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         gateEntryTransaction.setTpNo(tpNo);
         gateEntryTransaction.setChallanNo(challanNo);
         gateEntryTransaction.setEwaybillNo(ewaybillNo);
-        gateEntryTransaction.setTransactionType(gateEntryTransaction.getTransactionType());
+        gateEntryTransaction.setTransactionType(gateEntryTransactionRequest.getTransactionType());
         //save gate entry transaction
         GateEntryTransaction savedGateEntryTransaction = gateEntryTransactionRepository.save(gateEntryTransaction);
         //vehicle transaction status to know where the vehicle is

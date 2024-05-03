@@ -1,6 +1,7 @@
 package com.weighbridge.weighbridgeoperator.controllers;
 
 
+import com.weighbridge.weighbridgeoperator.payloads.TicketResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
 import com.weighbridge.weighbridgeoperator.services.WeighmentTransactionService;
@@ -27,5 +28,11 @@ public class WeighmentTransactionController {
     public ResponseEntity<List<WeighmentTransactionResponse>> getAlldetails(){
         List<WeighmentTransactionResponse> response=weighmentTransactionService.getAllGateDetails();
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/get/{ticketNo}")
+    public ResponseEntity<TicketResponse> getResponseByTicket(@PathVariable Integer ticketNo){
+        TicketResponse responseByTicket = weighmentTransactionService.getResponseByTicket(ticketNo);
+        return ResponseEntity.ok(responseByTicket);
     }
 }

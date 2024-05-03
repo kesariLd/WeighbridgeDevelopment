@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
@@ -40,7 +41,7 @@ public class VehicleMaster {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "vehicle_fitness_up_to")
-    private Date vehicleFitnessUpTo;
+    private LocalDate vehicleFitnessUpTo;
 
     @Column(name = "vehicle_status")
     private String vehicleStatus = "ACTIVE";

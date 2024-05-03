@@ -2,6 +2,7 @@ package com.weighbridge.weighbridgeoperator.payloads;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -11,12 +12,12 @@ public class WeighmentTransactionResponse {
         private String ticketNo;
         private String weighmentNo;
         private String transactionType;
-        private Date transactionDate;
+        private LocalDate transactionDate;
         private String grossWeight;
         private String tareWeight;
         private String netWeight;
         private String vehicleNo;
-        private Date vehicleFitnessUpTo;
+        private LocalDate vehicleFitnessUpTo;
         private String supplierName;
         private String transporterName;
         private String materialName;
