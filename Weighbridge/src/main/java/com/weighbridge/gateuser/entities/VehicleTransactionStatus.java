@@ -2,7 +2,9 @@ package com.weighbridge.gateuser.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * VehicleTransactionStatus class to store the current status of vehicle ,
@@ -10,6 +12,8 @@ import lombok.Data;
  */
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class VehicleTransactionStatus {
     @Id
     private Integer ticketNo;
