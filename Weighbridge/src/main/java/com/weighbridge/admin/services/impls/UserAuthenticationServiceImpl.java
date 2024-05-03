@@ -39,8 +39,6 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
 
     @Autowired
     private EmailService emailService;
-    @Value("${app.default-password}")
-    private String defaultPassword;
 
     @Autowired
     private SiteMasterRepository siteMasterRepository;
