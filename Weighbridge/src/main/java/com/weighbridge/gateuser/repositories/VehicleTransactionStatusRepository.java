@@ -4,6 +4,8 @@ import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
+
 /**
  * Repository interface for accessing vehicle transaction status data.
  */
@@ -33,4 +35,9 @@ public interface VehicleTransactionStatusRepository extends JpaRepository<Vehicl
 
     @Query(value = "select count(status_code) FROM vehicle_transaction_status as ts inner join gate_entry_transaction as g on ts.ticket_no=g.ticket_no where ts.status_code='GNT' and g.transaction_type='Outbound'",nativeQuery = true)
     Long countOutboundPendingTareWeight();
+    List<VehicleTransactionStatus> findByStatusCode(String statusCode);
+
 }
+
+    
+
