@@ -27,6 +27,7 @@ public class GateEntryTransaction {
     private long transporterId;
     private long materialId;
     private long vehicleId;
+    private long customerId;
     private String siteId;
     private String companyId;
     private LocalDateTime vehicleIn;

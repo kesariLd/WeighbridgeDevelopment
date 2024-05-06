@@ -94,4 +94,10 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
         });
         return allCustomerNames;
     }
+
+    @Override
+    public List<String> getAddressOfCustomer(String name) {
+        List<String> getAddress = customerMasterRepository.findCustomerAddressByCustomerName(name);
+        return getAddress;
+    }
 }

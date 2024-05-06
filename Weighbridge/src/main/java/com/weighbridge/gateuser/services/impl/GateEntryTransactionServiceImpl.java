@@ -48,6 +48,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     private TransactionLogRepository transactionLogRepository;
     @Autowired
     private HttpServletRequest httpServletRequest;
+    @Autowired
+    private CustomerMasterRepository customerMasterRepository;
 
     /**
      * Saves a gate entry transaction based on the provided request data.
@@ -79,26 +81,48 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             String transporterName = gateEntryTransactionRequest.getTransporter();
             String supplierName = gateEntryTransactionRequest.getSupplier();
             String supplierAddress = gateEntryTransactionRequest.getSupplierAddressLine1();
-            String supplierAddressLine1;
-            String supplierAddressLine2;
-            if (supplierAddress != null && supplierAddress.contains(",")) {
-                String[] parts = supplierAddress.split(",", 2); // Split into two parts
-                supplierAddressLine1 = parts[0].trim(); // Trim to remove leading/trailing spaces
-                supplierAddressLine2 = parts[1].trim();
-            } else {
-                // If there's no comma, store everything in supplierAddressLine1
-                supplierAddressLine1 = supplierAddress;
-                supplierAddressLine2 = null; // Set supplierAddressLine2 to null
+            String customerName = gateEntryTransactionRequest.getCustomer();
+            String customerAddress = gateEntryTransactionRequest.getCustomerAddressLine();
+            String addressLine1;
+            String addressLine2;
+            long supplierId = 0;
+            long customerId = 0;
+
+            if (gateEntryTransactionRequest.getTransactionType().equals("Inbound")) {
+                if (supplierAddress != null && supplierAddress.contains(",")) {
+                    String[] parts = supplierAddress.split(",", 2); // Split into two parts
+                    addressLine1 = parts[0].trim(); // Trim to remove leading/trailing spaces
+                    addressLine2 = parts[1].trim();
+                } else {
+                    // If there's no comma, store everything in supplierAddressLine1
+                    addressLine1 = supplierAddress;
+                    addressLine2 = null; // Set supplierAddressLine2 to null
+                }
+                supplierId = supplierMasterRepository.findSupplierIdBySupplierNameAndAddressLines(
+                        supplierName, addressLine1, addressLine2);
+                if (supplierId == 0) {
+                    throw new ResourceNotFoundException("Supplier not exist");
+                }
+            } else { // Outbound transaction
+                if (customerAddress != null && customerAddress.contains(",")) {
+                    String[] parts = customerAddress.split(",", 2); // Split into two parts
+                    addressLine1 = parts[0].trim(); // Trim to remove leading/trailing spaces
+                    addressLine2 = parts[1].trim();
+                } else {
+                    // If there's no comma, store everything in customerAddressLine1
+                    addressLine1 = customerAddress;
+                    addressLine2 = null; // Set customerAddressLine2 to null
+                }
+                customerId = customerMasterRepository.findCustomerIdByCustomerNameAndAddressLines(customerName,addressLine1,addressLine2);
+                if (customerId == 0) {
+                    throw new ResourceNotFoundException("Customer not exist");
+                }
             }
+
             //finding the entities by names from database
             long materialId = materialMasterRepository.findByMaterialIdByMaterialName(materialName);
             long vehicleId = vehicleMasterRepository.findVehicleIdByVehicleNo(vehicleNo);
             long transporterId = transporterMasterRepository.findTransporterIdByTransporterName(transporterName);
-            Long supplierId = supplierMasterRepository.findSupplierIdBySupplierNameAndAddressLines(
-                    supplierName, supplierAddressLine1, supplierAddressLine2);
-            if (supplierId == null) {
-                throw new ResourceNotFoundException("Supplier not exist");
-            }
             String dlNo = gateEntryTransactionRequest.getDlNo();
             String driverName = gateEntryTransactionRequest.getDriverName();
             Double supplyConsignment = gateEntryTransactionRequest.getSupplyConsignmentWeight();
@@ -123,6 +147,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             gateEntryTransaction.setChallanNo(challanNo);
             gateEntryTransaction.setEwaybillNo(ewaybillNo);
             gateEntryTransaction.setTransactionType(gateEntryTransactionRequest.getTransactionType());
+            gateEntryTransaction.setCustomerId(customerId);
             LocalDateTime now = LocalDateTime.now();
             // Round up the seconds
             LocalDateTime vehicleInTime = now.withSecond(0).withNano(0);
