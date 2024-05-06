@@ -8,13 +8,13 @@ import lombok.Data;
 
 import java.util.Date;
 
-/*@Entity
-@Data*/
+@Entity
+@Data
 public class SalesProcess {
-   // @Id
+    @Id
     private String purchasePassNo;
- //   @ManyToOne
- //   @JoinColumn(name = "purchaseOrderNo",referencedColumnName = "purchaseOrderNo")
+    @ManyToOne
+    @JoinColumn(name = "purchaseOrderNo",referencedColumnName = "purchaseOrderNo")
     private SalesOrder purchaseOrderNo;
     private String productType;
     private String vehicleNo;

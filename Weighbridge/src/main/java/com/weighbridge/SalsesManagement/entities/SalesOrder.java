@@ -7,10 +7,10 @@ import lombok.Data;
 
 import java.util.Date;
 
-/*@Entity
-@Data*/
+@Entity
+@Data
 public class SalesOrder {
-    //@Id
+    @Id
     private String purchaseOrderNo;
 
     @NotBlank
@@ -19,11 +19,12 @@ public class SalesOrder {
     @NotBlank
     private String saleOrderNo;
 
-
+    @NotBlank
     private String customerName;
+    @NotBlank
     private String customerAddress;
 
-
+    @NotBlank
     private String productName;
 
 
@@ -35,6 +36,9 @@ public class SalesOrder {
 
     private double balanceQuantity;
 
-    @NotBlank
+
     private String brokerName;
+
+
+    private String brokerAddress;
 }
