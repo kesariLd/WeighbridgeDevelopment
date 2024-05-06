@@ -149,6 +149,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
         String userId;
         String userCompany;
         String userSite;
+
         if (session != null && session.getAttribute("userId") != null) {
             userId = session.getAttribute("userId").toString();
             userSite = session.getAttribute("userSite").toString();
@@ -157,7 +158,9 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
         else {
             throw new SessionExpiredException("Session Expired, Login again !");
         }
+        System.out.println(userSite);
         List<Object[]> allUsers=weighmentTransactionRepository.getAllGateEntries(userSite);
+        System.out.println(allUsers);
         List<WeighmentTransactionResponse> responses = new ArrayList<>();
         if(allUsers==null){
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"No gateEntries yet.");
@@ -181,19 +184,20 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     response.setWeighmentNo(String.valueOf(row[1]));
                     response.setTransactionType((String) row[2]);
                     response.setTransactionDate((LocalDate) row[3]);
+                    response.setVehicleIn((LocalDateTime) row[4]);
                     if (((String) row[2]).equalsIgnoreCase("Inbound")) {
-                        response.setGrossWeight(String.valueOf(row[7]) + "/" + resTimeStamp);
-                        response.setTareWeight(row[5] + "/" + resTimeStamp1);
+                        response.setGrossWeight(String.valueOf(row[8]) + "/" + resTimeStamp);
+                        response.setTareWeight(row[6] + "/" + resTimeStamp1);
                     } else {
-                        response.setTareWeight(String.valueOf(row[7]) + "/" + resTimeStamp1);
-                        response.setGrossWeight(row[4] + "/" + resTimeStamp);
+                        response.setTareWeight(String.valueOf(row[8]) + "/" + resTimeStamp1);
+                        response.setGrossWeight(row[5] + "/" + resTimeStamp);
                     }
-                    response.setNetWeight(String.valueOf(row[6] + "/" + resTimeStamp1));
-                    response.setVehicleNo((String) row[8]);
-                    response.setVehicleFitnessUpTo((LocalDate) row[9]);
-                    response.setSupplierName((String) row[10]);
-                    response.setTransporterName((String) row[11]);
-                    response.setMaterialName((String) row[12]);
+                    response.setNetWeight(String.valueOf(row[7] + "/" + resTimeStamp1));
+                    response.setVehicleNo((String) row[9]);
+                    response.setVehicleFitnessUpTo((LocalDate) row[10]);
+                    response.setSupplierName((String) row[11]);
+                    response.setTransporterName((String) row[12]);
+                    response.setMaterialName((String) row[13]);
                     // Set other fields similarly
                     responses.add(response);
                 }
@@ -201,6 +205,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             } catch (Exception e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
+            System.out.println(responses);
             return responses;
         }
     }
