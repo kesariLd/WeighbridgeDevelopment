@@ -1,10 +1,17 @@
 package com.weighbridge.admin.controllers;
 
 import com.weighbridge.admin.dtos.MaterialMasterDto;
+import com.weighbridge.admin.payloads.MaterialWithParametersRequest;
 import com.weighbridge.admin.services.MaterialMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -27,14 +34,15 @@ public class MaterialMasterController {
 
     /**
      * Saves a new material.
-     * @param materialMasterDto The DTO containing information about the material to be saved.
+     * @param materialWithParametersRequest The payload containing information about the material, material type and its parameters with quality ranges to be saved.
      * @return ResponseEntity containing the saved material DTO and HTTP status CREATED.
      */
     @PostMapping
-    public ResponseEntity<MaterialMasterDto> saveMaterials(@RequestBody MaterialMasterDto materialMasterDto){
-        MaterialMasterDto savedMaterial = materialMasterService.saveMaterials(materialMasterDto);
-        return new ResponseEntity<>(savedMaterial, HttpStatus.CREATED);
+    public ResponseEntity<String> createMaterialWithParameterAndRange(@RequestBody MaterialWithParametersRequest materialWithParametersRequest) {
+        String response = materialMasterService.createMaterialWithParameterAndRange(materialWithParametersRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     /**
      * Retrieves all materials.
@@ -56,6 +64,12 @@ public class MaterialMasterController {
         return ResponseEntity.ok(allMaterialNames);
     }
 
+    @GetMapping("/{materialName}/types")
+    public ResponseEntity<List<String>> getTypeWithMaterial(@PathVariable String materialName){
+        List<String> allMaterialTypeNames = materialMasterService.getTypeWithMaterial(materialName);
+        return ResponseEntity.ok(allMaterialTypeNames);
+    }
+
     /**
      * Deletes a material by its name.
      * @param materialName The name of the material to be deleted.
@@ -66,4 +80,7 @@ public class MaterialMasterController {
         materialMasterService.deleteMaterial(materialName);
         return ResponseEntity.ok("Material is deleted successfully");
     }
+
+
+
 }
