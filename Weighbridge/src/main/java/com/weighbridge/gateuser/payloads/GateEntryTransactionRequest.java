@@ -13,6 +13,8 @@ public class GateEntryTransactionRequest {
     private String ticketNo;
     private String supplier;
     private String supplierAddressLine1;
+    private String customer;
+    private String customerAddressLine;
     private String transporter;
     private String material;
     private String vehicle;

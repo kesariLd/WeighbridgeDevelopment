@@ -10,4 +10,7 @@ public interface CustomerMasterService {
     List<CustomerMasterDto> getAllCustomers();
 
     List<String> getAllCustomerNames();
+
+    List<String> getAddressOfCustomer(String name);
+
 }

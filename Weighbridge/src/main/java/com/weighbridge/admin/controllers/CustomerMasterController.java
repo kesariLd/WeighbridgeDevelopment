@@ -42,5 +42,9 @@ public class CustomerMasterController {
         List<String> allCustomerNames = customerMasterService.getAllCustomerNames();
         return ResponseEntity.ok(allCustomerNames);
     }
-
+    @GetMapping("/get/{customerName}")
+    public ResponseEntity<List<String>> getCustsomerAddressByCustomerName(@PathVariable String customerName){
+        List<String> addressOfSupplier = customerMasterService.getAddressOfCustomer(customerName);
+        return new ResponseEntity<>(addressOfSupplier, HttpStatus.OK);
+    }
 }
