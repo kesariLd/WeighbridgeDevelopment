@@ -1,7 +1,7 @@
 package com.weighbridge.admin.controllers;
 
 import com.weighbridge.admin.dtos.MaterialMasterDto;
-import com.weighbridge.admin.payloads.MaterialWithParametersRequest;
+import com.weighbridge.admin.payloads.MaterialWithParameters;
 import com.weighbridge.admin.services.MaterialMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +37,7 @@ public class MaterialMasterController {
         this.materialMasterService = materialMasterService;
     }
 
+<<<<<<< Updated upstream
     /**
      * Creates a new material record along with its associated parameters and quality ranges.
      *
@@ -51,6 +52,11 @@ public class MaterialMasterController {
     @PostMapping
     public ResponseEntity<String> createMaterialWithParameterAndRange(@RequestBody MaterialWithParametersRequest materialWithParametersRequest) throws Exception {
         String response = materialMasterService.createMaterialWithParameterAndRange(materialWithParametersRequest);
+=======
+    @PostMapping
+    public ResponseEntity<String> createMaterialWithParameterAndRange(@RequestBody MaterialWithParameters materialWithParameters) {
+        String response = materialMasterService.createMaterialWithParameterAndRange(materialWithParameters);
+>>>>>>> Stashed changes
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -78,7 +84,14 @@ public class MaterialMasterController {
         return ResponseEntity.ok(allMaterialNames);
     }
 
+<<<<<<< Updated upstream
     /**
+=======
+<<<<<<< Updated upstream
+=======
+    /**
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
      * Retrieves all material types associated with a specific material.
      *
      * @param materialName - The name of the material to retrieve types for.
@@ -87,7 +100,17 @@ public class MaterialMasterController {
      *         material types associated with the specified material. An empty list is returned
      *         if the material is not found.
      * @throws Exception - If any unexpected error occurs during material type retrieval.
+<<<<<<< Updated upstream
      */
+=======
+=======
+     * Retrieves names of material typesl
+     * @param materialName containing the material name whose types to be retrieved.
+     * @return ResponseEntity containing a list of names of material types and HTTP status OK.
+>>>>>>> Stashed changes
+     */
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
     @GetMapping("/{materialName}/types")
     public ResponseEntity<List<String>> getTypeWithMaterial(@PathVariable String materialName) throws Exception {
         List<String> allMaterialTypeNames = materialMasterService.getTypeWithMaterial(materialName);
@@ -108,4 +131,18 @@ public class MaterialMasterController {
         materialMasterService.deleteMaterial(materialName);
         return ResponseEntity.ok("Material is deleted successfully");
     }
+<<<<<<< Updated upstream
+=======
+
+<<<<<<< Updated upstream
+
+
+=======
+    @GetMapping("/{materialName}/types/{materialTypeName}")
+    public ResponseEntity<List<MaterialWithParameters>> getQualityRangesByMaterialNameAndMaterialTypeName(@PathVariable String materialName, @PathVariable String materialTypeName) {
+        List<MaterialWithParameters> acceptableQualityRanges = materialMasterService.getQualityRangesByMaterialNameAndMaterialTypeName(materialName, materialTypeName);
+        return ResponseEntity.ok(acceptableQualityRanges);
+    }
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 }

@@ -4,20 +4,29 @@ import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.entities.MaterialMaster;
 import com.weighbridge.admin.entities.MaterialTypeMaster;
 import com.weighbridge.admin.entities.QualityRange;
-import com.weighbridge.admin.payloads.MaterialWithParametersRequest;
-import com.weighbridge.admin.payloads.MaterialWithParametersRequest.Parameter;
+import com.weighbridge.admin.payloads.MaterialWithParameters;
+import com.weighbridge.admin.payloads.MaterialWithParameters.Parameter;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
 import com.weighbridge.admin.repsitories.MaterialTypeMasterRepository;
 import com.weighbridge.admin.repsitories.QualityRangeRepository;
 import com.weighbridge.admin.services.MaterialMasterService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of the MaterialMasterService interface
+ */
+@Slf4j
 @Service
 public class MaterialMasterServiceImpl implements MaterialMasterService {
     private final MaterialMasterRepository materialMasterRepository;
@@ -59,44 +68,19 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     }
 
 
-//    @Override
-//    public String createMaterialWithParameterAndRange(MaterialWithParametersRequest materialWithParametersRequest) {
-//        MaterialMaster materialMaster = materialMasterRepository.findByMaterialName(materialWithParametersRequest.getMaterialName());
-//        MaterialMaster saved = null;
-//        if (materialMaster == null) {
-//            materialMaster = new MaterialMaster();
-//            materialMaster.setMaterialName(materialWithParametersRequest.getMaterialName());
-//            saved = materialMasterRepository.save(materialMaster);
-//        }
-//
-//        MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(materialWithParametersRequest.getMaterialTypeName());
-//        if (materialTypeMaster == null) {
-//            materialTypeMaster = new MaterialTypeMaster();
-//            materialTypeMaster.setMaterialTypeName(materialWithParametersRequest.getMaterialTypeName());
-//            materialTypeMaster.setMaterialMaster(saved);
-//            materialTypeMasterRepository.save(materialTypeMaster);
-//        }
-//
-//        List<QualityRange> qualityRanges = new ArrayList<>();
-//        for (Parameter rangeRequest : materialWithParametersRequest.getParameters()) {
-//            QualityRange qualityRange = new QualityRange();
-//            qualityRange.setParameterName(rangeRequest.getParameterName());
-//            qualityRange.setRangeFrom(rangeRequest.getRangeFrom());
-//            qualityRange.setRangeTo(rangeRequest.getRangeTo());
-//            qualityRange.setMaterialTypeMaster(materialTypeMaster);
-//            qualityRanges.add(qualityRange);
-//        }
-//
-//        qualityRangeRepository.saveAll(qualityRanges);
-//        return "Data saved successfully";
-//    }
-
     @Override
-    public String createMaterialWithParameterAndRange(MaterialWithParametersRequest request) {
+    public String createMaterialWithParameterAndRange(MaterialWithParameters request) {
+        HttpSession session = httpServletRequest.getSession();
+        String user = session.getAttribute("userId").toString();
+        LocalDateTime currentDateTime = LocalDateTime.now();
         MaterialMaster materialMaster = materialMasterRepository.findByMaterialName(request.getMaterialName());
         if (materialMaster == null) {
             materialMaster = new MaterialMaster();
             materialMaster.setMaterialName(request.getMaterialName());
+            materialMaster.setMaterialCreatedBy(user);
+            materialMaster.setMaterialCreatedDate(currentDateTime);
+            materialMaster.setMaterialModifiedBy(user);
+            materialMaster.setMaterialModifiedDate(currentDateTime);
             materialMaster = materialMasterRepository.save(materialMaster);
         }
 
@@ -108,7 +92,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
             materialTypeMasterRepository.save(materialTypeMaster);
         }
 
-        List<QualityRange> qualityRanges = createQualityRanges(request.getParameters(), materialTypeMaster);
+        List<QualityRange> qualityRanges = createQualityRanges(request.getParameters(), materialTypeMaster, materialMaster);
         qualityRangeRepository.saveAll(qualityRanges);
         return "Data saved successfully";
     }
@@ -119,7 +103,39 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
         return allMaterialTypeNames;
     }
 
-    private List<QualityRange> createQualityRanges(List<Parameter> parameters, MaterialTypeMaster materialTypeMaster) {
+    @Override
+    public List<MaterialWithParameters> getQualityRangesByMaterialNameAndMaterialTypeName(String materialName, String materialTypeName) {
+        List<QualityRange> qualityRanges = qualityRangeRepository.findByMaterialMasterMaterialNameAndMaterialTypeMasterMaterialTypeName(materialName, materialTypeName);
+        return mapQualityRangesToMaterialWithParameters(qualityRanges);
+    }
+
+    private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRange> qualityRanges) {
+        Map<String, MaterialWithParameters> materialWithParametersMap = new HashMap<>();
+        for (QualityRange qualityRange : qualityRanges) {
+            String key = qualityRange.getMaterialMaster().getMaterialName() + "_" +
+                    qualityRange.getMaterialTypeMaster().getMaterialTypeName();
+            MaterialWithParameters materialWithParameters = materialWithParametersMap.get(key);
+            if (materialWithParameters == null) {
+                materialWithParameters = new MaterialWithParameters();
+                materialWithParameters.setMaterialName(qualityRange.getMaterialMaster().getMaterialName());
+                materialWithParameters.setMaterialTypeName(qualityRange.getMaterialTypeMaster().getMaterialTypeName());
+                materialWithParameters.setParameters(new ArrayList<>());
+                materialWithParametersMap.put(key, materialWithParameters);
+            }
+
+            MaterialWithParameters.Parameter parameter = new MaterialWithParameters.Parameter();
+            parameter.setParameterName(qualityRange.getParameterName());
+            parameter.setRangeFrom(qualityRange.getRangeFrom());
+            parameter.setRangeTo(qualityRange.getRangeTo());
+
+            materialWithParameters.getParameters().add(parameter);
+        }
+
+        return new ArrayList<>(materialWithParametersMap.values());
+    }
+
+
+    private List<QualityRange> createQualityRanges(List<Parameter> parameters, MaterialTypeMaster materialTypeMaster, MaterialMaster materialMaster) {
         return parameters.stream()
                 .map(parameter -> {
                     QualityRange qualityRange = new QualityRange();
@@ -127,6 +143,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
                     qualityRange.setRangeFrom(parameter.getRangeFrom());
                     qualityRange.setRangeTo(parameter.getRangeTo());
                     qualityRange.setMaterialTypeMaster(materialTypeMaster);
+                    qualityRange.setMaterialMaster(materialMaster);
                     return qualityRange;
                 })
                 .collect(Collectors.toList());

@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class MaterialWithParametersRequest {
+public class MaterialWithParameters {
     private String materialName;
     private String materialTypeName;
     private List<Parameter> parameters;
