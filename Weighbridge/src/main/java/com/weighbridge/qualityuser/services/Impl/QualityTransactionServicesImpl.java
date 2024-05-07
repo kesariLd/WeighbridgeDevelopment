@@ -9,17 +9,18 @@ import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.qualityuser.exception.ResourceNotFoundException;
+import com.weighbridge.qualityuser.payloads.QualityRequest;
 import com.weighbridge.qualityuser.payloads.QualityResponse;
 import com.weighbridge.qualityuser.repository.QualityTransactioRepository;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -107,5 +108,31 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
         return qualityResponses;
     }
+
+    @Override
+    public String createQualityTransaction(Integer ticketNo, QualityRequest qualityRequest) {
+        Optional<GateEntryTransaction> gateEntryTransactionOptional = gateEntryTransactionRepository.findById(ticketNo);
+        if (gateEntryTransactionOptional.isPresent()) {
+
+            QualityTransaction qualityTransaction = new QualityTransaction();
+            qualityTransaction.setMoisture(qualityRequest.getMoisture());
+            qualityTransaction.setFc(qualityRequest.getFc());
+            qualityTransaction.setVm(qualityRequest.getVm());
+            qualityTransaction.setAsh(qualityRequest.getAsh());
+            qualityTransaction.setLoi(qualityRequest.getLoi());
+            qualityTransaction.setFe_t(qualityRequest.getFe_t());
+            qualityTransaction.setSize_03mm(qualityRequest.getSize_03mm());
+            qualityTransaction.setSize_20mm(qualityRequest.getSize_20mm());
+            qualityTransaction.setGateEntryTransaction(gateEntryTransactionOptional.get());
+
+            log.info(qualityRequest.toString());
+            log.info(qualityTransaction.toString());
+            QualityTransaction savedQualityTransaction = qualityTransactioRepository.save(qualityTransaction);
+            return "Quality added to ticket no : \"" + ticketNo + "\" successfully";
+        } else {
+            throw new ResourceNotFoundException("Gate Entry Transaction with ticketNo " + ticketNo + " not found");
+        }
+    }
 }
+
 
