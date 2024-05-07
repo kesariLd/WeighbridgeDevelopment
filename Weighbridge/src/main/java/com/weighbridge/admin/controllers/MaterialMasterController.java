@@ -16,71 +16,96 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * Controller class for managing material master data.
+ * This class acts as a REST API controller for managing material master data.
+ * It facilitates CRUD (Create, Read, Update, Delete) operations on material entities
+ * by exposing well-defined API endpoints.
+ * "/api/v1/materials" - This annotation maps all methods of this controller
+ * to the base URI "/api/v1/materials".
  */
 @RestController
 @RequestMapping("/api/v1/materials")
 public class MaterialMasterController {
 
-    private MaterialMasterService materialMasterService;
+    private final MaterialMasterService materialMasterService;
 
     /**
-     * Constructor for MaterialMasterController.
-     * @param materialMasterService The service to handle material master operations.
+     * Constructor to inject the `MaterialMasterService` dependency.
+     *
+     * @param materialMasterService - The service class responsible for material data access and manipulation logic.
      */
     public MaterialMasterController(MaterialMasterService materialMasterService) {
         this.materialMasterService = materialMasterService;
     }
 
     /**
-     * Saves a new material.
-     * @param materialWithParametersRequest The payload containing information about the material, material type and its parameters with quality ranges to be saved.
-     * @return ResponseEntity containing the saved material DTO and HTTP status CREATED.
+     * Creates a new material record along with its associated parameters and quality ranges.
+     *
+     * @param materialWithParametersRequest - A DTO object encapsulating the material data, material type,
+     *                                       and its parameters with quality ranges to be saved.
+     *                                       The DTO (Data Transfer Object) pattern is often used to decouple the API layer
+     *                                       from the underlying data model.
+     * @return A ResponseEntity object with status code CREATED (201) and a success message upon successful creation,
+     *         or an appropriate error response otherwise.
+     * @throws Exception - If any unexpected error occurs during material creation.
      */
     @PostMapping
-    public ResponseEntity<String> createMaterialWithParameterAndRange(@RequestBody MaterialWithParametersRequest materialWithParametersRequest) {
+    public ResponseEntity<String> createMaterialWithParameterAndRange(@RequestBody MaterialWithParametersRequest materialWithParametersRequest) throws Exception {
         String response = materialMasterService.createMaterialWithParameterAndRange(materialWithParametersRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
     /**
-     * Retrieves all materials.
-     * @return ResponseEntity containing a list of all material DTOs and HTTP status OK.
+     * Retrieves all material records.
+     *
+     * @return A ResponseEntity object with status code OK (200) containing a list of all material DTOs.
+     * @throws Exception - If any unexpected error occurs during material retrieval.
      */
     @GetMapping
-    public ResponseEntity<List<MaterialMasterDto>> getAllMaterials(){
+    public ResponseEntity<List<MaterialMasterDto>> getAllMaterials() throws Exception {
         List<MaterialMasterDto> allMaterials = materialMasterService.getAllMaterials();
         return ResponseEntity.ok(allMaterials);
     }
 
     /**
-     * Retrieves names of all materials.
-     * @return ResponseEntity containing a list of all material names and HTTP status OK.
+     * Retrieves a list of all material names.
+     *
+     * @return A ResponseEntity object with status code OK (200) containing a list of all material names.
+     * @throws Exception - If any unexpected error occurs during material name retrieval.
      */
     @GetMapping("/names")
-    public ResponseEntity<List<String>> getAllMaterialNames(){
+    public ResponseEntity<List<String>> getAllMaterialNames() throws Exception {
         List<String> allMaterialNames = materialMasterService.getAllMaterialNames();
         return ResponseEntity.ok(allMaterialNames);
     }
 
+    /**
+     * Retrieves all material types associated with a specific material.
+     *
+     * @param materialName - The name of the material to retrieve types for.
+     *                      This value is extracted from the path variable "{materialName}".
+     * @return A ResponseEntity object with status code OK (200) containing a list of
+     *         material types associated with the specified material. An empty list is returned
+     *         if the material is not found.
+     * @throws Exception - If any unexpected error occurs during material type retrieval.
+     */
     @GetMapping("/{materialName}/types")
-    public ResponseEntity<List<String>> getTypeWithMaterial(@PathVariable String materialName){
+    public ResponseEntity<List<String>> getTypeWithMaterial(@PathVariable String materialName) throws Exception {
         List<String> allMaterialTypeNames = materialMasterService.getTypeWithMaterial(materialName);
         return ResponseEntity.ok(allMaterialTypeNames);
     }
 
     /**
      * Deletes a material by its name.
-     * @param materialName The name of the material to be deleted.
-     * @return ResponseEntity with a success message and HTTP status OK.
+     *
+     * @param materialName - The name of the material to be deleted.
+     *                      This value is extracted from the path variable "{materialName}".
+     * @return A ResponseEntity object with status code OK (200) containing a success message
+     *         upon successful deletion, or an appropriate error response otherwise.
+     * @throws Exception - If any unexpected error occurs during material deletion.
      */
     @DeleteMapping("/{materialName}")
     public ResponseEntity<String> deleteMaterial(@PathVariable String materialName){
         materialMasterService.deleteMaterial(materialName);
         return ResponseEntity.ok("Material is deleted successfully");
     }
-
-
-
 }
