@@ -37,32 +37,22 @@ public class MaterialMasterController {
         this.materialMasterService = materialMasterService;
     }
 
-<<<<<<< Updated upstream
     /**
      * Creates a new material record along with its associated parameters and quality ranges.
      *
-     * @param materialWithParametersRequest - A DTO object encapsulating the material data, material type,
+     * @param materialWithParameters - A payload object encapsulating the material data, material type,
      *                                       and its parameters with quality ranges to be saved.
-     *                                       The DTO (Data Transfer Object) pattern is often used to decouple the API layer
-     *                                       from the underlying data model.
-     * @return A ResponseEntity object with status code CREATED (201) and a success message upon successful creation,
-     *         or an appropriate error response otherwise.
+     * @return A ResponseEntity containing message material added successfully with HTTP status CREATED(201).
      * @throws Exception - If any unexpected error occurs during material creation.
      */
     @PostMapping
-    public ResponseEntity<String> createMaterialWithParameterAndRange(@RequestBody MaterialWithParametersRequest materialWithParametersRequest) throws Exception {
-        String response = materialMasterService.createMaterialWithParameterAndRange(materialWithParametersRequest);
-=======
-    @PostMapping
     public ResponseEntity<String> createMaterialWithParameterAndRange(@RequestBody MaterialWithParameters materialWithParameters) {
         String response = materialMasterService.createMaterialWithParameterAndRange(materialWithParameters);
->>>>>>> Stashed changes
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     /**
-     * Retrieves all material records.
-     *
+     * Retrieves all material records.0
      * @return A ResponseEntity object with status code OK (200) containing a list of all material DTOs.
      * @throws Exception - If any unexpected error occurs during material retrieval.
      */
@@ -84,14 +74,7 @@ public class MaterialMasterController {
         return ResponseEntity.ok(allMaterialNames);
     }
 
-<<<<<<< Updated upstream
     /**
-=======
-<<<<<<< Updated upstream
-=======
-    /**
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
      * Retrieves all material types associated with a specific material.
      *
      * @param materialName - The name of the material to retrieve types for.
@@ -100,17 +83,7 @@ public class MaterialMasterController {
      *         material types associated with the specified material. An empty list is returned
      *         if the material is not found.
      * @throws Exception - If any unexpected error occurs during material type retrieval.
-<<<<<<< Updated upstream
      */
-=======
-=======
-     * Retrieves names of material typesl
-     * @param materialName containing the material name whose types to be retrieved.
-     * @return ResponseEntity containing a list of names of material types and HTTP status OK.
->>>>>>> Stashed changes
-     */
->>>>>>> Stashed changes
->>>>>>> Stashed changes
     @GetMapping("/{materialName}/types")
     public ResponseEntity<List<String>> getTypeWithMaterial(@PathVariable String materialName) throws Exception {
         List<String> allMaterialTypeNames = materialMasterService.getTypeWithMaterial(materialName);
@@ -131,18 +104,9 @@ public class MaterialMasterController {
         materialMasterService.deleteMaterial(materialName);
         return ResponseEntity.ok("Material is deleted successfully");
     }
-<<<<<<< Updated upstream
-=======
-
-<<<<<<< Updated upstream
-
-
-=======
     @GetMapping("/{materialName}/types/{materialTypeName}")
     public ResponseEntity<List<MaterialWithParameters>> getQualityRangesByMaterialNameAndMaterialTypeName(@PathVariable String materialName, @PathVariable String materialTypeName) {
         List<MaterialWithParameters> acceptableQualityRanges = materialMasterService.getQualityRangesByMaterialNameAndMaterialTypeName(materialName, materialTypeName);
         return ResponseEntity.ok(acceptableQualityRanges);
     }
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 }
