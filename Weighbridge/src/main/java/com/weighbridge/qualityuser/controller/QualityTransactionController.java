@@ -1,10 +1,14 @@
 package com.weighbridge.qualityuser.controller;
 
+import com.weighbridge.qualityuser.payloads.QualityRequest;
 import com.weighbridge.qualityuser.payloads.QualityResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
-import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,11 +25,16 @@ public class QualityTransactionController {
     }
 
     @GetMapping("/getAllTransaction")
-    public ResponseEntity<List<QualityResponse>> getAllTickets(){
-        List<QualityResponse> response=qualityTransactionService.getAllGateDetails();
+    public ResponseEntity<List<QualityResponse>> getAllTickets() {
+        List<QualityResponse> response = qualityTransactionService.getAllGateDetails();
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/{ticketNo}")
+    public ResponseEntity<String> createQualityTransaction(@PathVariable Integer ticketNo, @RequestBody QualityRequest qualityRequest) {
+        String response = qualityTransactionService.createQualityTransaction(ticketNo, qualityRequest);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
 
 
 }

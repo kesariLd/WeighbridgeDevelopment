@@ -17,15 +17,14 @@ public class QualityTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long qualityId;
-
-    private String moisture;
-    private String Vm;
-    private String Ash;
-    private String FC;
-    private String size_20mm;
-    private String size_03mm;
-    private String fe_t;
-    private String Loi;
+    private double moisture;
+    private double vm;
+    private double ash;
+    private double fc;
+    private double size_20mm;
+    private double size_03mm;
+    private double fe_t;
+    private double loi;
 
 
     @OneToOne
