@@ -70,7 +70,15 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
 
 //        List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany);
-        List<VehicleTransactionStatus> allGateTransactions = vehicleTransactionStatusRepository.findByStatusCode("GWT");
+//        List<VehicleTransactionStatus> allGateTransactions = vehicleTransactionStatusRepository.findByStatusCode("GWT");
+
+        List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany);
+        List<VehicleTransactionStatus> allGateTransactions = new ArrayList<>();
+
+        for (GateEntryTransaction transaction : allTransactions) {
+            List<VehicleTransactionStatus> gateTransactions = vehicleTransactionStatusRepository.findByStatusCodeAndTicketNo("GWT", transaction.getTicketNo());
+            allGateTransactions.addAll(gateTransactions);
+        }
 
         List<GateEntryTransaction> transactionList = new ArrayList<>();
         allGateTransactions.forEach(vehicleTransactionStatus -> {
@@ -92,8 +100,8 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             qualityResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
 
             MaterialMaster materialMaster = materialMasterRepository.findById(gateEntryTransaction.getMaterialId()).orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
-            qualityResponse.setMaterial(materialMaster.getMaterialName());
-            qualityResponse.setMaterialType("materialType");
+            qualityResponse.setMaterialOrProduct(materialMaster.getMaterialName());
+            qualityResponse.setMaterialTypeOrProductType("materialType");
 
             TransporterMaster transporterMaster = transporterMasterRepository.findById(gateEntryTransaction.getTransporterId()).orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
             qualityResponse.setTransporterName(transporterMaster.getTransporterName());
