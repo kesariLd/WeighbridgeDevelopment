@@ -13,8 +13,8 @@ public class QualityResponse {
     private LocalDateTime in;
     private LocalDateTime out;
     private String transporterName;
-    private String material;
-    private String materialType;
+    private String materialOrProduct;
+    private String materialTypeOrProductType;
     private String tpNo;
     private String poNo;
     private String challanNo;
