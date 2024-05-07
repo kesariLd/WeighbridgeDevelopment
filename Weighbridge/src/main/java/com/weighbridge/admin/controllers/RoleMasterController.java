@@ -9,7 +9,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 /**
- * REST controller for managing role-related operations.
+ * This class acts as a REST API controller for managing material master data.
+ * It facilitates CRUD (Create, Read, Update, Delete) operations on material entities
+ * by exposing well-defined API endpoints.
+ * "/api/v1/roles" - This annotation maps all methods of this controller
+ * to the base URI "/api/v1/roles".
  */
 @RestController
 @RequestMapping("/api/v1/roles")
