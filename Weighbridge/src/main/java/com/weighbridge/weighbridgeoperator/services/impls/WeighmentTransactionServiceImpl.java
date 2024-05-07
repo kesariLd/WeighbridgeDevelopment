@@ -1,7 +1,12 @@
 package com.weighbridge.weighbridgeoperator.services.impls;
 
+import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
+import com.weighbridge.admin.repsitories.MaterialMasterRepository;
+import com.weighbridge.admin.repsitories.SupplierMasterRepository;
+import com.weighbridge.admin.repsitories.TransporterMasterRepository;
+import com.weighbridge.admin.repsitories.VehicleMasterRepository;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
@@ -11,6 +16,7 @@ import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
 
 
+import com.weighbridge.weighbridgeoperator.payloads.TicketResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
@@ -22,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,6 +51,18 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
 
     @Autowired
     private TransactionLogRepository transactionLogRepository;
+
+    @Autowired
+    private MaterialMasterRepository materialMasterRepository;
+
+    @Autowired
+    private SupplierMasterRepository supplierMasterRepository;
+
+    @Autowired
+    private TransporterMasterRepository transporterMasterRepository;
+
+    @Autowired
+    private VehicleMasterRepository vehicleMasterRepository;
 
     @Override
     public String saveWeight(WeighmentRequest weighmentRequest) {
@@ -144,39 +163,78 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"No gateEntries yet.");
         }
         else {
-            for (Object[] row : allUsers) {
-                WeighmentTransactionResponse response = new WeighmentTransactionResponse();
-                response.setTicketNo(String.valueOf(row[0]));
-                TransactionLog byTicketNo = transactionLogRepository.findByTicketNoAndStatusCode((Integer) row[0],"GWT");
-                TransactionLog byTicketNo2 = transactionLogRepository.findByTicketNoAndStatusCode((Integer) row[0],"TWT");
-                LocalDateTime timestamp=null,timestamp1=null;
-                if(byTicketNo!=null) {
-                    timestamp = byTicketNo.getTimestamp();
+            try {
+                for (Object[] row : allUsers) {
+                    WeighmentTransactionResponse response = new WeighmentTransactionResponse();
+                    response.setTicketNo(String.valueOf(row[0]));
+                    TransactionLog byTicketNo = transactionLogRepository.findByTicketNoAndStatusCode((Integer) row[0], "GWT");
+                    TransactionLog byTicketNo2 = transactionLogRepository.findByTicketNoAndStatusCode((Integer) row[0], "TWT");
+                    LocalDateTime timestamp = null, timestamp1 = null, resTimeStamp = null, resTimeStamp1 = null;
+                    if (byTicketNo != null) {
+                        timestamp = byTicketNo.getTimestamp();
+                        resTimeStamp = timestamp.withSecond(0).withNano(0);
+                    }
+                    if (byTicketNo2 != null) {
+                        timestamp1 = byTicketNo2.getTimestamp();
+                        resTimeStamp1 = timestamp1.withSecond(0).withNano(0);
+                    }
+                    response.setWeighmentNo(String.valueOf(row[1]));
+                    response.setTransactionType((String) row[2]);
+                    response.setTransactionDate((LocalDate) row[3]);
+                    if (((String) row[2]).equalsIgnoreCase("Inbound")) {
+                        response.setGrossWeight(String.valueOf(row[7]) + "/" + resTimeStamp);
+                        response.setTareWeight(row[5] + "/" + resTimeStamp1);
+                    } else {
+                        response.setTareWeight(String.valueOf(row[7]) + "/" + resTimeStamp1);
+                        response.setGrossWeight(row[4] + "/" + resTimeStamp);
+                    }
+                    response.setNetWeight(String.valueOf(row[6] + "/" + resTimeStamp1));
+                    response.setVehicleNo((String) row[8]);
+                    response.setVehicleFitnessUpTo((LocalDate) row[9]);
+                    response.setSupplierName((String) row[10]);
+                    response.setTransporterName((String) row[11]);
+                    response.setMaterialName((String) row[12]);
+                    // Set other fields similarly
+                    responses.add(response);
                 }
-                if(byTicketNo2!=null) {
-                    timestamp1 = byTicketNo2.getTimestamp();
-                }
-                response.setWeighmentNo(String.valueOf(row[1]));
-                response.setTransactionType((String) row[2]);
-                response.setTransactionDate((Date) row[3]);
-                if(((String) row[2]).equalsIgnoreCase("Inbound")){
-                    response.setGrossWeight(String.valueOf(row[7])+"/"+timestamp);
-                    response.setTareWeight(row[5]+"/"+timestamp1);
-                }
-                else{
-                    response.setTareWeight(String.valueOf(row[7])+"/"+timestamp1);
-                    response.setGrossWeight(row[4]+"/"+timestamp);
-                }
-                response.setNetWeight(String.valueOf(row[6]+"/"+timestamp1));
-                response.setVehicleNo((String) row[8]);
-                response.setVehicleFitnessUpTo((Date) row[9]);
-                response.setSupplierName((String) row[10]);
-                response.setTransporterName((String) row[11]);
-                response.setMaterialName((String) row[12]);
-                // Set other fields similarly
-                responses.add(response);
+
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
             return responses;
+        }
+    }
+
+    @Override
+    public TicketResponse getResponseByTicket(Integer ticketNo) {
+        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo).get();
+        if (gateEntryTransaction == null) {
+            throw new ResourceNotFoundException("ticket", "ticketNo", ticketNo.toString());
+        } else {
+            System.out.println("site id"+gateEntryTransaction.getSupplierId());
+            TicketResponse ticketResponse = new TicketResponse();
+            ticketResponse.setPoNo(gateEntryTransaction.getPoNo());
+            ticketResponse.setTpN0(gateEntryTransaction.getTpNo());
+            ticketResponse.setChallanNo(gateEntryTransaction.getChallanNo());
+            ticketResponse.setMaterial(materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId()));
+            ticketResponse.setTransporter(transporterMasterRepository.findTransporterNameByTransporterId(gateEntryTransaction.getTransporterId()));
+            ticketResponse.setDriverName(gateEntryTransaction.getDriverName());
+            VehicleMaster vehicleMaster = vehicleMasterRepository.findById(gateEntryTransaction.getVehicleId()).orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
+
+            ticketResponse.setVehicleNo(vehicleMaster.getVehicleNo());
+            Object[] supplierInfo = supplierMasterRepository.findSupplierNameBySupplierId(gateEntryTransaction.getSupplierId());
+            Object[] supplierData = (Object[]) supplierInfo[0];
+            if (supplierData != null && supplierData.length >= 2) {
+                String supplierName = (String) supplierData[0];
+                String supplierAddress = (String) supplierData[1];
+                System.out.println(supplierName + " " + supplierAddress);
+                ticketResponse.setSupplierName(supplierName);
+                ticketResponse.setSupplierAddress(supplierAddress);
+            }
+//            ticketResponse.setSupplierName(supplierName);
+            ticketResponse.setDriverDlNo(gateEntryTransaction.getDlNo());
+//            ticketResponse.setSupplierAddress(supplierAddress);
+            return ticketResponse;
         }
     }
 }
