@@ -13,19 +13,20 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
 
    WeighmentTransaction findByGateEntryTransactionTicketNo(Integer ticketNo);
 
-   @Query("SELECT w.gateEntryTransaction.ticketNo, w.weighmentNo, w.gateEntryTransaction.transactionType, w.gateEntryTransaction.transactionDate, " +
+   @Query("SELECT g.ticketNo, w.weighmentNo, g.transactionType, g.transactionDate, g.vehicleIn, " +
            "w.grossWeight, w.tareWeight, w.netWeight, w.temporaryWeight, " +
            "v.vehicleNo, v.vehicleFitnessUpTo, " +
            "s.supplierName, t.transporterName, " +
            "m.materialName " +
-           "FROM WeighmentTransaction w " +
-           "INNER JOIN w.gateEntryTransaction g " +
+           "FROM GateEntryTransaction g " +
+           "LEFT JOIN WeighmentTransaction w ON g.ticketNo = w.gateEntryTransaction.ticketNo  " +
            "INNER JOIN VehicleMaster v ON v.id = g.vehicleId " +
            "INNER JOIN SupplierMaster s ON s.supplierId = g.supplierId " +
            "INNER JOIN TransporterMaster t ON t.id = g.transporterId " +
            "INNER JOIN MaterialMaster m ON m.materialId = g.materialId " +
-           "WHERE g.siteId = :siteId " +
-           "ORDER BY w.gateEntryTransaction.transactionDate DESC")
+           "INNER JOIN VehicleTransactionStatus ts ON ts.ticketNo = g.ticketNo " +
+           "WHERE g.siteId = :siteId and w.netWeight IS NULL " +
+           "ORDER BY g.transactionDate DESC")
    List<Object[]> getAllGateEntries(@Param("siteId") String siteId);
 
 }
