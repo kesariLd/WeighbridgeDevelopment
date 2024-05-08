@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -69,53 +70,47 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             throw new SessionExpiredException("Session Expired, Login again !");
         }
 
-//        List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany);
-//        List<VehicleTransactionStatus> allGateTransactions = vehicleTransactionStatusRepository.findByStatusCode("GWT");
-
         List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany);
-        List<VehicleTransactionStatus> allGateTransactions = new ArrayList<>();
 
-        for (GateEntryTransaction transaction : allTransactions) {
-            List<VehicleTransactionStatus> gateTransactions = vehicleTransactionStatusRepository.findByStatusCodeAndTicketNo("GWT", transaction.getTicketNo());
-            allGateTransactions.addAll(gateTransactions);
-        }
+        List<QualityResponse> qualityResponses = allTransactions.stream()
+                .filter(transaction -> transaction.getTransactionType().equals("Inbound") || transaction.getTransactionType().equals("Outbound"))
+                .flatMap(transaction -> {
+                    VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
+                    if (transactionStatus != null && (transactionStatus.getStatusCode().equals("GWT") || transactionStatus.getStatusCode().equals("TWT"))) {
+                        QualityResponse qualityResponse = new QualityResponse();
+                        qualityResponse.setTicketNo(transaction.getTicketNo());
+                        qualityResponse.setTpNo(transaction.getTpNo());
+                        qualityResponse.setPoNo(transaction.getPoNo());
+                        qualityResponse.setChallanNo(transaction.getChallanNo());
+                        qualityResponse.setTransactionType(transaction.getTransactionType());
 
-        List<GateEntryTransaction> transactionList = new ArrayList<>();
-        allGateTransactions.forEach(vehicleTransactionStatus -> {
-            log.info(String.valueOf(vehicleTransactionStatus.getTicketNo()));
-            GateEntryTransaction transaction = gateEntryTransactionRepository.findByTicketNo(vehicleTransactionStatus.getTicketNo());
-            transactionList.add(transaction);
-        });
+                        SupplierMaster supplierMaster = supplierMasterRepository.findById(transaction.getSupplierId()).orElseThrow(() -> new ResourceNotFoundException("Supplier is not found"));
+                        qualityResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
+                        qualityResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
 
-        List<QualityResponse> qualityResponses = transactionList.stream().map(gateEntryTransaction -> {
-            QualityResponse qualityResponse = new QualityResponse();
-            qualityResponse.setTicketNo(gateEntryTransaction.getTicketNo());
-            qualityResponse.setTpNo(gateEntryTransaction.getTpNo());
-            qualityResponse.setPoNo(gateEntryTransaction.getPoNo());
-            qualityResponse.setChallanNo(gateEntryTransaction.getChallanNo());
-            qualityResponse.setTransactionType(gateEntryTransaction.getTransactionType());
+                        MaterialMaster materialMaster = materialMasterRepository.findById(transaction.getMaterialId()).orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
+                        qualityResponse.setMaterialOrProduct(materialMaster.getMaterialName());
+                        qualityResponse.setMaterialTypeOrProductType("materialType");
 
-            SupplierMaster supplierMaster = supplierMasterRepository.findById(gateEntryTransaction.getSupplierId()).orElseThrow(() -> new ResourceNotFoundException("Supplier is not found"));
-            qualityResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
-            qualityResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
+                        TransporterMaster transporterMaster = transporterMasterRepository.findById(transaction.getTransporterId()).orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
+                        qualityResponse.setTransporterName(transporterMaster.getTransporterName());
 
-            MaterialMaster materialMaster = materialMasterRepository.findById(gateEntryTransaction.getMaterialId()).orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
-            qualityResponse.setMaterialOrProduct(materialMaster.getMaterialName());
-            qualityResponse.setMaterialTypeOrProductType("materialType");
+                        VehicleMaster vehicleMaster = vehicleMasterRepository.findById(transaction.getVehicleId()).orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
+                        qualityResponse.setVehicleNo(vehicleMaster.getVehicleNo());
+                        qualityResponse.setIn(transaction.getVehicleIn());
+                        qualityResponse.setOut(transaction.getVehicleOut());
+                        qualityResponse.setDate(transaction.getTransactionDate());
 
-            TransporterMaster transporterMaster = transporterMasterRepository.findById(gateEntryTransaction.getTransporterId()).orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
-            qualityResponse.setTransporterName(transporterMaster.getTransporterName());
-
-            VehicleMaster vehicleMaster = vehicleMasterRepository.findById(gateEntryTransaction.getVehicleId()).orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
-            qualityResponse.setVehicleNo(vehicleMaster.getVehicleNo());
-            qualityResponse.setIn(gateEntryTransaction.getVehicleIn());
-            qualityResponse.setOut(gateEntryTransaction.getVehicleOut());
-            qualityResponse.setDate(gateEntryTransaction.getTransactionDate());
-            return qualityResponse;
-        }).collect(Collectors.toList());
+                        return Stream.of(qualityResponse);
+                    } else {
+                        return Stream.empty();
+                    }
+                })
+                .collect(Collectors.toList());
 
         return qualityResponses;
     }
+
 
     @Override
     public String createQualityTransaction(Integer ticketNo, QualityRequest qualityRequest) {
