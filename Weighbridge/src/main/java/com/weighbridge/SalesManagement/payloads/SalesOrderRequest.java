@@ -1,44 +1,37 @@
-package com.weighbridge.SalsesManagement.entities;
+package com.weighbridge.SalesManagement.payloads;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.util.Date;
 
-@Entity
 @Data
-public class SalesOrder {
-    @Id
-    private String purchaseOrderNo;
+public class SalesOrderRequest {
 
     @NotBlank
     private Date purchaseOrderedDate;
 
-    @NotBlank
+
     private String saleOrderNo;
 
     @NotBlank
     private String customerName;
+
     @NotBlank
     private String customerAddress;
+
+    private String customerContact;
+
+    private String customerEmail;
 
     @NotBlank
     private String productName;
 
-
     private double orderedQuantity;
-
 
     private double progressiveQuantity;
 
-
-    private double balanceQuantity;
-
-
     private String brokerName;
-
 
     private String brokerAddress;
 }

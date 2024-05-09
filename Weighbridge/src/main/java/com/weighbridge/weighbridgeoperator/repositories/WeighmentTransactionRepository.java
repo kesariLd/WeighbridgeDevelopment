@@ -25,8 +25,7 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
            "INNER JOIN TransporterMaster t ON t.id = g.transporterId " +
            "INNER JOIN MaterialMaster m ON m.materialId = g.materialId " +
            "INNER JOIN VehicleTransactionStatus ts ON ts.ticketNo = g.ticketNo " +
-           "WHERE g.siteId = :siteId and w.netWeight IS NULL " +
+           "WHERE g.siteId = :siteId and w.netWeight IS NULL or w.netWeight = 0.0" +
            "ORDER BY g.transactionDate DESC")
    List<Object[]> getAllGateEntries(@Param("siteId") String siteId);
-
 }

@@ -13,7 +13,8 @@ import java.util.Set;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransporterMaster {
+public class
+TransporterMaster {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

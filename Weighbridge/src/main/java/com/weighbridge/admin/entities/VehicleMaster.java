@@ -60,5 +60,4 @@ public class VehicleMaster {
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "vehicles")
     private Set<TransporterMaster> transporter = new HashSet<>();
-
 }

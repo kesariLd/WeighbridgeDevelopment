@@ -209,7 +209,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             return responses;
         }
     }
-
+    // todo NWT status insert
     @Override
     public TicketResponse getResponseByTicket(Integer ticketNo) {
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo).get();
@@ -219,7 +219,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             System.out.println("site id"+gateEntryTransaction.getSupplierId());
             TicketResponse ticketResponse = new TicketResponse();
             ticketResponse.setPoNo(gateEntryTransaction.getPoNo());
-            ticketResponse.setTpN0(gateEntryTransaction.getTpNo());
+            ticketResponse.setTpNo(gateEntryTransaction.getTpNo());
             ticketResponse.setChallanNo(gateEntryTransaction.getChallanNo());
             ticketResponse.setMaterial(materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId()));
             ticketResponse.setTransporter(transporterMasterRepository.findTransporterNameByTransporterId(gateEntryTransaction.getTransporterId()));
