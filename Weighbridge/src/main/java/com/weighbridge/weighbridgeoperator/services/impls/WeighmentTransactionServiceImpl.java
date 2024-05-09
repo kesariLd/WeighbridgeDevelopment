@@ -236,6 +236,17 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                 ticketResponse.setSupplierName(supplierName);
                 ticketResponse.setSupplierAddress(supplierAddress);
             }
+            String transactionType = gateEntryTransaction.getTransactionType();
+            WeighmentTransaction byGateEntryTransactionTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(ticketNo);
+            if(transactionType.equalsIgnoreCase("Inbound")){
+               ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
+               ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight());
+            }
+            else {
+                ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
+                ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight());
+            }
+            ticketResponse.setNetWeight(byGateEntryTransactionTicketNo.getGrossWeight()- byGateEntryTransactionTicketNo.getTareWeight());
 //            ticketResponse.setSupplierName(supplierName);
             ticketResponse.setDriverDlNo(gateEntryTransaction.getDlNo());
 //            ticketResponse.setSupplierAddress(supplierAddress);
