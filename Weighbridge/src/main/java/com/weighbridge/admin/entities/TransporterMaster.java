@@ -19,6 +19,7 @@ TransporterMaster {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @Column(nullable = false)
     private String transporterName;
     private String transporterContactNo;
     private String transporterEmailId;

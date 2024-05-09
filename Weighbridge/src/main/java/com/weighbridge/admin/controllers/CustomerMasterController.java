@@ -44,7 +44,7 @@ public class CustomerMasterController {
      */
     @PostMapping
     public ResponseEntity<String> createCustomer(@RequestBody CustomerMasterDto customerMasterDto) throws Exception {
-        String response = customerMasterService.createSupplier(customerMasterDto);
+        String response = customerMasterService.createCustomer(customerMasterDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
