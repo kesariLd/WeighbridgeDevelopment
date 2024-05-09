@@ -9,4 +9,6 @@ import java.util.List;
 
 public interface QualityTransactioRepository extends JpaRepository<QualityTransaction,Integer> {
 
+    @Query("SELECT qt FROM QualityTransaction qt WHERE qt.gateEntryTransaction.ticketNo = :ticketNo")
+    QualityTransaction findByTicketNo(@Param("ticketNo") Integer ticketNo);
 }

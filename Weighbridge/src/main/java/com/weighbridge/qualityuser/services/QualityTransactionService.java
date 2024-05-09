@@ -2,6 +2,7 @@ package com.weighbridge.qualityuser.services;
 
 import com.weighbridge.qualityuser.payloads.QualityRequest;
 import com.weighbridge.qualityuser.payloads.QualityResponse;
+import com.weighbridge.qualityuser.payloads.ReportResponse;
 
 import java.util.List;
 
@@ -10,4 +11,9 @@ public interface QualityTransactionService {
 
 
     String createQualityTransaction(Integer ticketNo, QualityRequest qualityTransaction);
+
+
+    ReportResponse getReportResponse(Integer ticketNo);
+
+    byte[] generateQualityReport(ReportResponse reportResponse);
 }
