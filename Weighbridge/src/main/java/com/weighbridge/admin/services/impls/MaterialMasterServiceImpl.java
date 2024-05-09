@@ -92,7 +92,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
             materialTypeMasterRepository.save(materialTypeMaster);
         }
 
-        List<QualityRange> qualityRanges = createQualityRanges(request.getParameters(), materialTypeMaster, materialMaster);
+        List<QualityRange> qualityRanges = createQualityRanges(request.getParameters(), materialMaster);
         qualityRangeRepository.saveAll(qualityRanges);
         return "Data saved successfully";
     }
@@ -104,21 +104,20 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     }
 
     @Override
-    public List<MaterialWithParameters> getQualityRangesByMaterialNameAndMaterialTypeName(String materialName, String materialTypeName) {
-        List<QualityRange> qualityRanges = qualityRangeRepository.findByMaterialMasterMaterialNameAndMaterialTypeMasterMaterialTypeName(materialName, materialTypeName);
-        return mapQualityRangesToMaterialWithParameters(qualityRanges);
+    public List<MaterialWithParameters> getQualityRangesByMaterialName(String materialName, String materialTypeName) {
+        List<QualityRange> qualityRanges = qualityRangeRepository.findByMaterialMasterMaterialName(materialName);
+        return mapQualityRangesToMaterialWithParameters(qualityRanges, materialTypeName);
     }
 
-    private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRange> qualityRanges) {
+    private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRange> qualityRanges, String materilaTypeName) {
         Map<String, MaterialWithParameters> materialWithParametersMap = new HashMap<>();
         for (QualityRange qualityRange : qualityRanges) {
-            String key = qualityRange.getMaterialMaster().getMaterialName() + "_" +
-                    qualityRange.getMaterialTypeMaster().getMaterialTypeName();
+            String key = qualityRange.getMaterialMaster().getMaterialName();
             MaterialWithParameters materialWithParameters = materialWithParametersMap.get(key);
             if (materialWithParameters == null) {
                 materialWithParameters = new MaterialWithParameters();
                 materialWithParameters.setMaterialName(qualityRange.getMaterialMaster().getMaterialName());
-                materialWithParameters.setMaterialTypeName(qualityRange.getMaterialTypeMaster().getMaterialTypeName());
+                materialWithParameters.setMaterialTypeName(materilaTypeName);
                 materialWithParameters.setParameters(new ArrayList<>());
                 materialWithParametersMap.put(key, materialWithParameters);
             }
@@ -135,14 +134,13 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     }
 
 
-    private List<QualityRange> createQualityRanges(List<Parameter> parameters, MaterialTypeMaster materialTypeMaster, MaterialMaster materialMaster) {
+    private List<QualityRange> createQualityRanges(List<Parameter> parameters, MaterialMaster materialMaster) {
         return parameters.stream()
                 .map(parameter -> {
                     QualityRange qualityRange = new QualityRange();
                     qualityRange.setParameterName(parameter.getParameterName());
                     qualityRange.setRangeFrom(parameter.getRangeFrom());
                     qualityRange.setRangeTo(parameter.getRangeTo());
-                    qualityRange.setMaterialTypeMaster(materialTypeMaster);
                     qualityRange.setMaterialMaster(materialMaster);
                     return qualityRange;
                 })

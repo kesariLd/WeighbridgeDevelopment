@@ -1,5 +1,6 @@
 package com.weighbridge.qualityuser.services;
 
+import com.weighbridge.qualityuser.payloads.QualityDetailsResponse;
 import com.weighbridge.qualityuser.payloads.QualityRequest;
 import com.weighbridge.qualityuser.payloads.QualityResponse;
 
@@ -10,4 +11,6 @@ public interface QualityTransactionService {
 
 
     String createQualityTransaction(Integer ticketNo, QualityRequest qualityTransaction);
+
+    QualityDetailsResponse getDetailsForQualityTransaction(Integer ticketNo);
 }

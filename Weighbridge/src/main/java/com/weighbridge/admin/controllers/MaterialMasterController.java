@@ -105,8 +105,8 @@ public class MaterialMasterController {
         return ResponseEntity.ok("Material is deleted successfully");
     }
     @GetMapping("/{materialName}/types/{materialTypeName}")
-    public ResponseEntity<List<MaterialWithParameters>> getQualityRangesByMaterialNameAndMaterialTypeName(@PathVariable String materialName, @PathVariable String materialTypeName) {
-        List<MaterialWithParameters> acceptableQualityRanges = materialMasterService.getQualityRangesByMaterialNameAndMaterialTypeName(materialName, materialTypeName);
+    public ResponseEntity<List<MaterialWithParameters>> getQualityRangesByMaterialName(@PathVariable String materialName, @PathVariable String materialTypeName) {
+        List<MaterialWithParameters> acceptableQualityRanges = materialMasterService.getQualityRangesByMaterialName(materialName, materialTypeName);
         return ResponseEntity.ok(acceptableQualityRanges);
     }
 }

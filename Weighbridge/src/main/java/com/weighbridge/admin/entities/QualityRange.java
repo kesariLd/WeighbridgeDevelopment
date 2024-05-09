@@ -33,11 +33,5 @@ public class QualityRange {
     @JoinColumn(name = "material_id", referencedColumnName = "material_id")
     private MaterialMaster materialMaster;
 
-    @ManyToOne
-    @JoinColumn(name = "material_type_id", referencedColumnName = "materialTypeId")
-    private MaterialTypeMaster materialTypeMaster;
-
-
-
 }
 

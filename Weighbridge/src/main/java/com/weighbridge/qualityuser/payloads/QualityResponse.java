@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 @Data
 public class QualityResponse {
-
     private Integer ticketNo;
     private LocalDate date;
     private String vehicleNo;
@@ -21,8 +20,4 @@ public class QualityResponse {
     private String supplierOrCustomerName;
     private String supplierOrCustomerAddress;
     private String transactionType;
-
-
-
-
 }
