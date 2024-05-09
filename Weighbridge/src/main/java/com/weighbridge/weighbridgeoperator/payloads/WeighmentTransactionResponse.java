@@ -20,6 +20,7 @@ public class WeighmentTransactionResponse {
         private String vehicleNo;
         private LocalDate vehicleFitnessUpTo;
         private String supplierName;
+        private String customerName;
         private String transporterName;
         private String materialName;
 }
