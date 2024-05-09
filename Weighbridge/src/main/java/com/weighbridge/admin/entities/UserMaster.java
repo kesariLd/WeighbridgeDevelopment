@@ -32,7 +32,7 @@ public class UserMaster {
 
     //@NotNull(message = "Site is required")
     @ManyToOne
-    @JoinColumn(name = "site_id", referencedColumnName = "  site_id")
+    @JoinColumn(name = "site_id", referencedColumnName = "site_id")
     private SiteMaster site;
 
    // @NotNull(message = "Company is required")
@@ -55,7 +55,7 @@ public class UserMaster {
 
     @NotBlank(message = "Firstname is required")
     @Size(min = 2, max = 50, message = "Firstname must be between 2 and 50 characters")
-    @Column(name = "user_first_name")
+    @Column(name = "user_first_name",nullable = false)
     private String userFirstName;
 
     @Column(name = "user_middle_name")
@@ -63,7 +63,7 @@ public class UserMaster {
 
     @NotBlank(message = "Lastname is required")
     @Size(min = 2, max = 50, message = "Firstname must be between 2 and 50 characters")
-    @Column(name = "user_last_name")
+    @Column(name = "user_last_name",nullable = false)
     private String userLastName;
 
     @Column(name = "user_status")
@@ -80,5 +80,4 @@ public class UserMaster {
 
     @Column(name = "user_modified_date")
     private LocalDateTime userModifiedDate;
-
 }

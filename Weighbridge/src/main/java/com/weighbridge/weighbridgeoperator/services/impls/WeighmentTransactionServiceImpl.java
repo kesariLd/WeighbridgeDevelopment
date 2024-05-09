@@ -209,7 +209,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             return responses;
         }
     }
-
+    // todo NWT status insert
     @Override
     public TicketResponse getResponseByTicket(Integer ticketNo) {
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo).get();
@@ -219,7 +219,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             System.out.println("site id"+gateEntryTransaction.getSupplierId());
             TicketResponse ticketResponse = new TicketResponse();
             ticketResponse.setPoNo(gateEntryTransaction.getPoNo());
-            ticketResponse.setTpN0(gateEntryTransaction.getTpNo());
+            ticketResponse.setTpNo(gateEntryTransaction.getTpNo());
             ticketResponse.setChallanNo(gateEntryTransaction.getChallanNo());
             ticketResponse.setMaterial(materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId()));
             ticketResponse.setTransporter(transporterMasterRepository.findTransporterNameByTransporterId(gateEntryTransaction.getTransporterId()));
@@ -236,6 +236,17 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                 ticketResponse.setSupplierName(supplierName);
                 ticketResponse.setSupplierAddress(supplierAddress);
             }
+            String transactionType = gateEntryTransaction.getTransactionType();
+            WeighmentTransaction byGateEntryTransactionTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(ticketNo);
+            if(transactionType.equalsIgnoreCase("Inbound")){
+               ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
+               ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight());
+            }
+            else {
+                ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
+                ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight());
+            }
+            ticketResponse.setNetWeight(byGateEntryTransactionTicketNo.getGrossWeight()- byGateEntryTransactionTicketNo.getTareWeight());
 //            ticketResponse.setSupplierName(supplierName);
             ticketResponse.setDriverDlNo(gateEntryTransaction.getDlNo());
 //            ticketResponse.setSupplierAddress(supplierAddress);

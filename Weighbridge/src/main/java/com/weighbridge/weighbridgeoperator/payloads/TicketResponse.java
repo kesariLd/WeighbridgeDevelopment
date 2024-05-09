@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class TicketResponse {
-    private String tpN0;
+    private String tpNo;
     private String poNo;
     private String challanNo;
     private String vehicleNo;
@@ -14,4 +14,7 @@ public class TicketResponse {
     private String driverDlNo;
     private String driverName;
     private String material;
+    private double grossWeight;
+    private double tareWeight;
+    private double netWeight;
 }

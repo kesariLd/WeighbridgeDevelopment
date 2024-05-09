@@ -22,7 +22,7 @@ public class RoleMaster {
     private int roleId;
 
     @NotBlank
-    @Column(name = "role_name")
+    @Column(name = "role_name",nullable = false)
     private String roleName;
 
     @Column(name = "role_status")

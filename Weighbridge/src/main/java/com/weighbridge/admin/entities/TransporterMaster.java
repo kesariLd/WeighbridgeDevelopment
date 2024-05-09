@@ -13,11 +13,13 @@ import java.util.Set;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransporterMaster {
+public class
+TransporterMaster {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @Column(nullable = false)
     private String transporterName;
     private String transporterContactNo;
     private String transporterEmailId;

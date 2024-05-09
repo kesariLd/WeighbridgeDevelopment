@@ -20,7 +20,7 @@ public class CompanyMaster {
     private String companyId;
 
     @NotBlank
-    @Column(name = "company_name")
+    @Column(name = "company_name",nullable = false)
     private String companyName;
 
     @NotBlank(message = "Email is required")

@@ -21,7 +21,7 @@ public class VehicleMaster {
     @Column(name = "id")
     private long id;
 
-    @Column(name = "vehicle_no")
+    @Column(name = "vehicle_no",nullable = false)
     private String vehicleNo;
 
     @Column(name = "vehicle_type")
@@ -60,5 +60,4 @@ public class VehicleMaster {
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "vehicles")
     private Set<TransporterMaster> transporter = new HashSet<>();
-
 }

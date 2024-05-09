@@ -75,7 +75,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         } else {
             throw new SessionExpiredException("Session Expired, Login again !");
         }
-
+      
         List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany);
 
         List<QualityResponse> qualityResponses = allTransactions.stream()

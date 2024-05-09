@@ -77,6 +77,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
             //getting the name and details of request data
             String materialName = gateEntryTransactionRequest.getMaterial();
+            String materialType = gateEntryTransactionRequest.getMaterialType();
             String vehicleNo = gateEntryTransactionRequest.getVehicle();
             String transporterName = gateEntryTransactionRequest.getTransporter();
             String supplierName = gateEntryTransactionRequest.getSupplier();
@@ -137,6 +138,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             gateEntryTransaction.setTransporterId(transporterId);
             gateEntryTransaction.setVehicleId(vehicleId);
             gateEntryTransaction.setMaterialId(materialId);
+            gateEntryTransaction.setMaterialType(materialType);
             gateEntryTransaction.setSupplierId(supplierId);
             gateEntryTransaction.setSiteId(userSite);
             gateEntryTransaction.setDlNo(dlNo);
@@ -234,7 +236,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             return "An error occurred while setting out time for the vehicle. Please try again later.";
         }
     }
-
+    // todo Inbound supplier show , outbound Customer show
     @Override
     public List<GateEntryTransactionResponse> getAllGateEntryTransaction() {
         try {
@@ -270,22 +272,36 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 Object[] vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId = vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId());
                 System.out.println("vehicle " + vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId[0]);
                 String transporterName = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getTransporterId());
-                Object[] supplierNameBySupplierId = supplierMasterRepository.findSupplierNameBySupplierId(transaction.getSupplierId());
                 // Setting values to response object
                 response.setTicketNo(transaction.getTicketNo());
                 response.setTransactionType(transaction.getTransactionType());
                 response.setMaterial(materialName);
-                Object[] supplierInfo = (Object[]) supplierNameBySupplierId[0];
-                if (supplierInfo != null && supplierInfo.length >= 2) {
-                    String supplierName = (String) supplierInfo[0];
-                    String supplierAddress = (String) supplierInfo[1];
-                    response.setSupplier(supplierName);
-                    response.setSupplierAddress(supplierAddress);
-                } else {
-                    // Handle case where supplier info is not available
-                    response.setSupplier(null);
-                    response.setSupplierAddress(null);
+                response.setMaterialType(transaction.getMaterialType());
+
+                // Check the transaction type and set the appropriate entity
+                if ("Inbound".equals(transaction.getTransactionType())) {
+                    Object[] supplierNameBySupplierId = supplierMasterRepository.findSupplierNameBySupplierId(transaction.getSupplierId());
+                    // Inbound transaction
+                    Object[] supplierInfo = (Object[]) supplierNameBySupplierId[0];
+                    if (supplierInfo != null && supplierInfo.length >= 2) {
+                        String supplierName = (String) supplierInfo[0];
+                        String supplierAddress = (String) supplierInfo[1];
+                        response.setSupplier(supplierName);
+                        response.setSupplierAddress(supplierAddress);
+                    }
+                } else if ("Outbound".equals(transaction.getTransactionType())) {
+                    Object[] customerNameByCustomerId = customerMasterRepository.findCustomerNameBycustomerId(transaction.getCustomerId());
+
+                    // Outbound transaction
+                    Object[] customerInfo = (Object[]) customerNameByCustomerId[0];
+                    if (customerInfo != null && customerInfo.length >= 2) {
+                        String customerName = (String) customerInfo[0];
+                        String customerAddress = (String) customerInfo[1];
+                        response.setCustomer(customerName);
+                        response.setCustomerAddress(customerAddress);
+                    }
                 }
+
                 Object[] vehicleInfo = (Object[]) vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId[0];
                 if (vehicleInfo != null && vehicleInfo.length >= 3) {
                     String vehicleNo = (String) vehicleInfo[0];
@@ -330,6 +346,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while retrieving gate entry transactions. Please try again later.");
         }
     }
+
 
 
 }
