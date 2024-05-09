@@ -11,6 +11,8 @@ import java.util.Set;
 
 public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Long> {
 
+
+
     @Query("SELECT DISTINCT v.id FROM VehicleMaster v WHERE v.vehicleNo = :vehicleNo")
     long findVehicleIdByVehicleNo(@Param("vehicleNo") String vehicleNo);
     @Query("SELECT v.id FROM VehicleMaster v JOIN v.transporter t WHERE v.vehicleNo = :vehicleNo AND t.id = :transporterId")
@@ -22,19 +24,10 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
     @Query("SELECT v.transporter FROM VehicleMaster v WHERE v.vehicleNo = :vehicleId")
     List<TransporterMaster> findTransportersByVehicleId(String vehicleId);
 
-//    VehicleMaster findByVehicleNo(String vehicleNo);
-//
-//    boolean existsByVehicleNo(String vehicleNo);
-
-//    List<VehicleMaster> findVehicleMastersByTransporterId(Long transporterId);
-
     VehicleMaster findByVehicleNo(String vehicleNo);
 
     @Query("SELECT v.vehicleNo, v.vehicleWheelsNo, v.vehicleFitnessUpTo,v.vehicleType, t.transporterName " +
             "FROM VehicleMaster v JOIN v.transporter t WHERE v.vehicleNo = :vehicleNo")
     Set<Object[]> findVehicleInfoByVehicleNo(String vehicleNo);
-
-
-
 
 }

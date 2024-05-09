@@ -32,7 +32,7 @@ public class UserMaster {
 
     //@NotNull(message = "Site is required")
     @ManyToOne
-    @JoinColumn(name = "site_id", referencedColumnName = "  site_id")
+    @JoinColumn(name = "site_id", referencedColumnName = "site_id")
     private SiteMaster site;
 
    // @NotNull(message = "Company is required")
@@ -80,5 +80,4 @@ public class UserMaster {
 
     @Column(name = "user_modified_date")
     private LocalDateTime userModifiedDate;
-
 }
