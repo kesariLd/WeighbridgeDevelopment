@@ -1,8 +1,17 @@
 package com.weighbridge.qualityuser.services.Impl;
 
-import com.weighbridge.admin.entities.*;
+import com.weighbridge.admin.entities.MaterialMaster;
+import com.weighbridge.admin.entities.QualityRange;
+import com.weighbridge.admin.entities.SupplierMaster;
+import com.weighbridge.admin.entities.TransporterMaster;
+import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
-import com.weighbridge.admin.repsitories.*;
+import com.weighbridge.admin.repsitories.CustomerMasterRepository;
+import com.weighbridge.admin.repsitories.MaterialMasterRepository;
+import com.weighbridge.admin.repsitories.QualityRangeRepository;
+import com.weighbridge.admin.repsitories.SupplierMasterRepository;
+import com.weighbridge.admin.repsitories.TransporterMasterRepository;
+import com.weighbridge.admin.repsitories.VehicleMasterRepository;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
@@ -23,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,7 +42,7 @@ import java.util.stream.Stream;
 @Service
 public class QualityTransactionServicesImpl implements QualityTransactionService {
 
-    private  final QualityTransactioRepository qualityTransactioRepository;
+    private final QualityTransactioRepository qualityTransactioRepository;
     private final GateEntryTransactionRepository gateEntryTransactionRepository;
     private final HttpServletRequest httpServletRequest;
     private final VehicleTransactionStatusRepository vehicleTransactionStatusRepository;
@@ -48,12 +58,12 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                                           GateEntryTransactionRepository gateEntryTransactionRepository,
                                           HttpServletRequest httpServletRequest,
                                           VehicleTransactionStatusRepository vehicleTransactionStatusRepository,
-                                          TransactionLogRepository transactionLogRepository),
                                           SupplierMasterRepository supplierMasterRepository,
                                           CustomerMasterRepository customerMasterRepository,
                                           MaterialMasterRepository materialMasterRepository,
                                           TransporterMasterRepository transporterMasterRepository,
                                           VehicleMasterRepository vehicleMasterRepository,
+                                          TransactionLogRepository transactionLogRepository,
                                           QualityRangeRepository qualityRangeRepository) {
         this.qualityTransactioRepository = qualityTransactioRepository;
         this.gateEntryTransactionRepository = gateEntryTransactionRepository;
@@ -81,7 +91,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         } else {
             throw new SessionExpiredException("Session Expired, Login again !");
         }
-      
+
         List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany);
 
         List<QualityResponse> qualityResponses = allTransactions.stream()
@@ -162,7 +172,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             // Round up the seconds
             LocalDateTime vehicleInTime = now.withSecond(0).withNano(0);
 
-           //set qualityCheck in transactionLog
+            //set qualityCheck in transactionLog
             TransactionLog transactionLog = new TransactionLog();
             transactionLog.setUserId(userId);
             transactionLog.setTicketNo(ticketNo);
@@ -171,7 +181,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             transactionLogRepository.save(transactionLog);
 
             //set qualityCheck in vechicleTransactionStatus
-            VehicleTransactionStatus vehicleTransactionStatus=new VehicleTransactionStatus();
+            VehicleTransactionStatus vehicleTransactionStatus = new VehicleTransactionStatus();
             vehicleTransactionStatus.setTicketNo(ticketNo);
             vehicleTransactionStatus.setStatusCode("QCT");
             vehicleTransactionStatusRepository.save(vehicleTransactionStatus);
@@ -280,9 +290,8 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
     }
 
-}
 
-    //Generate report for quality check
+//Generate report for quality check
 
     @Override
     public ReportResponse getReportResponse(Integer ticketNo) {
@@ -324,6 +333,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
         throw new ResourceNotFoundException("Quality transaction not found for ticketNo: " + ticketNo);
     }
+
     public byte[] generateQualityReport(ReportResponse reportResponse) {
         // Generate the quality report based on the ReportRequest data
         byte[] reportBytes = generatePDFReport(reportResponse);
@@ -332,7 +342,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
     private byte[] generatePDFReport(ReportResponse reportResponse) {
         StringBuilder pdfContent = new StringBuilder();
-
 
         pdfContent.append("Quality Report");
         pdfContent.append("Ticket No:").append(reportResponse.getTicketNo()).append("\n");
@@ -354,7 +363,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         return pdfContent.toString().getBytes();
 
     }
-    }
+}
 
 
 
