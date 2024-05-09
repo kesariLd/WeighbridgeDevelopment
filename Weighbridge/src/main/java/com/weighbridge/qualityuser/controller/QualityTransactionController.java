@@ -1,5 +1,6 @@
 package com.weighbridge.qualityuser.controller;
 
+import com.weighbridge.qualityuser.payloads.QualityDetailsResponse;
 import com.weighbridge.qualityuser.payloads.QualityRequest;
 import com.weighbridge.qualityuser.payloads.QualityResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
@@ -58,5 +59,10 @@ public class QualityTransactionController {
     }
 
 
+    @GetMapping("/{ticketNo}")
+    public ResponseEntity<QualityDetailsResponse> getDetailsForQualityTransactions(@PathVariable Integer ticketNo) {
+        QualityDetailsResponse qualityDetailsResponse = qualityTransactionService.getDetailsForQualityTransaction(ticketNo);
+        return ResponseEntity.ok(qualityDetailsResponse);
+    }
 
 }

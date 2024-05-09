@@ -1,15 +1,14 @@
 package com.weighbridge.admin.services.impls;
 
-import com.weighbridge.admin.dtos.VehicleMasterDto;
+import com.weighbridge.admin.entities.TransporterMaster;
+import com.weighbridge.admin.entities.VehicleMaster;
+import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.payloads.VehicleGateEntryResponse;
 import com.weighbridge.admin.payloads.VehicleRequest;
 import com.weighbridge.admin.payloads.VehicleResponse;
 import com.weighbridge.admin.repsitories.TransporterMasterRepository;
 import com.weighbridge.admin.repsitories.VehicleMasterRepository;
 import com.weighbridge.admin.services.VehicleMasterService;
-import com.weighbridge.admin.entities.TransporterMaster;
-import com.weighbridge.admin.entities.VehicleMaster;
-import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.modelmapper.ModelMapper;
@@ -90,6 +89,10 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
 
     @Override
     public String addVehicle(VehicleRequest vehicleRequest, String transporterName) {
+        VehicleMaster existsVehicle = vehicleMasterRepository.findByVehicleNoAndTransporterMasterTransporterName(vehicleRequest.getVehicleNo(), transporterName);
+        if (existsVehicle != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle no: " + vehicleRequest.getVehicleNo() + " is already present with transporter name : " + transporterName);
+        }
         TransporterMaster transporterMaster = transporterMasterRepository.findByTransporterName(transporterName);
 
         VehicleMaster vehicleMaster = transporterMasterRepository.findById(transporterMaster.getId()).map(transporter -> {

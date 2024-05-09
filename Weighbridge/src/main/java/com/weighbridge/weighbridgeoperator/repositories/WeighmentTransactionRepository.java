@@ -16,16 +16,18 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
    @Query("SELECT g.ticketNo, w.weighmentNo, g.transactionType, g.transactionDate, g.vehicleIn, " +
            "w.grossWeight, w.tareWeight, w.netWeight, w.temporaryWeight, " +
            "v.vehicleNo, v.vehicleFitnessUpTo, " +
-           "s.supplierName, t.transporterName, " +
-           "m.materialName " +
+           "COALESCE(s.supplierName, c.customerName) AS supplierOrCustomer, " +
+           "t.transporterName, m.materialName " +
            "FROM GateEntryTransaction g " +
-           "LEFT JOIN WeighmentTransaction w ON g.ticketNo = w.gateEntryTransaction.ticketNo  " +
+           "LEFT JOIN WeighmentTransaction w ON g.ticketNo = w.gateEntryTransaction.ticketNo " +
            "INNER JOIN VehicleMaster v ON v.id = g.vehicleId " +
-           "INNER JOIN SupplierMaster s ON s.supplierId = g.supplierId " +
            "INNER JOIN TransporterMaster t ON t.id = g.transporterId " +
            "INNER JOIN MaterialMaster m ON m.materialId = g.materialId " +
            "INNER JOIN VehicleTransactionStatus ts ON ts.ticketNo = g.ticketNo " +
-           "WHERE g.siteId = :siteId and w.netWeight IS NULL or w.netWeight = 0.0" +
+           "LEFT JOIN SupplierMaster s ON s.supplierId = g.supplierId " +
+           "LEFT JOIN CustomerMaster c ON c.customerId = g.customerId " +
+           "WHERE g.siteId = :siteId AND (w.netWeight IS NULL OR w.netWeight = 0.0) " +
            "ORDER BY g.transactionDate DESC")
    List<Object[]> getAllGateEntries(@Param("siteId") String siteId);
+
 }

@@ -18,8 +18,4 @@ public class MaterialTypeMaster {
     @JoinColumn(name = "material_id", referencedColumnName = "material_id")
     private MaterialMaster materialMaster;
 
-    @OneToMany(mappedBy = "materialTypeMaster")
-    private List<QualityRange> qualityRanges;
-
-
 }

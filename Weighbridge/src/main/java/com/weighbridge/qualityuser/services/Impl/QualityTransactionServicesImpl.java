@@ -11,6 +11,7 @@ import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.qualityuser.exception.ResourceNotFoundException;
+import com.weighbridge.qualityuser.payloads.QualityDetailsResponse;
 import com.weighbridge.qualityuser.payloads.QualityRequest;
 import com.weighbridge.qualityuser.payloads.QualityResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
@@ -35,21 +36,25 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     private final GateEntryTransactionRepository gateEntryTransactionRepository;
     private final HttpServletRequest httpServletRequest;
     private final VehicleTransactionStatusRepository vehicleTransactionStatusRepository;
-
     private final SupplierMasterRepository supplierMasterRepository;
-
     private final CustomerMasterRepository customerMasterRepository;
     private final MaterialMasterRepository materialMasterRepository;
     private final TransporterMasterRepository transporterMasterRepository;
     private final VehicleMasterRepository vehicleMasterRepository;
-    private TransactionLogRepository transactionLogRepository;
-
+    private final TransactionLogRepository transactionLogRepository;
+    private final QualityRangeRepository qualityRangeRepository;
 
     public QualityTransactionServicesImpl(QualityTransactioRepository qualityTransactioRepository,
                                           GateEntryTransactionRepository gateEntryTransactionRepository,
                                           HttpServletRequest httpServletRequest,
                                           VehicleTransactionStatusRepository vehicleTransactionStatusRepository,
-                                          SupplierMasterRepository supplierMasterRepository, CustomerMasterRepository customerMasterRepository, MaterialMasterRepository materialMasterRepository, TransporterMasterRepository transporterMasterRepository, VehicleMasterRepository vehicleMasterRepository, TransactionLogRepository transactionLogRepository) {
+                                          TransactionLogRepository transactionLogRepository),
+                                          SupplierMasterRepository supplierMasterRepository,
+                                          CustomerMasterRepository customerMasterRepository,
+                                          MaterialMasterRepository materialMasterRepository,
+                                          TransporterMasterRepository transporterMasterRepository,
+                                          VehicleMasterRepository vehicleMasterRepository,
+                                          QualityRangeRepository qualityRangeRepository) {
         this.qualityTransactioRepository = qualityTransactioRepository;
         this.gateEntryTransactionRepository = gateEntryTransactionRepository;
         this.httpServletRequest = httpServletRequest;
@@ -60,6 +65,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         this.transporterMasterRepository = transporterMasterRepository;
         this.vehicleMasterRepository = vehicleMasterRepository;
         this.transactionLogRepository = transactionLogRepository;
+        this.qualityRangeRepository = qualityRangeRepository;
     }
 
     @Override
@@ -139,7 +145,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             qualityTransaction.setMoisture(qualityRequest.getMoisture());
             qualityTransaction.setFc(qualityRequest.getFc());
             qualityTransaction.setVm(qualityRequest.getVm());
-            qualityTransaction.setAsh(qualityRequest.getAsh());
+//            qualityTransaction.setAsh(qualityRequest.getAsh());
             qualityTransaction.setLoi(qualityRequest.getLoi());
             qualityTransaction.setFe_t(qualityRequest.getFe_t());
             qualityTransaction.setSize_03mm(qualityRequest.getSize_03mm());
@@ -176,6 +182,105 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             throw new ResourceNotFoundException("Gate Entry Transaction with ticketNo " + ticketNo + " not found");
         }
     }
+
+    @Override
+    public QualityDetailsResponse getDetailsForQualityTransaction(Integer ticketNo) {
+        QualityDetailsResponse qualityDetailsResponse = new QualityDetailsResponse();
+        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
+        if (gateEntryTransaction == null) {
+            return qualityDetailsResponse; // or handle the case where ticketNo is not found
+        }
+
+        qualityDetailsResponse.setTicketNo(gateEntryTransaction.getTicketNo());
+        qualityDetailsResponse.setTransactionDate(gateEntryTransaction.getTransactionDate());
+        qualityDetailsResponse.setVehicleNo(vehicleMasterRepository.findVehicleNoById(gateEntryTransaction.getVehicleId()));
+        qualityDetailsResponse.setVehicleInTime(gateEntryTransaction.getVehicleIn());
+        qualityDetailsResponse.setVehicleOutTime(gateEntryTransaction.getVehicleOut());
+        qualityDetailsResponse.setTransporterName(transporterMasterRepository.findTransporterNameByTransporterId(gateEntryTransaction.getTransporterId()));
+        qualityDetailsResponse.setTpNo(gateEntryTransaction.getTpNo());
+        qualityDetailsResponse.setPoNo(gateEntryTransaction.getPoNo());
+        qualityDetailsResponse.setChallanNo(gateEntryTransaction.getChallanNo());
+        qualityDetailsResponse.setTransactionType(gateEntryTransaction.getTransactionType());
+
+        if ("Inbound".equals(gateEntryTransaction.getTransactionType())) {
+            Object[] supplierInfo = supplierMasterRepository.findSupplierNameBySupplierId(gateEntryTransaction.getSupplierId());
+            setSupplierOrCustomerInfo(qualityDetailsResponse, supplierInfo);
+        } else if ("Outbound".equals(gateEntryTransaction.getTransactionType())) {
+            Object[] customerInfo = customerMasterRepository.findCustomerNameBycustomerId(ticketNo);
+            setSupplierOrCustomerInfo(qualityDetailsResponse, customerInfo);
+        }
+
+        String materialName = materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId());
+        qualityDetailsResponse.setMaterialName(materialName);
+        qualityDetailsResponse.setMaterialTypeName(gateEntryTransaction.getMaterialType());
+
+        List<QualityRange> qualityRanges = qualityRangeRepository.findByMaterialMasterMaterialName(materialName);
+        qualityDetailsResponse.setParameters(mapQualityRangesToParameter(qualityRanges, ticketNo));
+
+        return qualityDetailsResponse;
+    }
+
+    private void setSupplierOrCustomerInfo(QualityDetailsResponse qualityDetailsResponse, Object[] info) {
+        if (info != null && info.length >= 2) {
+            String name = (String) info[0];
+            String address = (String) info[1];
+            qualityDetailsResponse.setSupplierOrCustomerName(name);
+            qualityDetailsResponse.setSupplierOrCustomerAddress(address);
+        }
+    }
+
+    private List<QualityDetailsResponse.Parameter> mapQualityRangesToParameter(List<QualityRange> qualityRanges, Integer ticketNo) {
+        List<QualityDetailsResponse.Parameter> parameterList = new ArrayList<>();
+        QualityTransaction qualityTransaction = qualityTransactioRepository.findByGateEntryTransactionTicketNo(ticketNo);
+        if (qualityTransaction == null) {
+            return parameterList; // or handle the case where quality transaction is not found
+        }
+
+        for (QualityRange qualityRange : qualityRanges) {
+            QualityDetailsResponse.Parameter parameter = new QualityDetailsResponse.Parameter();
+            String parameterName = qualityRange.getParameterName();
+            parameter.setParameterName(parameterName);
+            parameter.setRangeTo(qualityRange.getRangeTo());
+            parameter.setRangeFrom(qualityRange.getRangeFrom());
+            setParameterValue(parameter, parameterName, qualityTransaction);
+            parameterList.add(parameter);
+        }
+        return parameterList;
+    }
+
+    private void setParameterValue(QualityDetailsResponse.Parameter parameter, String parameterName, QualityTransaction qualityTransaction) {
+        switch (parameterName) {
+            case "moisture":
+                parameter.setParameterValue(qualityTransaction.getMoisture());
+                break;
+            case "vm":
+                parameter.setParameterValue(qualityTransaction.getVm());
+                break;
+            case "ash":
+                parameter.setParameterValue(qualityTransaction.getAsh());
+                break;
+            case "fc":
+                parameter.setParameterValue(qualityTransaction.getFc());
+                break;
+            case "size_20mm":
+                parameter.setParameterValue(qualityTransaction.getSize_20mm());
+                break;
+            case "size_03mm":
+                parameter.setParameterValue(qualityTransaction.getSize_03mm());
+                break;
+            case "fe_t":
+                parameter.setParameterValue(qualityTransaction.getFe_t());
+                break;
+            case "loi":
+                parameter.setParameterValue(qualityTransaction.getLoi());
+                break;
+            default:
+                parameter.setParameterValue(null);
+                break;
+        }
+    }
+
+}
 
     //Generate report for quality check
 
@@ -250,4 +355,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
     }
     }
+
+
 
