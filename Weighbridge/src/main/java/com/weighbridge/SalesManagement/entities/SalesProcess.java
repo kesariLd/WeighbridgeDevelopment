@@ -1,4 +1,4 @@
-package com.weighbridge.SalsesManagement.entities;
+package com.weighbridge.SalesManagement.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -14,8 +14,9 @@ public class SalesProcess {
     @Id
     private String purchasePassNo;
     @ManyToOne
-    @JoinColumn(name = "purchaseOrderNo",referencedColumnName = "purchaseOrderNo")
-    private SalesOrder purchaseOrderNo;
+    @JoinColumn(name = "purchase_order_no")
+    private SalesOrder purchaseSale;
+    private String productName;
     private String productType;
     private String vehicleNo;
     private String TransporterName;

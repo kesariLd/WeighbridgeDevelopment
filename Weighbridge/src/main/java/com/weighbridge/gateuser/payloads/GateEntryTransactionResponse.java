@@ -19,7 +19,11 @@ public class GateEntryTransactionResponse {
     private String transporter;
     private String supplier;
     private String supplierAddress;
+    private String customer;
+    private String customerAddress;
+    
     private String material;
+    private String materialType;
     private Double tpNetWeight;
     private String poNo;
     private String tpNo;
