@@ -5,7 +5,7 @@ import com.weighbridge.admin.dtos.CustomerMasterDto;
 import java.util.List;
 
 public interface CustomerMasterService {
-    String createSupplier(CustomerMasterDto customerMasterDto);
+    String createCustomer(CustomerMasterDto customerMasterDto);
 
     List<CustomerMasterDto> getAllCustomers();
 

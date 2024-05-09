@@ -27,7 +27,7 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
     }
 
     @Override
-    public String createSupplier(CustomerMasterDto customerMasterDto) {
+    public String createCustomer(CustomerMasterDto customerMasterDto) {
         boolean exists = customerMasterRepository.existsByCustomerContactNoOrCustomerEmail(
                 customerMasterDto.getCustomerContactNo(),
                 customerMasterDto.getCustomerEmail());

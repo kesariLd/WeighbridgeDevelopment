@@ -55,7 +55,7 @@ public class UserMaster {
 
     @NotBlank(message = "Firstname is required")
     @Size(min = 2, max = 50, message = "Firstname must be between 2 and 50 characters")
-    @Column(name = "user_first_name")
+    @Column(name = "user_first_name",nullable = false)
     private String userFirstName;
 
     @Column(name = "user_middle_name")
@@ -63,7 +63,7 @@ public class UserMaster {
 
     @NotBlank(message = "Lastname is required")
     @Size(min = 2, max = 50, message = "Firstname must be between 2 and 50 characters")
-    @Column(name = "user_last_name")
+    @Column(name = "user_last_name",nullable = false)
     private String userLastName;
 
     @Column(name = "user_status")

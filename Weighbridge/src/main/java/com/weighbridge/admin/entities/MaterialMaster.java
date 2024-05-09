@@ -27,7 +27,7 @@ public class MaterialMaster {
     @Column(name = "material_id")
     private long materialId;
 
-    @Column(name = "material_name")
+    @Column(name = "material_name",nullable = false)
     private String materialName;
 
     @Column(name = "material_status")

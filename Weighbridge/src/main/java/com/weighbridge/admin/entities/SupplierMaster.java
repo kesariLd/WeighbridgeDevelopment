@@ -21,6 +21,7 @@ public class SupplierMaster {
     private Long supplierId;
 
     @NotBlank(message = "supplier Name is required")
+    @Column(nullable = false)
     private String supplierName;
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid Email format")
@@ -31,6 +32,7 @@ public class SupplierMaster {
     @Pattern(regexp = "^\\+?[1-9][0-9]{7,14}$", message = "Invalid contact number format")
     @Column(name = "supplier_contact_no", unique = true)
     private String supplierContactNo;
+    @Column(nullable = false)
     private String supplierAddressLine1;
     private String supplierAddressLine2;
     

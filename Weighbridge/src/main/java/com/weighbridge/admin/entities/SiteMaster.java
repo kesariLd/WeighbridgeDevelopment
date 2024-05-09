@@ -21,7 +21,7 @@ public class SiteMaster {
     private String siteId;
 
     @NotBlank
-    @Column(name = "site_name")
+    @Column(name = "site_name",nullable = false)
     private String siteName;
 
     @JsonIgnore
