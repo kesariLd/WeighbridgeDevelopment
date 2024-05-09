@@ -28,7 +28,7 @@ public class CustomerMaster {
     @Column(name = "customer_id")
     private long customerId;
 
-    @Column(name = "customer_name")
+    @Column(name = "customer_name",nullable = false)
     private String customerName;
 
     @NotBlank(message = "Email is required")
@@ -40,6 +40,7 @@ public class CustomerMaster {
     @Pattern(regexp = "^\\+?[1-9][0-9]{7,14}$", message = "Invalid contact number format")
     @Column(name = "customer_contactNo")
     private String customerContactNo;
+    @Column(nullable = false)
     private String customerAddressLine1;
     private String customerAddressLine2;
 
