@@ -106,12 +106,12 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     }
 
     @Override
-    public List<MaterialWithParameters> getQualityRangesByMaterialName(String materialName, String materialTypeName) {
+    public List<MaterialWithParameters> getQualityRangesByMaterialName(String materialName) {
         List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialName(materialName);
-        return mapQualityRangesToMaterialWithParameters(qualityRangeMasters, materialTypeName);
+        return mapQualityRangesToMaterialWithParameters(qualityRangeMasters);
     }
 
-    private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRangeMaster> qualityRangeMasters, String materilaTypeName) {
+    private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRangeMaster> qualityRangeMasters) {
         Map<String, MaterialWithParameters> materialWithParametersMap = new HashMap<>();
         for (QualityRangeMaster qualityRangeMaster : qualityRangeMasters) {
             String key = qualityRangeMaster.getMaterialMaster().getMaterialName();
@@ -119,7 +119,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
             if (materialWithParameters == null) {
                 materialWithParameters = new MaterialWithParameters();
                 materialWithParameters.setMaterialName(qualityRangeMaster.getMaterialMaster().getMaterialName());
-                materialWithParameters.setMaterialTypeName(materilaTypeName);
+                materialWithParameters.setMaterialTypeName(null);
                 materialWithParameters.setParameters(new ArrayList<>());
                 materialWithParametersMap.put(key, materialWithParameters);
             }

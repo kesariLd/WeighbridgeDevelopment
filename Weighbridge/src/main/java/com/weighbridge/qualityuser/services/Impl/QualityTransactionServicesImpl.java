@@ -109,7 +109,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
                         MaterialMaster materialMaster = materialMasterRepository.findById(transaction.getMaterialId()).orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
                         qualityResponse.setMaterialOrProduct(materialMaster.getMaterialName());
-                        qualityResponse.setMaterialTypeOrProductType("materialType");
+                        qualityResponse.setMaterialTypeOrProductType(transaction.getMaterialType());
 
                         TransporterMaster transporterMaster = transporterMasterRepository.findById(transaction.getTransporterId()).orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
                         qualityResponse.setTransporterName(transporterMaster.getTransporterName());
