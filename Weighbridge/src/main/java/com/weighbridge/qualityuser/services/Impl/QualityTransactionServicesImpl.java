@@ -1,14 +1,11 @@
 package com.weighbridge.qualityuser.services.Impl;
 
-import com.weighbridge.admin.entities.MaterialMaster;
-import com.weighbridge.admin.entities.QualityRange;
-import com.weighbridge.admin.entities.SupplierMaster;
-import com.weighbridge.admin.entities.TransporterMaster;
-import com.weighbridge.admin.entities.VehicleMaster;
+import com.weighbridge.admin.entities.*;
+import com.weighbridge.admin.entities.QualityRangeMaster;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
 import com.weighbridge.admin.repsitories.CustomerMasterRepository;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
-import com.weighbridge.admin.repsitories.QualityRangeRepository;
+import com.weighbridge.admin.repsitories.QualityRangeMasterRepository;
 import com.weighbridge.admin.repsitories.SupplierMasterRepository;
 import com.weighbridge.admin.repsitories.TransporterMasterRepository;
 import com.weighbridge.admin.repsitories.VehicleMasterRepository;
@@ -52,7 +49,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     private final TransporterMasterRepository transporterMasterRepository;
     private final VehicleMasterRepository vehicleMasterRepository;
     private final TransactionLogRepository transactionLogRepository;
-    private final QualityRangeRepository qualityRangeRepository;
+    private final QualityRangeMasterRepository qualityRangeMasterRepository;
 
     public QualityTransactionServicesImpl(QualityTransactioRepository qualityTransactioRepository,
                                           GateEntryTransactionRepository gateEntryTransactionRepository,
@@ -64,7 +61,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                                           TransporterMasterRepository transporterMasterRepository,
                                           VehicleMasterRepository vehicleMasterRepository,
                                           TransactionLogRepository transactionLogRepository,
-                                          QualityRangeRepository qualityRangeRepository) {
+                                          QualityRangeMasterRepository qualityRangeMasterRepository) {
         this.qualityTransactioRepository = qualityTransactioRepository;
         this.gateEntryTransactionRepository = gateEntryTransactionRepository;
         this.httpServletRequest = httpServletRequest;
@@ -75,7 +72,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         this.transporterMasterRepository = transporterMasterRepository;
         this.vehicleMasterRepository = vehicleMasterRepository;
         this.transactionLogRepository = transactionLogRepository;
-        this.qualityRangeRepository = qualityRangeRepository;
+        this.qualityRangeMasterRepository = qualityRangeMasterRepository;
     }
 
     @Override
@@ -224,8 +221,8 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         qualityDetailsResponse.setMaterialName(materialName);
         qualityDetailsResponse.setMaterialTypeName(gateEntryTransaction.getMaterialType());
 
-        List<QualityRange> qualityRanges = qualityRangeRepository.findByMaterialMasterMaterialName(materialName);
-        qualityDetailsResponse.setParameters(mapQualityRangesToParameter(qualityRanges, ticketNo));
+        List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialName(materialName);
+        qualityDetailsResponse.setParameters(mapQualityRangesToParameter(qualityRangeMasters, ticketNo));
 
         return qualityDetailsResponse;
     }
@@ -239,19 +236,19 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
     }
 
-    private List<QualityDetailsResponse.Parameter> mapQualityRangesToParameter(List<QualityRange> qualityRanges, Integer ticketNo) {
+    private List<QualityDetailsResponse.Parameter> mapQualityRangesToParameter(List<QualityRangeMaster> qualityRangeMasters, Integer ticketNo) {
         List<QualityDetailsResponse.Parameter> parameterList = new ArrayList<>();
         QualityTransaction qualityTransaction = qualityTransactioRepository.findByGateEntryTransactionTicketNo(ticketNo);
         if (qualityTransaction == null) {
             return parameterList; // or handle the case where quality transaction is not found
         }
 
-        for (QualityRange qualityRange : qualityRanges) {
+        for (QualityRangeMaster qualityRangeMaster : qualityRangeMasters) {
             QualityDetailsResponse.Parameter parameter = new QualityDetailsResponse.Parameter();
-            String parameterName = qualityRange.getParameterName();
+            String parameterName = qualityRangeMaster.getParameterName();
             parameter.setParameterName(parameterName);
-            parameter.setRangeTo(qualityRange.getRangeTo());
-            parameter.setRangeFrom(qualityRange.getRangeFrom());
+            parameter.setRangeTo(qualityRangeMaster.getRangeTo());
+            parameter.setRangeFrom(qualityRangeMaster.getRangeFrom());
             setParameterValue(parameter, parameterName, qualityTransaction);
             parameterList.add(parameter);
         }

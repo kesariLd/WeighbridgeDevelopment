@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Table(name = "material_type")
+@Table(name = "material_type_master")
 public class MaterialTypeMaster {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
