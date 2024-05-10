@@ -14,8 +14,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "quality_range")
-public class QualityRange {
+@Table(name = "quality_range_master")
+public class QualityRangeMaster {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "quality_range_id")

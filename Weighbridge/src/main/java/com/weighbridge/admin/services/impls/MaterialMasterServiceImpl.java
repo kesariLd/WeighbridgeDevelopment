@@ -3,18 +3,20 @@ package com.weighbridge.admin.services.impls;
 import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.entities.MaterialMaster;
 import com.weighbridge.admin.entities.MaterialTypeMaster;
-import com.weighbridge.admin.entities.QualityRange;
+import com.weighbridge.admin.entities.QualityRangeMaster;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
 import com.weighbridge.admin.payloads.MaterialWithParameters.Parameter;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
 import com.weighbridge.admin.repsitories.MaterialTypeMasterRepository;
-import com.weighbridge.admin.repsitories.QualityRangeRepository;
+import com.weighbridge.admin.repsitories.QualityRangeMasterRepository;
 import com.weighbridge.admin.services.MaterialMasterService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,14 +35,14 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     private final ModelMapper modelMapper;
     private final HttpServletRequest httpServletRequest;
     private final MaterialTypeMasterRepository materialTypeMasterRepository;
-    private final QualityRangeRepository qualityRangeRepository;
+    private final QualityRangeMasterRepository qualityRangeMasterRepository;
 
-    public MaterialMasterServiceImpl(MaterialMasterRepository materialMasterRepository, ModelMapper modelMapper, HttpServletRequest httpServletRequest, MaterialTypeMasterRepository materialTypeMasterRepository, QualityRangeRepository qualityRangeRepository) {
+    public MaterialMasterServiceImpl(MaterialMasterRepository materialMasterRepository, ModelMapper modelMapper, HttpServletRequest httpServletRequest, MaterialTypeMasterRepository materialTypeMasterRepository, QualityRangeMasterRepository qualityRangeMasterRepository) {
         this.materialMasterRepository = materialMasterRepository;
         this.modelMapper = modelMapper;
         this.httpServletRequest = httpServletRequest;
         this.materialTypeMasterRepository = materialTypeMasterRepository;
-        this.qualityRangeRepository = qualityRangeRepository;
+        this.qualityRangeMasterRepository = qualityRangeMasterRepository;
     }
 
     @Override
@@ -85,15 +87,15 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
         }
 
         MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
-        if (materialTypeMaster == null) {
+        if (request.getMaterialTypeName() != null && materialTypeMaster == null) {
             materialTypeMaster = new MaterialTypeMaster();
             materialTypeMaster.setMaterialTypeName(request.getMaterialTypeName());
             materialTypeMaster.setMaterialMaster(materialMaster);
             materialTypeMasterRepository.save(materialTypeMaster);
         }
 
-        List<QualityRange> qualityRanges = createQualityRanges(request.getParameters(), materialMaster);
-        qualityRangeRepository.saveAll(qualityRanges);
+        List<QualityRangeMaster> qualityRangeMasters = createQualityRanges(request.getParameters(), materialMaster);
+        qualityRangeMasterRepository.saveAll(qualityRangeMasters);
         return "Data saved successfully";
     }
 
@@ -105,27 +107,27 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
     @Override
     public List<MaterialWithParameters> getQualityRangesByMaterialName(String materialName, String materialTypeName) {
-        List<QualityRange> qualityRanges = qualityRangeRepository.findByMaterialMasterMaterialName(materialName);
-        return mapQualityRangesToMaterialWithParameters(qualityRanges, materialTypeName);
+        List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialName(materialName);
+        return mapQualityRangesToMaterialWithParameters(qualityRangeMasters, materialTypeName);
     }
 
-    private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRange> qualityRanges, String materilaTypeName) {
+    private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRangeMaster> qualityRangeMasters, String materilaTypeName) {
         Map<String, MaterialWithParameters> materialWithParametersMap = new HashMap<>();
-        for (QualityRange qualityRange : qualityRanges) {
-            String key = qualityRange.getMaterialMaster().getMaterialName();
+        for (QualityRangeMaster qualityRangeMaster : qualityRangeMasters) {
+            String key = qualityRangeMaster.getMaterialMaster().getMaterialName();
             MaterialWithParameters materialWithParameters = materialWithParametersMap.get(key);
             if (materialWithParameters == null) {
                 materialWithParameters = new MaterialWithParameters();
-                materialWithParameters.setMaterialName(qualityRange.getMaterialMaster().getMaterialName());
+                materialWithParameters.setMaterialName(qualityRangeMaster.getMaterialMaster().getMaterialName());
                 materialWithParameters.setMaterialTypeName(materilaTypeName);
                 materialWithParameters.setParameters(new ArrayList<>());
                 materialWithParametersMap.put(key, materialWithParameters);
             }
 
             MaterialWithParameters.Parameter parameter = new MaterialWithParameters.Parameter();
-            parameter.setParameterName(qualityRange.getParameterName());
-            parameter.setRangeFrom(qualityRange.getRangeFrom());
-            parameter.setRangeTo(qualityRange.getRangeTo());
+            parameter.setParameterName(qualityRangeMaster.getParameterName());
+            parameter.setRangeFrom(qualityRangeMaster.getRangeFrom());
+            parameter.setRangeTo(qualityRangeMaster.getRangeTo());
 
             materialWithParameters.getParameters().add(parameter);
         }
@@ -134,15 +136,20 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     }
 
 
-    private List<QualityRange> createQualityRanges(List<Parameter> parameters, MaterialMaster materialMaster) {
+    private List<QualityRangeMaster> createQualityRanges(List<Parameter> parameters, MaterialMaster materialMaster) {
+
         return parameters.stream()
                 .map(parameter -> {
-                    QualityRange qualityRange = new QualityRange();
-                    qualityRange.setParameterName(parameter.getParameterName());
-                    qualityRange.setRangeFrom(parameter.getRangeFrom());
-                    qualityRange.setRangeTo(parameter.getRangeTo());
-                    qualityRange.setMaterialMaster(materialMaster);
-                    return qualityRange;
+                    QualityRangeMaster qualityRangeMaster = new QualityRangeMaster();
+                    if(!qualityRangeMasterRepository.existsByParameterNameAndMaterialMasterMaterialId(parameter.getParameterName(),materialMaster.getMaterialId())) {
+                        qualityRangeMaster.setParameterName(parameter.getParameterName());
+                        qualityRangeMaster.setRangeFrom(parameter.getRangeFrom());
+                        qualityRangeMaster.setRangeTo(parameter.getRangeTo());
+                        qualityRangeMaster.setMaterialMaster(materialMaster);
+                    } else {
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Parameter is already set");
+                    }
+                    return qualityRangeMaster;
                 })
                 .collect(Collectors.toList());
     }
