@@ -27,7 +27,7 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
            "LEFT JOIN SupplierMaster s ON s.supplierId = g.supplierId " +
            "LEFT JOIN CustomerMaster c ON c.customerId = g.customerId " +
            "WHERE g.siteId = :siteId AND (w.netWeight IS NULL OR w.netWeight = 0.0) " +
-           "ORDER BY g.transactionDate DESC")
+           "ORDER BY g.ticketNo DESC")
    List<Object[]> getAllGateEntries(@Param("siteId") String siteId);
 
 }

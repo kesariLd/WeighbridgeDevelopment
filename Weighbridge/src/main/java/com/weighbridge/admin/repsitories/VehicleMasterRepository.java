@@ -2,11 +2,14 @@ package com.weighbridge.admin.repsitories;
 
 import com.weighbridge.admin.entities.TransporterMaster;
 import com.weighbridge.admin.entities.VehicleMaster;
+import com.weighbridge.gateuser.entities.GateEntryTransaction;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Long> {
@@ -34,4 +37,6 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
 
     @Query("SELECT vm.vehicleNo FROM VehicleMaster vm WHERE vm.id = :vehicleId")
     String findVehicleNoById(@Param("vehicleId") long vehicleId);
+
+
 }

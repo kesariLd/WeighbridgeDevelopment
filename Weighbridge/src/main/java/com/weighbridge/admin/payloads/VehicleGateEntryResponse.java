@@ -15,7 +15,7 @@ public class VehicleGateEntryResponse {
     private String vehicleNo;
     private Integer vehicleWheelsNo;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private Date vehicleFitnessUpTo;
+    private LocalDate vehicleFitnessUpTo;
     private List<String> transporter;
     private String vehicleType;
 }

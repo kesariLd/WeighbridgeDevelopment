@@ -102,24 +102,29 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                         qualityResponse.setPoNo(transaction.getPoNo());
                         qualityResponse.setChallanNo(transaction.getChallanNo());
                         qualityResponse.setTransactionType(transaction.getTransactionType());
-
-                        SupplierMaster supplierMaster = supplierMasterRepository.findById(transaction.getSupplierId()).orElseThrow(() -> new ResourceNotFoundException("Supplier is not found"));
+                        
+                        System.out.println(transaction.getSupplierId());
+                        SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(transaction.getSupplierId());
+                        if(supplierMaster != null) {
                         qualityResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
                         qualityResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
-
-                        MaterialMaster materialMaster = materialMasterRepository.findById(transaction.getMaterialId()).orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
+                        }
+                        MaterialMaster materialMaster = materialMasterRepository.findByMaterialId(transaction.getMaterialId());
+                        if(materialMaster!= null) {
                         qualityResponse.setMaterialOrProduct(materialMaster.getMaterialName());
                         qualityResponse.setMaterialTypeOrProductType(transaction.getMaterialType());
-
-                        TransporterMaster transporterMaster = transporterMasterRepository.findById(transaction.getTransporterId()).orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
+                        }
+                        TransporterMaster transporterMaster = transporterMasterRepository.findById(transaction.getTransporterId()).orElseThrow(()-> new ResourceNotFoundException("Transporter is not found"));
+                        if(transporterMaster != null) {
                         qualityResponse.setTransporterName(transporterMaster.getTransporterName());
-
-                        VehicleMaster vehicleMaster = vehicleMasterRepository.findById(transaction.getVehicleId()).orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
+                        }
+                        VehicleMaster vehicleMaster = vehicleMasterRepository.findById(transaction.getVehicleId()).orElseThrow(()-> new ResourceNotFoundException("Vehicle is not found"));
+                        if(vehicleMaster != null) {
                         qualityResponse.setVehicleNo(vehicleMaster.getVehicleNo());
                         qualityResponse.setIn(transaction.getVehicleIn());
                         qualityResponse.setOut(transaction.getVehicleOut());
                         qualityResponse.setDate(transaction.getTransactionDate());
-
+                        }
                         return Stream.of(qualityResponse);
                     } else {
                         return Stream.empty();
@@ -152,7 +157,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             qualityTransaction.setMoisture(qualityRequest.getMoisture());
             qualityTransaction.setFc(qualityRequest.getFc());
             qualityTransaction.setVm(qualityRequest.getVm());
-//            qualityTransaction.setAsh(qualityRequest.getAsh());
+            qualityTransaction.setAsh(qualityRequest.getAsh());
             qualityTransaction.setLoi(qualityRequest.getLoi());
             qualityTransaction.setFe_t(qualityRequest.getFe_t());
             qualityTransaction.setSize_03mm(qualityRequest.getSize_03mm());
