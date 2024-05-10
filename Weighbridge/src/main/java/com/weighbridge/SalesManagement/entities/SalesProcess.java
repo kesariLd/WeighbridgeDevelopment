@@ -19,7 +19,7 @@ public class SalesProcess {
     private String productName;
     private String productType;
     private String vehicleNo;
-    private String TransporterName;
+    private String transporterName;
     private double netWeight;
     private Date purchaseProcessDate;
 }
