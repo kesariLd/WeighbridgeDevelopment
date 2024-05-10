@@ -197,9 +197,15 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             VehicleTransactionStatus vehicleTransactionStatus = vehicleTransactionStatusRepository.findByTicketNo(ticketNo);
             GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
 
-            // Check if vehicle TareWeight is measured
-            if (!Objects.equals(vehicleTransactionStatus.getStatusCode(), "TWT")) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle TareWeight is not measured yet!");
+            String transactionType = gateEntryTransaction.getTransactionType();
+            if(transactionType==null){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Transaction Type is not Mentioned");
+            }
+
+            List<String> allowedStatusCodes = gateEntryTransaction.getTransactionType().equalsIgnoreCase("Inbound") ? Arrays.asList("TWT", "QCK") : Arrays.asList("GWT", "QCK");
+
+            if (!allowedStatusCodes.contains(vehicleTransactionStatus.getStatusCode())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle is not measured yet!");
             }
 
             // Retrieve user ID from session
