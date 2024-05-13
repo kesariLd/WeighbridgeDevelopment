@@ -2,6 +2,8 @@ package com.weighbridge.weighbridgeoperator.payloads;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class TicketResponse {
     private String tpNo;
@@ -17,4 +19,6 @@ public class TicketResponse {
     private double grossWeight;
     private double tareWeight;
     private double netWeight;
+    private LocalDateTime grossWeightTime;
+    private LocalDateTime tareWeightTime;
 }
