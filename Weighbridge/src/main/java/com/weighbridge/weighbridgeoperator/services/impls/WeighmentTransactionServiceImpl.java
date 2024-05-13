@@ -115,6 +115,15 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             return "First Weight saved.";
         }
         else {
+            //History save with vehicle intime and vehicle out time
+            if(byId.getTransactionType().equalsIgnoreCase("Inbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("TWT")){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tare Weight already saved.");
+            }
+
+            if(byId.getTransactionType().equalsIgnoreCase("Outbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("GWT")){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Gross Weight already saved.");
+            }
+            
             double temporaryWeight = byTicketTicketNo.getTemporaryWeight();
             if (temporaryWeight>weighmentRequest.getWeight()){
                 byTicketTicketNo.setGrossWeight(temporaryWeight);
@@ -126,14 +135,13 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             }
             double netWeight = Math.abs(temporaryWeight - weighmentRequest.getWeight());
             byTicketTicketNo.setNetWeight(netWeight);
+
             weighmentTransactionRepository.save(byTicketTicketNo);
-
-
-            //History save with vehicle intime and vehicle out time
             TransactionLog transactionLog = new TransactionLog();
             transactionLog.setUserId(userId);
             transactionLog.setTicketNo(weighmentRequest.getTicketNo());
             transactionLog.setTimestamp(LocalDateTime.now());
+
 
             //Vehiclestatus details
             if(byId.getTransactionType().equalsIgnoreCase("Outbound")) {
