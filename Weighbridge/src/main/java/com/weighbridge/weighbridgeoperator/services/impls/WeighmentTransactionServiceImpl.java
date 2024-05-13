@@ -130,10 +130,20 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
 
 
             //History save with vehicle intime and vehicle out time
+            if(byId.getTransactionType().equalsIgnoreCase("Inbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("TWT")){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tare Weight already saved.");
+            }
+
+            if(byId.getTransactionType().equalsIgnoreCase("Outbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("GWT")){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Gross Weight already saved.");
+            }
+
+
             TransactionLog transactionLog = new TransactionLog();
             transactionLog.setUserId(userId);
             transactionLog.setTicketNo(weighmentRequest.getTicketNo());
             transactionLog.setTimestamp(LocalDateTime.now());
+
 
             //Vehiclestatus details
             if(byId.getTransactionType().equalsIgnoreCase("Outbound")) {
