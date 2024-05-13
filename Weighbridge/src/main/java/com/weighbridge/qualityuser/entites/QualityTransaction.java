@@ -2,8 +2,17 @@ package com.weighbridge.qualityuser.entites;
 
 
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -12,33 +21,16 @@ import lombok.*;
 @AllArgsConstructor
 @Table(name = "quality_transaction")
 public class QualityTransaction {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long qualityId;
-
-    @Column(nullable = false)
     private Double moisture;
-
-    @Column(nullable = false)
     private Double vm;
-
-    @Column(nullable = false)
     private Double ash;
-
-    @Column(nullable = false)
     private Double fc;
-
-    @Column(nullable = false)
     private Double size_20mm;
-
-    @Column(nullable = false)
     private Double size_03mm;
-
-    @Column(nullable = false)
     private Double fe_t;
-
-    @Column(nullable = false)
     private Double loi;
 
     @OneToOne

@@ -136,13 +136,13 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             transactionLog.setTimestamp(LocalDateTime.now());
 
             //Vehiclestatus details
-            if(byTicketNo.getStatusCode().equalsIgnoreCase("GWT")) {
-                byTicketNo.setStatusCode("TWT");
-                transactionLog.setStatusCode("TWT");
-            }
-            else {
+            if(byId.getTransactionType().equalsIgnoreCase("Outbound")) {
                 byTicketNo.setStatusCode("GWT");
                 transactionLog.setStatusCode("GWT");
+            }
+            else {
+                byTicketNo.setStatusCode("TWT");
+                transactionLog.setStatusCode("TWT");
             }
             vehicleTransactionStatusRepository.save(byTicketNo);
             transactionLogRepository.save(transactionLog);
