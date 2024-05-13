@@ -78,6 +78,6 @@ public class QualityTransaction {
      * @see GateEntryTransaction
      */
     @OneToOne
-    @JoinColumn(name = "ticket_no", referencedColumnName = "ticketNo", nullable = false)
+    @JoinColumn(name = "ticket_no", referencedColumnName = "ticketNo")
     private GateEntryTransaction gateEntryTransaction;
 }

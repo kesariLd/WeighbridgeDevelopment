@@ -1,8 +1,8 @@
 package com.weighbridge.qualityuser.controller;
 
-import com.weighbridge.qualityuser.payloads.QualityDetailsResponse;
+import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
 import com.weighbridge.qualityuser.payloads.QualityRequest;
-import com.weighbridge.qualityuser.payloads.QualityResponse;
+import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
 import org.springframework.http.HttpStatus;
@@ -39,8 +39,8 @@ public class QualityTransactionController {
      * @return a ResponseEntity containing a list of all gate entry transaction details
      */
     @GetMapping("/getAllTransaction")
-    public ResponseEntity<List<QualityResponse>> getAllTickets() {
-        List<QualityResponse> response = qualityTransactionService.getAllGateDetails();
+    public ResponseEntity<List<QualityDashboardResponse>> getAllTickets() {
+        List<QualityDashboardResponse> response = qualityTransactionService.getAllGateDetails();
         return ResponseEntity.ok(response);
     }
 
@@ -87,8 +87,8 @@ public class QualityTransactionController {
      * @return a ResponseEntity containing the quality details
      */
     @GetMapping("/{ticketNo}")
-    public ResponseEntity<QualityDetailsResponse> getDetailsForQualityTransactions(@PathVariable Integer ticketNo) {
-        QualityDetailsResponse qualityDetailsResponse = qualityTransactionService.getDetailsForQualityTransaction(ticketNo);
-        return ResponseEntity.ok(qualityDetailsResponse);
+    public ResponseEntity<QualityCreationResponse> getDetailsForQualityTransactions(@PathVariable Integer ticketNo) {
+        QualityCreationResponse qualityCreationResponse = qualityTransactionService.getDetailsForQualityTransaction(ticketNo);
+        return ResponseEntity.ok(qualityCreationResponse);
     }
 }
