@@ -71,6 +71,9 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
     @Autowired
     private SalesProcessRepository salesProcessRepository;
 
+    @Autowired
+    private SalesOrderRespository salesOrderRespository;
+
     @Override
     public String saveWeight(WeighmentRequest weighmentRequest) {
         // Set user session details
@@ -161,6 +164,13 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                SalesProcess byPurchasePassNo = salesProcessRepository.findByPurchasePassNo(byId.getTpNo());
                byPurchasePassNo.setNetWeight(netWeight);
                salesProcessRepository.save(byPurchasePassNo);
+               String purchaseOrderNo = byPurchasePassNo.getPurchaseSale().getPurchaseOrderNo();
+               SalesOrder byPurchaseOrderNo = salesOrderRespository.findByPurchaseOrderNo(purchaseOrderNo);
+               double progressiveQty = byPurchaseOrderNo.getProgressiveQuantity() + netWeight;
+               double balanceQty=byPurchaseOrderNo.getBalanceQuantity()-progressiveQty;
+                 byPurchaseOrderNo.setProgressiveQuantity(progressiveQty);
+                 byPurchaseOrderNo.setBalanceQuantity(balanceQty);
+                 salesOrderRespository.save(byPurchaseOrderNo);
            }
 
             return "Second weight saved";

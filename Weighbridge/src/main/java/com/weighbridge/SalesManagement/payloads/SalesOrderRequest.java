@@ -29,8 +29,6 @@ public class SalesOrderRequest {
 
     private double orderedQuantity;
 
-    private double progressiveQuantity;
-
     private String brokerName;
 
     private String brokerAddress;

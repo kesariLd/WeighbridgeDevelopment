@@ -1,8 +1,11 @@
 package com.weighbridge.SalesManagement.service.serviceImpl;
 
 import com.weighbridge.SalesManagement.entities.SalesOrder;
+import com.weighbridge.SalesManagement.entities.SalesProcess;
+import com.weighbridge.SalesManagement.payloads.SalesDashboardResponse;
 import com.weighbridge.SalesManagement.payloads.SalesOrderRequest;
 import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
+import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.SalesManagement.service.SalesOrderService;
 import com.weighbridge.admin.entities.CustomerMaster;
 import com.weighbridge.admin.entities.MaterialMaster;
@@ -15,6 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class SalesOrderServiceImpl implements SalesOrderService {
@@ -26,6 +31,9 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     @Autowired
     MaterialMasterRepository materialMasterRepository;
+
+    @Autowired
+    SalesProcessRepository salesProcessRepository;
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -84,10 +92,30 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         }
 
         salesOrder.setProductName(salesOrderRequest.getProductName());
-        salesOrder.setProgressiveQuantity(salesOrderRequest.getProgressiveQuantity());
-        salesOrder.setBalanceQuantity(salesOrderRequest.getOrderedQuantity()-salesOrderRequest.getProgressiveQuantity());
+       // salesOrder.setProgressiveQuantity(salesOrderRequest.getProgressiveQuantity());
+        salesOrder.setBalanceQuantity(salesOrderRequest.getOrderedQuantity());
         salesOrderRespository.save(salesOrder);
         return "Sales details added";
+    }
+
+    @Override
+    public List<SalesDashboardResponse> getAllSalesDetails() {
+        List<SalesOrder> allSales = salesOrderRespository.findAll();
+        List<SalesDashboardResponse> list=new ArrayList<>();
+        for(SalesOrder salesOrder:allSales){
+            SalesDashboardResponse salesDashboardResponse=new SalesDashboardResponse();
+            salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
+            salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
+            salesDashboardResponse.setCustomerName(salesOrder.getCustomerName());
+            salesDashboardResponse.setSaleOrderNo(salesOrder.getSaleOrderNo());
+            salesDashboardResponse.setProductName(salesOrder.getProductName());
+            salesDashboardResponse.setBrokerName(salesOrder.getBrokerName());
+            SalesProcess byPurchaseSalePurchaseOrderNo = salesProcessRepository.findByPurchaseSalePurchaseOrderNo(salesOrder.getPurchaseOrderNo());
+            salesDashboardResponse.setPurchasePassNo(byPurchaseSalePurchaseOrderNo.getPurchasePassNo());
+            list.add(salesDashboardResponse);
+        }
+        System.out.println(list);
+        return list;
     }
 
     public String generatePurchaseOrderNo() {
@@ -105,4 +133,5 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
         return purchaseOrderId;
     }
+
 }

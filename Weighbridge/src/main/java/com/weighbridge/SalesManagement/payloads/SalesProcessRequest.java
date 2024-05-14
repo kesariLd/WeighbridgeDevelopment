@@ -14,7 +14,7 @@ public class SalesProcessRequest {
     @NotBlank
     private String vehicleNo;
     @NotBlank
-    private String TransporterName;
+    private String transporterName;
 
     @NotBlank
     private Date purchaseProcessDate;

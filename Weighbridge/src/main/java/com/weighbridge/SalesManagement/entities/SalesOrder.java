@@ -36,7 +36,7 @@ public class SalesOrder {
 
     private double orderedQuantity;
 
-    private double progressiveQuantity;
+    private double progressiveQuantity=0.0;
 
     private double balanceQuantity;
 
