@@ -6,6 +6,8 @@ import java.time.LocalDate;
 @Data
 public class ReportResponse {
     private Integer ticketNo;
+    private String companyName;
+    private String companyAddress;
     private LocalDate date;
     private String vehicleNo;
     private String materialOrProduct;
