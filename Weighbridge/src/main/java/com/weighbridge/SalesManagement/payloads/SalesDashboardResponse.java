@@ -10,5 +10,4 @@ public class SalesDashboardResponse {
   private String productName;
   private String brokerName;
   private double orderedQty;
-  private String purchasePassNo;
 }

@@ -10,8 +10,9 @@ public class SalesOrderRequest {
 
     @NotBlank
     private Date purchaseOrderedDate;
-
-
+    @NotBlank
+    private String purchaseOrderNo;
+    @NotBlank
     private String saleOrderNo;
 
     @NotBlank

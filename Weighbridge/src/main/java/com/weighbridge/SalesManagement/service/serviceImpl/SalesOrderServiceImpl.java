@@ -5,6 +5,7 @@ import com.weighbridge.SalesManagement.entities.SalesProcess;
 import com.weighbridge.SalesManagement.payloads.SalesDashboardResponse;
 import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
 import com.weighbridge.SalesManagement.payloads.SalesOrderRequest;
+import com.weighbridge.SalesManagement.payloads.VehicleAndTransporterDetail;
 import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.SalesManagement.service.SalesOrderService;
@@ -51,7 +52,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             throw new ResponseStatusException(HttpStatus.CONFLICT,"this salesNumber already exists");
         }
         SalesOrder salesOrder=new SalesOrder();
-        salesOrder.setPurchaseOrderNo(generatePurchaseOrderNo());
+        salesOrder.setPurchaseOrderNo(salesOrderRequest.getPurchaseOrderNo());
         salesOrder.setSaleOrderNo(salesOrderRequest.getSaleOrderNo());
         salesOrder.setPurchaseOrderedDate(salesOrderRequest.getPurchaseOrderedDate());
         salesOrder.setOrderedQuantity(salesOrderRequest.getOrderedQuantity());
@@ -106,9 +107,6 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         List<SalesDashboardResponse> list = new ArrayList<>();
 
         for(SalesOrder salesOrder : allSales) {
-            List<SalesProcess> byPurchaseSalePurchaseOrderNo = salesProcessRepository.findByPurchaseSalePurchaseOrderNo(salesOrder.getPurchaseOrderNo());
-            if(!byPurchaseSalePurchaseOrderNo.isEmpty()) {
-                for (SalesProcess salesProcess : byPurchaseSalePurchaseOrderNo) {
                     SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
                     salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
                     salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
@@ -117,23 +115,9 @@ public class SalesOrderServiceImpl implements SalesOrderService {
                     salesDashboardResponse.setProductName(salesOrder.getProductName());
                     salesDashboardResponse.setBrokerName(salesOrder.getBrokerName());
                     // Assuming getPurchasePassNo() is a method of SalesProcess, not List<SalesProcess>
-                    salesDashboardResponse.setPurchasePassNo(salesProcess.getPurchasePassNo());
                     list.add(salesDashboardResponse);
                 }
-            }
-            else {
-                SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
-                salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
-                salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
-                salesDashboardResponse.setCustomerName(salesOrder.getCustomerName());
-                salesDashboardResponse.setSaleOrderNo(salesOrder.getSaleOrderNo());
-                salesDashboardResponse.setProductName(salesOrder.getProductName());
-                salesDashboardResponse.setBrokerName(salesOrder.getBrokerName());
-                // Assuming getPurchasePassNo() is a method of SalesProcess, not List<SalesProcess>
-                salesDashboardResponse.setPurchasePassNo("-");
-                list.add(salesDashboardResponse);
-            }
-        }
+
         return list;
     }
 
@@ -149,8 +133,26 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         return salesDetailResponse;
     }
 
+    public List<VehicleAndTransporterDetail> getVehiclesAndTransporterDetails(){
+        List<SalesProcess> allVehiclesDetails= salesProcessRepository.findAll();
+        List<VehicleAndTransporterDetail> listOfVehicle=new ArrayList<>();
+        for (SalesProcess salesProcess:allVehiclesDetails) {
+            VehicleAndTransporterDetail vehicleAndTransporterDetail = new VehicleAndTransporterDetail();
+            vehicleAndTransporterDetail.setPurchasePassNo(salesProcess.getPurchasePassNo());
+            vehicleAndTransporterDetail.setTransporterName(salesProcess.getTransporterName());
+            vehicleAndTransporterDetail.setVehicleNo(salesProcess.getVehicleNo());
+            vehicleAndTransporterDetail.setProductName(salesProcess.getProductName());
+            vehicleAndTransporterDetail.setProductType(salesProcess.getProductType());
+            SalesOrder byPurchaseOrderNo = salesOrderRespository.findByPurchaseOrderNo(salesProcess.getPurchaseSale().getPurchaseOrderNo());
+            vehicleAndTransporterDetail.setBalanceQty(byPurchaseOrderNo.getBalanceQuantity());
+            vehicleAndTransporterDetail.setProgressiveQty(byPurchaseOrderNo.getProgressiveQuantity());
+            listOfVehicle.add(vehicleAndTransporterDetail);
+        }
+        return listOfVehicle;
+    }
 
-    public String generatePurchaseOrderNo() {
+
+/*    public String generatePurchaseOrderNo() {
         LocalDate currentDate = LocalDate.now();
         String formattedDate = dateFormatter.format(currentDate);
 
@@ -164,8 +166,5 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         String purchaseOrderId = formattedDate + incrementedNumber;
 
         return purchaseOrderId;
-    }
-
-
-
+    }*/
 }

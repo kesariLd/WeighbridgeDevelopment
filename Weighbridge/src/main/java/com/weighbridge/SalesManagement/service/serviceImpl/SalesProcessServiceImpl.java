@@ -125,6 +125,4 @@ public class SalesProcessServiceImpl implements SalesProcessService {
         String purchasePassNo = purchaseOrderNo + "/" + incrementedNumber;
         return purchasePassNo;
     }
-
-
 }
