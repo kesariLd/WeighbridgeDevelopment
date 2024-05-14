@@ -4,7 +4,6 @@ package com.weighbridge.weighbridgeoperator.payloads;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
 public class WeighmentReportResponse {
@@ -16,5 +15,5 @@ public class WeighmentReportResponse {
     private LocalDate challanDate;
     private Double supplyConsignmentWeight;
     private Double weighQuantity;
-    private Double totalQuantity;
+    private Double excessQty;
 }
