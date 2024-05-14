@@ -1,6 +1,8 @@
 package com.weighbridge.weighbridgeoperator.services.impls;
 
+import com.weighbridge.SalesManagement.entities.SalesOrder;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
+import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
@@ -67,6 +69,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
 
     @Autowired
     private CustomerMasterRepository customerMasterRepository;
+    @Autowired
     private SalesOrderRespository salesOrderRespository;
 
 

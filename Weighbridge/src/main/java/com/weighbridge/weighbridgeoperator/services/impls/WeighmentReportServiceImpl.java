@@ -41,8 +41,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
     private TransactionLogRepository transactionLogRepository;
 
     @Override
-    public Map<String, List<WeighmentReportResponse>> generateWeighmentReport() {
-
+    public Map<String, Map<String, List<WeighmentReportResponse>>> generateWeighmentReport() {
         List<GateEntryTransactionResponse> gateEntryTransactionResponseList = gateEntryTransactionService.getAllGateEntryTransaction();
         List<WeighmentReportResponse> weighmentReportResponses = new ArrayList<>();
 
@@ -69,11 +68,13 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
             }
         }
 
-        // Grouping WeighmentReportResponse objects by supplier
-        Map<String, List<WeighmentReportResponse>> groupedBySupplier = weighmentReportResponses.stream()
-                .collect(Collectors.groupingBy(WeighmentReportResponse::getSupplier));
+        // Grouping WeighmentReportResponse objects first by material name, then by supplier
+        Map<String, Map<String, List<WeighmentReportResponse>>> groupedByMaterialAndSupplier = weighmentReportResponses.stream()
+                .collect(Collectors.groupingBy(WeighmentReportResponse::getMaterialName, // First level grouping by material name
+                        Collectors.groupingBy(WeighmentReportResponse::getSupplier))); // Second level grouping by supplier
 
-        return groupedBySupplier;
+        return groupedByMaterialAndSupplier;
     }
+
 
 }
