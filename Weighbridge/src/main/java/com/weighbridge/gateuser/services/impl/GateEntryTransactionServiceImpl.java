@@ -1,8 +1,6 @@
 package com.weighbridge.gateuser.services.impl;
-import com.weighbridge.admin.entities.*;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.repsitories.*;
-import com.weighbridge.gateuser.dtos.GateEntryTransactionDto;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
@@ -134,6 +132,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             //assigin to gateentrytransaction master table
             GateEntryTransaction gateEntryTransaction = new GateEntryTransaction();
             gateEntryTransaction.setTransactionDate(LocalDate.now());
+            gateEntryTransaction.setChallanDate(gateEntryTransactionRequest.getChallanDate());
             gateEntryTransaction.setCompanyId(userCompany);
             gateEntryTransaction.setTransporterId(transporterId);
             gateEntryTransaction.setVehicleId(vehicleId);
@@ -286,7 +285,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
                 // Check the transaction type and set the appropriate entity
                 if ("Inbound".equals(transaction.getTransactionType())) {
-                    Object[] supplierNameBySupplierId = supplierMasterRepository.findSupplierNameBySupplierId(transaction.getSupplierId());
+                    Object[] supplierNameBySupplierId = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(transaction.getSupplierId());
                     // Inbound transaction
                     Object[] supplierInfo = (Object[]) supplierNameBySupplierId[0];
                     if (supplierInfo != null && supplierInfo.length >= 2) {
@@ -296,7 +295,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                         response.setSupplierAddress(supplierAddress);
                     }
                 } else if ("Outbound".equals(transaction.getTransactionType())) {
-                    Object[] customerNameByCustomerId = customerMasterRepository.findCustomerNameBycustomerId(transaction.getCustomerId());
+                    Object[] customerNameByCustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(transaction.getCustomerId());
 
                     // Outbound transaction
                     Object[] customerInfo = (Object[]) customerNameByCustomerId[0];
@@ -339,6 +338,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 response.setTpNo(transaction.getTpNo());
                 response.setTpNetWeight(transaction.getSupplyConsignmentWeight());
                 response.setTransporter(transporterName);
+                response.setChallanDate(transaction.getChallanDate());
+                response.setTransactionDate(transaction.getTransactionDate());
                 responseList.add(response);
             }
             return responseList;

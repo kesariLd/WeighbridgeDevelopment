@@ -2,6 +2,7 @@ package com.weighbridge.gateuser.payloads;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -21,12 +22,13 @@ public class GateEntryTransactionResponse {
     private String supplierAddress;
     private String customer;
     private String customerAddress;
-    
     private String material;
     private String materialType;
     private Double tpNetWeight;
     private String poNo;
     private String tpNo;
     private String challanNo;
+    private LocalDate transactionDate;
+    private LocalDate challanDate;
     private String transactionType;
 }

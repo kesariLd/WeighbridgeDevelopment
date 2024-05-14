@@ -22,7 +22,7 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
     List<String> findCustomerAddressByCustomerName(@Param("customerName") String customerName);
 
     @Query("SELECT c.customerName,c.customerAddressLine1 from CustomerMaster c where c.customerId =:customerId")
-    Object[] findCustomerNameBycustomerId(@Param("customerId") long customerId);
+    Object[] findCustomerNameAndAddressBycustomerId(@Param("customerId") long customerId);
 
 
 

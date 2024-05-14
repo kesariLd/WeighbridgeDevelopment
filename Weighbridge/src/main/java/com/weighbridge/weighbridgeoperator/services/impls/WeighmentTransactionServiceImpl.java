@@ -1,16 +1,11 @@
 package com.weighbridge.weighbridgeoperator.services.impls;
 
-import com.weighbridge.SalesManagement.entities.SalesOrder;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
-import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
-import com.weighbridge.admin.repsitories.MaterialMasterRepository;
-import com.weighbridge.admin.repsitories.SupplierMasterRepository;
-import com.weighbridge.admin.repsitories.TransporterMasterRepository;
-import com.weighbridge.admin.repsitories.VehicleMasterRepository;
+import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
@@ -35,7 +30,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,7 +66,9 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
     private SalesProcessRepository salesProcessRepository;
 
     @Autowired
+    private CustomerMasterRepository customerMasterRepository;
     private SalesOrderRespository salesOrderRespository;
+
 
     @Override
     public String saveWeight(WeighmentRequest weighmentRequest) {
@@ -269,15 +265,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             VehicleMaster vehicleMaster = vehicleMasterRepository.findById(gateEntryTransaction.getVehicleId()).orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
 
             ticketResponse.setVehicleNo(vehicleMaster.getVehicleNo());
-            Object[] supplierInfo = supplierMasterRepository.findSupplierNameBySupplierId(gateEntryTransaction.getSupplierId());
-            Object[] supplierData = (Object[]) supplierInfo[0];
-            if (supplierData != null && supplierData.length >= 2) {
-                String supplierName = (String) supplierData[0];
-                String supplierAddress = (String) supplierData[1];
-                System.out.println(supplierName + " " + supplierAddress);
-                ticketResponse.setSupplierName(supplierName);
-                ticketResponse.setSupplierAddress(supplierAddress);
-            }
+
             Optional<TransactionLog> byTicketNoGWT = Optional.ofNullable(transactionLogRepository.findByTicketNoAndStatusCode(ticketNo, "GWT"));
             Optional<TransactionLog> byTicketNoTWT = Optional.ofNullable(transactionLogRepository.findByTicketNoAndStatusCode(ticketNo, "TWT"));
 
@@ -293,9 +281,27 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                 if (transactionType.equalsIgnoreCase("Inbound")) {
                     ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
                     ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight());
+                    Object[] supplierInfo = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(gateEntryTransaction.getSupplierId());
+                    Object[] supplierData = (Object[]) supplierInfo[0];
+                    if (supplierData != null && supplierData.length >= 2) {
+                        String supplierName = (String) supplierData[0];
+                        String supplierAddress = (String) supplierData[1];
+                        System.out.println(supplierName + " " + supplierAddress);
+                        ticketResponse.setSupplierName(supplierName);
+                        ticketResponse.setSupplierAddress(supplierAddress);
+                    }
                 } else {
                     ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
                     ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight());
+                    Object[] customerInfo = customerMasterRepository.findCustomerNameAndAddressBycustomerId(gateEntryTransaction.getCustomerId());
+                    Object[] customerData = (Object[]) customerInfo[0];
+                    if (customerData != null && customerData.length >= 2) {
+                        String customerName = (String) customerData[0];
+                        String customerAddress = (String) customerData[1];
+                        System.out.println(customerName + " " + customerAddress);
+                        ticketResponse.setSupplierName(customerName);
+                        ticketResponse.setSupplierAddress(customerAddress);
+                    }
                 }
                 ticketResponse.setNetWeight(byGateEntryTransactionTicketNo.getGrossWeight() - byGateEntryTransactionTicketNo.getTareWeight());
             }
