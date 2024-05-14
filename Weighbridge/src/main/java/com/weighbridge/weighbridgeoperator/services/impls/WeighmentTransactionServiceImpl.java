@@ -88,12 +88,12 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
         else {
             throw new SessionExpiredException("Session Expired, Login again !");
         }
-        GateEntryTransaction byId = gateEntryTransactionRepository.findById(weighmentRequest.getTicketNo()).get();
-        WeighmentTransaction byTicketTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(weighmentRequest.getTicketNo());
+        GateEntryTransaction gateEntryId = gateEntryTransactionRepository.findById(weighmentRequest.getTicketNo()).get();
+        WeighmentTransaction weighmentTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(weighmentRequest.getTicketNo());
         VehicleTransactionStatus byTicketNo = vehicleTransactionStatusRepository.findByTicketNo(weighmentRequest.getTicketNo());
-        if(byTicketTicketNo==null){
+        if(weighmentTicketNo ==null){
             WeighmentTransaction weighmentTransaction=new WeighmentTransaction();
-            weighmentTransaction.setGateEntryTransaction(byId);
+            weighmentTransaction.setGateEntryTransaction(gateEntryId);
             weighmentTransaction.setMachineId(weighmentRequest.getMachineId());
             weighmentTransaction.setTemporaryWeight(weighmentRequest.getWeight());
             weighmentTransactionRepository.save(weighmentTransaction);
@@ -104,7 +104,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             transactionLog.setTicketNo(weighmentRequest.getTicketNo());
             transactionLog.setTimestamp(LocalDateTime.now());
 
-            if(byId.getTransactionType().equalsIgnoreCase("Inbound")) {
+            if(gateEntryId.getTransactionType().equalsIgnoreCase("Inbound")) {
                 byTicketNo.setStatusCode("GWT");
                 transactionLog.setStatusCode("GWT");
             }
@@ -118,27 +118,27 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
         }
         else {
             //History save with vehicle intime and vehicle out time
-            if(byId.getTransactionType().equalsIgnoreCase("Inbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("TWT")){
+            if(gateEntryId.getTransactionType().equalsIgnoreCase("Inbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("TWT")){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tare Weight already saved.");
             }
 
-            if(byId.getTransactionType().equalsIgnoreCase("Outbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("GWT")){
+            if(gateEntryId.getTransactionType().equalsIgnoreCase("Outbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("GWT")){
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Gross Weight already saved.");
             }
             
-            double temporaryWeight = byTicketTicketNo.getTemporaryWeight();
+            double temporaryWeight = weighmentTicketNo.getTemporaryWeight();
             if (temporaryWeight>weighmentRequest.getWeight()){
-                byTicketTicketNo.setGrossWeight(temporaryWeight);
-                byTicketTicketNo.setTareWeight(weighmentRequest.getWeight());
+                weighmentTicketNo.setGrossWeight(temporaryWeight);
+                weighmentTicketNo.setTareWeight(weighmentRequest.getWeight());
             }
             else{
-               byTicketTicketNo.setTareWeight(temporaryWeight);
-               byTicketTicketNo.setGrossWeight(weighmentRequest.getWeight());
+               weighmentTicketNo.setTareWeight(temporaryWeight);
+               weighmentTicketNo.setGrossWeight(weighmentRequest.getWeight());
             }
             double netWeight = Math.abs(temporaryWeight - weighmentRequest.getWeight());
-            byTicketTicketNo.setNetWeight(netWeight);
+            weighmentTicketNo.setNetWeight(netWeight);
 
-            weighmentTransactionRepository.save(byTicketTicketNo);
+            weighmentTransactionRepository.save(weighmentTicketNo);
             TransactionLog transactionLog = new TransactionLog();
             transactionLog.setUserId(userId);
             transactionLog.setTicketNo(weighmentRequest.getTicketNo());
@@ -146,7 +146,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
 
 
             //Vehiclestatus details
-            if(byId.getTransactionType().equalsIgnoreCase("Outbound")) {
+            if(gateEntryId.getTransactionType().equalsIgnoreCase("Outbound")) {
                 byTicketNo.setStatusCode("GWT");
                 transactionLog.setStatusCode("GWT");
             }
@@ -157,10 +157,10 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             vehicleTransactionStatusRepository.save(byTicketNo);
             transactionLogRepository.save(transactionLog);
 
-           if(byId.getTransactionType().equalsIgnoreCase("Outbound")){
-               byId.setSupplyConsignmentWeight(netWeight);
-               gateEntryTransactionRepository.save(byId);
-               SalesProcess byPurchasePassNo = salesProcessRepository.findByPurchasePassNo(byId.getTpNo());
+           if(gateEntryId.getTransactionType().equalsIgnoreCase("Outbound")){
+               gateEntryId.setSupplyConsignmentWeight(netWeight);
+               gateEntryTransactionRepository.save(gateEntryId);
+               SalesProcess byPurchasePassNo = salesProcessRepository.findByPurchasePassNo(gateEntryId.getTpNo());
                byPurchasePassNo.setNetWeight(netWeight);
                salesProcessRepository.save(byPurchasePassNo);
                String purchaseOrderNo = byPurchasePassNo.getPurchaseSale().getPurchaseOrderNo();

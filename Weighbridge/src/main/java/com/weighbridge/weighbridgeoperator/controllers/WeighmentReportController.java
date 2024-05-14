@@ -3,12 +3,10 @@ package com.weighbridge.weighbridgeoperator.controllers;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentReportResponse;
 import com.weighbridge.weighbridgeoperator.services.WeighmentReportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -21,8 +19,10 @@ public class WeighmentReportController {
 
     @Autowired
     private WeighmentReportService weighmentReportService;
-    @GetMapping("/report/{startDate}/{endDate}")
-    public ResponseEntity< Map<String, Map<String, List<WeighmentReportResponse>>>> generateWeighmentReport(@PathVariable LocalDate startDate,LocalDate endDate) {
+    @GetMapping("/report")
+    public ResponseEntity< Map<String, Map<String, List<WeighmentReportResponse>>>> generateWeighmentReport(@RequestParam(required = false) LocalDate startDate,
+                                                                                                            @RequestParam(required = false) LocalDate endDate) {
+        System.out.println("startDate" +startDate+"endDate "+endDate);
         Map<String, Map<String, List<WeighmentReportResponse>>> report = weighmentReportService.generateWeighmentReport(startDate,endDate);
         return ResponseEntity.ok(report);
     }
