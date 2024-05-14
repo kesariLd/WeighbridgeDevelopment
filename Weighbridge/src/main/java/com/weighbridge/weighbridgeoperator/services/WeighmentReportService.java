@@ -7,5 +7,5 @@ import java.util.Map;
 
 public interface WeighmentReportService {
 
-    public Map<String, List<WeighmentReportResponse>> generateWeighmentReport();
+    public Map<String, Map<String, List<WeighmentReportResponse>>> generateWeighmentReport();
 }

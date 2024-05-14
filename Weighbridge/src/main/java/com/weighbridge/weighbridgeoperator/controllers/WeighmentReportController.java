@@ -20,8 +20,8 @@ public class WeighmentReportController {
     @Autowired
     private WeighmentReportService weighmentReportService;
     @GetMapping("/report")
-    public ResponseEntity<Map<String, List<WeighmentReportResponse>>> generateWeighmentReport() {
-        Map<String, List<WeighmentReportResponse>> report = weighmentReportService.generateWeighmentReport();
+    public ResponseEntity< Map<String, Map<String, List<WeighmentReportResponse>>>> generateWeighmentReport() {
+        Map<String, Map<String, List<WeighmentReportResponse>>> report = weighmentReportService.generateWeighmentReport();
         return ResponseEntity.ok(report);
     }
 }
