@@ -2,6 +2,7 @@ package com.weighbridge.gateuser.payloads;
 
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 /**
@@ -30,4 +31,5 @@ public class GateEntryTransactionRequest {
     private String challanNo;
     private String ewayBillNo;
     private String tranasactionType;
+    private LocalDate challanDate;
 }

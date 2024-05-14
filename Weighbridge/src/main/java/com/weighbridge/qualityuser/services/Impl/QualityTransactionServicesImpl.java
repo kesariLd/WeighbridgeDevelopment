@@ -215,10 +215,10 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         qualityDetailsResponse.setTransactionType(gateEntryTransaction.getTransactionType());
 
         if ("Inbound".equals(gateEntryTransaction.getTransactionType())) {
-            Object[] supplierInfo = supplierMasterRepository.findSupplierNameBySupplierId(gateEntryTransaction.getSupplierId());
+            Object[] supplierInfo = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(gateEntryTransaction.getSupplierId());
             setSupplierOrCustomerInfo(qualityDetailsResponse, supplierInfo);
         } else if ("Outbound".equals(gateEntryTransaction.getTransactionType())) {
-            Object[] customerInfo = customerMasterRepository.findCustomerNameBycustomerId(ticketNo);
+            Object[] customerInfo = customerMasterRepository.findCustomerNameAndAddressBycustomerId(ticketNo);
             setSupplierOrCustomerInfo(qualityDetailsResponse, customerInfo);
         }
 

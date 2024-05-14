@@ -1,14 +1,12 @@
 package com.weighbridge.admin.repsitories;
 
 import com.weighbridge.admin.entities.SupplierMaster;
-import com.weighbridge.gateuser.entities.GateEntryTransaction;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,Long> {
 
@@ -21,7 +19,7 @@ public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,L
     Long findSupplierIdBySupplierName(@Param("supplierName") String supplierName);
 
     @Query("SELECT s.supplierName,s.supplierAddressLine1 from SupplierMaster s where s.supplierId =:supplierId")
-    Object[] findSupplierNameBySupplierId(@Param("supplierId") long supplierId);
+    Object[] findSupplierNameAndAddressBySupplierId(@Param("supplierId") long supplierId);
 
     @Query("SELECT s.supplierAddressLine1,s.supplierAddressLine2 from SupplierMaster s where s.supplierName =:supplierName")
     List<String> findSupplierAddressBySupplierName(@Param("supplierName") String supplierName);
