@@ -1,5 +1,6 @@
 package com.weighbridge.admin.services.impls;
 
+import com.weighbridge.admin.dtos.TransporterDto;
 import com.weighbridge.admin.payloads.TransporterRequest;
 import com.weighbridge.admin.repsitories.TransporterMasterRepository;
 import com.weighbridge.admin.services.TransporterService;
@@ -15,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TransporterServiceImpl implements TransporterService {
@@ -61,12 +63,18 @@ public class TransporterServiceImpl implements TransporterService {
     }
 
     @Override
-    public List<String> getAllTransporter() {
+    public List<String> getAllTransporterNames() {
         List<TransporterMaster> all = transporterMasterRepository.findAll();
         List<String> str=new ArrayList<>();
         for(TransporterMaster transporterMaster:all){
             str.add(transporterMaster.getTransporterName());
         }
         return str;
+    }
+
+    @Override
+    public List<TransporterDto> getAllTransporter() {
+        List<TransporterMaster> transporterMasters = transporterMasterRepository.findAll();
+        return transporterMasters.stream().map(transporterMaster -> modelMapper.map(transporterMaster, TransporterDto.class)).collect(Collectors.toList());
     }
 }

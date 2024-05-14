@@ -116,7 +116,7 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
 
     @Override
     public List<CompanyDto> getAllCompany() {
-        List<CompanyMaster> companies = companyMasterRepository.findAll();
+        List<CompanyMaster> companies = companyMasterRepository.findByCompanyIdNot("all");
         return companies.stream().map(company -> modelMapper.map(company, CompanyDto.class)).collect(Collectors.toList());
     }
 

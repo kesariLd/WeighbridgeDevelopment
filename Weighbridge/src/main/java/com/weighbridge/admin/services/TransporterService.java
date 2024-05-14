@@ -1,5 +1,6 @@
 package com.weighbridge.admin.services;
 
+import com.weighbridge.admin.dtos.TransporterDto;
 import com.weighbridge.admin.payloads.TransporterRequest;
 
 import java.util.List;
@@ -20,5 +21,7 @@ public interface TransporterService {
      * Get all transporters
      * @return List of Strings containing all transporters
      */
-    public List<String> getAllTransporter();
+    public List<String> getAllTransporterNames();
+
+    List<TransporterDto> getAllTransporter();
 }

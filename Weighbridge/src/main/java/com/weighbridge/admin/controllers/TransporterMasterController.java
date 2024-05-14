@@ -1,5 +1,6 @@
 package com.weighbridge.admin.controllers;
 
+import com.weighbridge.admin.dtos.TransporterDto;
 import com.weighbridge.admin.payloads.TransporterRequest;
 import com.weighbridge.admin.services.TransporterService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,13 @@ public class TransporterMasterController {
      */
     @GetMapping()
     public ResponseEntity<List<String>> getAllTransporterName(){
-        List<String> allTransporter = transporterService.getAllTransporter();
+        List<String> allTransporter = transporterService.getAllTransporterNames();
         return ResponseEntity.ok(allTransporter);
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<List<TransporterDto>> getAllTransporter() {
+        List<TransporterDto> transporterDtos = transporterService.getAllTransporter();
+        return ResponseEntity.ok(transporterDtos);
     }
 }

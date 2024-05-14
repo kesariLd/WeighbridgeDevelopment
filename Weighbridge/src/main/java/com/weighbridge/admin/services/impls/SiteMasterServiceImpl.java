@@ -94,7 +94,7 @@ public class SiteMasterServiceImpl implements SiteMasterService {
                     newSite.setSiteModifiedBy(userId);
                     newSite.setSiteModifiedDate(currentDateTime);
                     siteMasterRepository.save(newSite);
-                    return "Site(s) assigned to company successfully";
+                    return "Site assigned to company successfully";
                 }
             }
             else{
