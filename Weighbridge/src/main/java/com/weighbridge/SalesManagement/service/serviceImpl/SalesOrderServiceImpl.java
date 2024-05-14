@@ -3,6 +3,7 @@ package com.weighbridge.SalesManagement.service.serviceImpl;
 import com.weighbridge.SalesManagement.entities.SalesOrder;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
 import com.weighbridge.SalesManagement.payloads.SalesDashboardResponse;
+import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
 import com.weighbridge.SalesManagement.payloads.SalesOrderRequest;
 import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
@@ -101,22 +102,53 @@ public class SalesOrderServiceImpl implements SalesOrderService {
     @Override
     public List<SalesDashboardResponse> getAllSalesDetails() {
         List<SalesOrder> allSales = salesOrderRespository.findAll();
-        List<SalesDashboardResponse> list=new ArrayList<>();
-        for(SalesOrder salesOrder:allSales){
-            SalesDashboardResponse salesDashboardResponse=new SalesDashboardResponse();
-            salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
-            salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
-            salesDashboardResponse.setCustomerName(salesOrder.getCustomerName());
-            salesDashboardResponse.setSaleOrderNo(salesOrder.getSaleOrderNo());
-            salesDashboardResponse.setProductName(salesOrder.getProductName());
-            salesDashboardResponse.setBrokerName(salesOrder.getBrokerName());
-            SalesProcess byPurchaseSalePurchaseOrderNo = salesProcessRepository.findByPurchaseSalePurchaseOrderNo(salesOrder.getPurchaseOrderNo());
-            salesDashboardResponse.setPurchasePassNo(byPurchaseSalePurchaseOrderNo.getPurchasePassNo());
-            list.add(salesDashboardResponse);
+
+        List<SalesDashboardResponse> list = new ArrayList<>();
+
+        for(SalesOrder salesOrder : allSales) {
+            List<SalesProcess> byPurchaseSalePurchaseOrderNo = salesProcessRepository.findByPurchaseSalePurchaseOrderNo(salesOrder.getPurchaseOrderNo());
+            if(!byPurchaseSalePurchaseOrderNo.isEmpty()) {
+                for (SalesProcess salesProcess : byPurchaseSalePurchaseOrderNo) {
+                    SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
+                    salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
+                    salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
+                    salesDashboardResponse.setCustomerName(salesOrder.getCustomerName());
+                    salesDashboardResponse.setSaleOrderNo(salesOrder.getSaleOrderNo());
+                    salesDashboardResponse.setProductName(salesOrder.getProductName());
+                    salesDashboardResponse.setBrokerName(salesOrder.getBrokerName());
+                    // Assuming getPurchasePassNo() is a method of SalesProcess, not List<SalesProcess>
+                    salesDashboardResponse.setPurchasePassNo(salesProcess.getPurchasePassNo());
+                    list.add(salesDashboardResponse);
+                }
+            }
+            else {
+                SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
+                salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
+                salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
+                salesDashboardResponse.setCustomerName(salesOrder.getCustomerName());
+                salesDashboardResponse.setSaleOrderNo(salesOrder.getSaleOrderNo());
+                salesDashboardResponse.setProductName(salesOrder.getProductName());
+                salesDashboardResponse.setBrokerName(salesOrder.getBrokerName());
+                // Assuming getPurchasePassNo() is a method of SalesProcess, not List<SalesProcess>
+                salesDashboardResponse.setPurchasePassNo("-");
+                list.add(salesDashboardResponse);
+            }
         }
-        System.out.println(list);
         return list;
     }
+
+    /**
+     * @return
+     */
+    @Override
+    public SalesDetailResponse getSalesDetails(String purchaseOrderNo) {
+        SalesOrder byPurchaseOrderNo = salesOrderRespository.findByPurchaseOrderNo(purchaseOrderNo);
+        SalesDetailResponse salesDetailResponse=new SalesDetailResponse();
+        salesDetailResponse.setProductName(byPurchaseOrderNo.getProductName());
+        salesDetailResponse.setPurchaseOrderNo(byPurchaseOrderNo.getPurchaseOrderNo());
+        return salesDetailResponse;
+    }
+
 
     public String generatePurchaseOrderNo() {
         LocalDate currentDate = LocalDate.now();
@@ -133,5 +165,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
         return purchaseOrderId;
     }
+
+
 
 }

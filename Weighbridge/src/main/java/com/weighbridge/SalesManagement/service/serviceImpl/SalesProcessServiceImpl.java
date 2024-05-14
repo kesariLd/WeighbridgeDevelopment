@@ -2,6 +2,7 @@ package com.weighbridge.SalesManagement.service.serviceImpl;
 
 import com.weighbridge.SalesManagement.entities.SalesOrder;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
+import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
 import com.weighbridge.SalesManagement.payloads.SalesProcessRequest;
 import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
@@ -124,4 +125,6 @@ public class SalesProcessServiceImpl implements SalesProcessService {
         String purchasePassNo = purchaseOrderNo + "/" + incrementedNumber;
         return purchasePassNo;
     }
+
+
 }

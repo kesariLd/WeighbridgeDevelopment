@@ -1,6 +1,7 @@
 package com.weighbridge.SalesManagement.controller;
 
 import com.weighbridge.SalesManagement.payloads.SalesDashboardResponse;
+import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
 import com.weighbridge.SalesManagement.payloads.SalesOrderRequest;
 import com.weighbridge.SalesManagement.service.SalesOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,4 +30,9 @@ public class SalesOrderController {
         return ResponseEntity.ok(allSalesDetails);
     }
 
+    @GetMapping("/getPoDetails/{purchaseOrderNo}")
+    public ResponseEntity<SalesDetailResponse> getSalesDetail(@PathVariable String purchaseOrderNo){
+        SalesDetailResponse salesDetails = salesOrderService.getSalesDetails(purchaseOrderNo);
+        return ResponseEntity.ok(salesDetails);
+    }
 }

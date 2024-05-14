@@ -165,8 +165,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                salesProcessRepository.save(byPurchasePassNo);
                String purchaseOrderNo = byPurchasePassNo.getPurchaseSale().getPurchaseOrderNo();
                SalesOrder byPurchaseOrderNo = salesOrderRespository.findByPurchaseOrderNo(purchaseOrderNo);
-               double progressiveQty = byPurchaseOrderNo.getProgressiveQuantity() + netWeight;
-               double balanceQty=byPurchaseOrderNo.getBalanceQuantity()-progressiveQty;
+               double progressiveQty = byPurchaseOrderNo.getProgressiveQuantity() + netWeight/1000;
+               double balanceQty=byPurchaseOrderNo.getBalanceQuantity()-progressiveQty/1000;
                  byPurchaseOrderNo.setProgressiveQuantity(progressiveQty);
                  byPurchaseOrderNo.setBalanceQuantity(balanceQty);
                  salesOrderRespository.save(byPurchaseOrderNo);
