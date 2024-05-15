@@ -1,6 +1,8 @@
 package com.weighbridge.qualityuser.services.Impl;
 
+import com.itextpdf.io.IOException;
 import com.itextpdf.io.source.ByteArrayOutputStream;
+import com.lowagie.text.DocumentException;
 import com.weighbridge.admin.entities.*;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
 import com.weighbridge.admin.repsitories.*;
@@ -105,27 +107,27 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                         qualityDashboardResponse.setTransactionType(transaction.getTransactionType());
 
                         SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(transaction.getSupplierId());
-                        if(supplierMaster != null) {
+                        if (supplierMaster != null) {
                             qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
                             qualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
                         }
 
                         MaterialMaster materialMaster = materialMasterRepository.findById(transaction.getMaterialId())
                                 .orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
-                        if(materialMaster!= null) {
+                        if (materialMaster != null) {
                             qualityDashboardResponse.setMaterialName(materialMaster.getMaterialName());
                             qualityDashboardResponse.setMaterialType(transaction.getMaterialType());
                         }
 
                         TransporterMaster transporterMaster = transporterMasterRepository.findById(transaction.getTransporterId())
                                 .orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
-                        if(transporterMaster != null) {
+                        if (transporterMaster != null) {
                             qualityDashboardResponse.setTransporterName(transporterMaster.getTransporterName());
                         }
 
                         VehicleMaster vehicleMaster = vehicleMasterRepository.findById(transaction.getVehicleId())
                                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
-                        if(vehicleMaster != null) {
+                        if (vehicleMaster != null) {
                             qualityDashboardResponse.setVehicleNo(vehicleMaster.getVehicleNo());
                         }
 
@@ -141,7 +143,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
         return qualityDashboardResponses;
     }
-
 
     @Override
     public String createQualityTransaction(Integer ticketNo, QualityRequest qualityRequest) {
@@ -171,8 +172,13 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             qualityTransaction.setAsh(qualityRequest.getAsh());
             qualityTransaction.setLoi(qualityRequest.getLoi());
             qualityTransaction.setFe_t(qualityRequest.getFe_t());
-            qualityTransaction.setSize_03mm(qualityRequest.getSize_03mm());
-            qualityTransaction.setSize_20mm(qualityRequest.getSize_20mm());
+            qualityTransaction.setCarbon(qualityRequest.getCarbon());
+            qualityTransaction.setFe_m(qualityRequest.getFe_m());
+            qualityTransaction.setMtz(qualityRequest.getMtz());
+            qualityTransaction.setSize(qualityRequest.getSize());
+            qualityTransaction.setSulphur(qualityRequest.getSulphur());
+            qualityTransaction.setNon_mag(qualityRequest.getNon_mag());
+
             qualityTransaction.setGateEntryTransaction(gateEntryTransactionOptional.get());
             QualityTransaction savedQualityTransaction = qualityTransactioRepository.save(qualityTransaction);
 
@@ -284,10 +290,10 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 parameter.setParameterValue(qualityTransaction.getFc());
                 break;
             case "size_20mm":
-                parameter.setParameterValue(qualityTransaction.getSize_20mm());
+                parameter.setParameterValue(qualityTransaction.getSize());
                 break;
             case "size_03mm":
-                parameter.setParameterValue(qualityTransaction.getSize_03mm());
+                parameter.setParameterValue(qualityTransaction.getSize());
                 break;
             case "fe_t":
                 parameter.setParameterValue(qualityTransaction.getFe_t());
@@ -301,8 +307,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
     }
 
-
-//Generate report for quality check
+    //Generate report for quality check
 
     @Override
     public ReportResponse getReportResponse(Integer ticketNo) {
@@ -318,7 +323,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                     orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
             reportResponse.setVehicleNo(vehicleMaster.getVehicleNo());
 
-            CompanyMaster companyMaster=companyMasterRepository.findById(gateEntryTransaction.getCompanyId())
+            CompanyMaster companyMaster = companyMasterRepository.findById(gateEntryTransaction.getCompanyId())
                     .orElseThrow(() -> new ResourceNotFoundException("Company is not found"));
             reportResponse.setCompanyName(companyMaster.getCompanyName());
             reportResponse.setCompanyAddress(companyMaster.getCompanyAddress());
@@ -331,7 +336,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             SupplierMaster supplierMaster = supplierMasterRepository.findById(gateEntryTransaction.getSupplierId())
                     .orElseThrow(() -> new ResourceNotFoundException("Supplier is not found"));
             reportResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
-
+            reportResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
 
             QualityTransaction qualityTransaction = qualityTransactioRepository.findByTicketNo(ticketNo);
             if (qualityTransaction != null) {
@@ -341,111 +346,117 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 reportResponse.setAsh(qualityTransaction.getAsh());
                 reportResponse.setLoi(qualityTransaction.getLoi());
                 reportResponse.setFe_t(qualityTransaction.getFe_t());
-                reportResponse.setSize_03mm(qualityTransaction.getSize_03mm());
-                reportResponse.setSize_20mm(qualityTransaction.getSize_20mm());
-
+                reportResponse.setSize(qualityTransaction.getSize());
+                reportResponse.setCarbon(qualityTransaction.getCarbon());
+                reportResponse.setFe_m(qualityTransaction.getFe_m());
+                reportResponse.setMtz(qualityTransaction.getMtz());
+                reportResponse.setSulphur(qualityTransaction.getSulphur());
+                reportResponse.setNon_mag(qualityTransaction.getNon_mag());
                 return reportResponse; // Return here
             }
         }
-
         throw new ResourceNotFoundException("Quality transaction not found for ticketNo: " + ticketNo);
-    }
-
-    public byte[] generateQualityReport(ReportResponse reportResponse) {
-        // Generate the quality report based on the ReportRequest data
-        byte[] reportBytes = generatePDFReport(reportResponse);
-        return reportBytes;
-    }
-
-    private byte[] generatePDFReport(ReportResponse reportResponse) {
-
-        // Create a StringBuilder to hold the PDF content
-        StringBuilder pdfContent = new StringBuilder();
-
-        pdfContent.append("<form style=\"background-color: #f2f2f2;\">");
-
-        pdfContent.append("<h1 style=\"text-align: center;\">").append(reportResponse.getCompanyName()).append("</h1>");
-
-//Add a line break (optional, adjust spacing as needed)
-        //pdfContent.append("<br/>");
-
-//Add the company address as a centered sub-header
-        pdfContent.append("<h3 style=\"text-align: center; margin-bottom:20px;\">").append(reportResponse.getCompanyAddress())
-                .append("</h3>");
-
-        // Start the table
-        pdfContent.append("<table>");
-
-        // Header row for the table
-        pdfContent.append("<th>");
-        pdfContent.append("<tr>Ticket No:</tr>");
-        pdfContent.append("<tr>Date:</tr>");
-        pdfContent.append("<tr>Vehicle No:</tr>");
-        pdfContent.append("<tr>Material/Product:</tr>");
-        pdfContent.append("<tr>Material/Product Type:</tr>");
-        pdfContent.append("<tr>Supplier/Customer Name:</tr>");
-        pdfContent.append("<tr>Transaction Type:</tr>");
-        pdfContent.append("</th>");
-
-        // Append the report details from the ReportResponse object
-        pdfContent.append("<td>");
-        pdfContent.append("<tr>").append(reportResponse.getTicketNo()).append("</tr>");
-        pdfContent.append("<tr>").append(reportResponse.getDate()).append("</tr>");
-        pdfContent.append("<tr>").append(reportResponse.getVehicleNo()).append("</tr>");
-        pdfContent.append("<tr>").append(reportResponse.getMaterialOrProduct()).append("</tr>");
-        pdfContent.append("<tr>").append(reportResponse.getMaterialTypeOrProductType()).append("</tr>");
-        pdfContent.append("<tr>").append(reportResponse.getSupplierOrCustomerName()).append("</tr>");
-        pdfContent.append("<tr>").append(reportResponse.getTransactionType()).append("</tr>");
-        pdfContent.append("</td>");
-
-        // Close the table
-        pdfContent.append("</table>");
-
-
-        pdfContent.append("<h4 style=\"text-align: center;\">").append(reportResponse.getMaterialOrProduct() + " TestReport")
-                .append("</h4>");
-
-
-//       // Start the second table for quality details
-        pdfContent.append("<table style=\"text-align: center; margin: 0 auto; width:100%;border: 1px solid black; border-collapse: collapse;\">"); // Center the entire table
-
-        // Header row for quality details
-        pdfContent.append("<tr>");
-        pdfContent.append("<th style=\"border: 1px solid black; background-color: #e0e0e0; font-weight: bold;\">Moisture </th>"); // Style for headers
-        pdfContent.append("<th style=\"border: 1px solid black; background-color: #e0e0e0; font-weight: bold;\">VM </th>");
-        pdfContent.append("<th style=\"border: 1px solid black; background-color: #e0e0e0; font-weight: bold;\">Ash </th>");
-        pdfContent.append("<th style=\"border: 1px solid black; background-color: #e0e0e0; font-weight: bold;\">FC </th>");
-        pdfContent.append("<th style=\"border: 1px solid black; background-color: #e0e0e0; font-weight: bold;\">Size20mm </th>");
-        pdfContent.append("<th style=\"border: 1px solid black; background-color: #e0e0e0; font-weight: bold;\">Size03mm </th>");
-        pdfContent.append("<th style=\"border: 1px solid black; background-color: #e0e0e0; font-weight: bold;\">Fe_t </th>");
-        pdfContent.append("<th style=\"border: 1px solid black; background-color: #e0e0e0; font-weight: bold;\">LOI </th>");
-        pdfContent.append("</tr>");
-
-
-        // Row for quality details
-        pdfContent.append("<tr>");
-        pdfContent.append("<td style=\"border: 1px solid black;\">").append(reportResponse.getMoisture()).append("</td>"); // Remove inline styles
-        pdfContent.append("<td style=\"border: 1px solid black;\">").append(reportResponse.getVm()).append("</td>");
-        pdfContent.append("<td style=\"border: 1px solid black;\">").append(reportResponse.getAsh()).append("</td>");
-        pdfContent.append("<td style=\"border: 1px solid black;\">").append(reportResponse.getFc()).append("</td>");
-        pdfContent.append("<td style=\"border: 1px solid black;\">").append(reportResponse.getSize_20mm()).append("</td>");
-        pdfContent.append("<td style=\"border: 1px solid black;\">").append(reportResponse.getSize_03mm()).append("</td>");
-        pdfContent.append("<td style=\"border: 1px solid black;\">").append(reportResponse.getFe_t()).append("</td>");
-        pdfContent.append("<td style=\"border: 1px solid black;\">").append(reportResponse.getLoi()).append("</td>");
-        pdfContent.append("</tr>");
-
-        // Close the table for quality details
-        pdfContent.append("</table>");
-        pdfContent.append("</form>");
-
-        ITextRenderer renderer = new ITextRenderer();
-        renderer.setDocumentFromString(pdfContent.toString());
-        renderer.layout();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        renderer.createPDF(outputStream);
-        return outputStream.toByteArray();
     }
 }
 
 
+//    public byte[] generateQualityReport(ReportResponse reportResponse) {
+//        // Generate the quality report based on the ReportRequest data
+//        byte[] reportBytes = generatePDFReport(reportResponse);
+//        return reportBytes;
+//    }
+
+    /**
+     * Generates a PDF report based on the given ReportResponse object.
+     * <p>
+     * This method constructs an HTML string representing the report,
+     * converts it into a PDF using the iTextRenderer library,
+     * and returns the resulting PDF as a byte array.
+     *
+     * @param reportResponse The ReportResponse object containing the data for the report.
+     * @return A byte array containing the generated PDF.
+     * @throws DocumentException if there is an error during PDF creation.
+     * @throws IOException       if there is an IO error during PDF creation.
+     */
+//    private byte[] generatePDFReport(ReportResponse reportResponse) {
+//
+//        // Create a StringBuilder to hold the PDF content
+//        StringBuilder pdfContent = new StringBuilder();
+//
+//        pdfContent.append("<form style=\"background-color: #f2f2f2;\">");
+//
+//        pdfContent.append("<h1 style=\"text-align: center;\">").append(reportResponse.getCompanyName()).append("</h1>");
+//
+////Add a line break (optional, adjust spacing as needed)
+//        // pdfContent.append("<br/>");
+//
+////Add the company address as a centered sub-header
+//        pdfContent.append("<h3 style=\"text-align: center; margin-bottom:15px;\">")
+//                .append(reportResponse.getCompanyAddress()).append("</h3>");
+//
+//        // Start the table
+//        pdfContent.append("<table>");
+//
+//        // Header row for the table
+//
+//        String[] headers1 = {"Ticket No:", "Date:", "Vehicle No:", "Material/Product:", "Material/Product Type:",
+//                "Supplier/Customer Name:", "Transaction Type:"};
+//
+//        // Values array, converting all values to strings
+//        String[] values1 = {reportResponse.getTicketNo().toString(), reportResponse.getDate().toString(),
+//                reportResponse.getVehicleNo().toString(), reportResponse.getMaterialOrProduct().toString(),
+//                reportResponse.getMaterialTypeOrProductType().toString(),
+//                reportResponse.getSupplierOrCustomerName().toString(), reportResponse.getTransactionType().toString()};
+//
+//        // Iterate through headers and values to create rows
+//        for (int i = 0; i < headers1.length; i++) {
+//            pdfContent.append("<tr>");
+//            pdfContent.append("<th style=\"padding: 3px;  font-weight: bold; text-align: left;\">").append(headers1[i])
+//                    .append("</th>");
+//            pdfContent.append("<td >").append("<div>").append(values1[i]).append("</div>").append("</td>");
+//            pdfContent.append("</tr>");
+//        }
+//        // Close the table
+//        pdfContent.append("</table>");
+//
+//        pdfContent.append("<h4 style=\"text-align: center;\">")
+//                .append(reportResponse.getMaterialOrProduct() + " TestReport").append("</h4>");
+//
+//       // Start the second table for quality details
+//
+//		// Header row for quality details
+//
+//        pdfContent.append(
+//                "<table style=\"text-align: left; margin: 0 auto; width:80%;border: 1px solid black; border-collapse: collapse;\">"); // Center
+//        // the
+//        // entire
+//        // table
+//
+//        // Headers and values row by row
+//        String[] headers = {"Moisture", "VM", "Ash", "FC", "Size20mm", "Size03mm", "Fe_t", "LOI"};
+//        double[] values = {reportResponse.getMoisture(), reportResponse.getVm(), reportResponse.getAsh(),
+//                reportResponse.getFc(), reportResponse.getSize(), reportResponse.getSize(),
+//                reportResponse.getFe_t(), reportResponse.getLoi()};
+//
+//        for (int i = 0; i < headers.length; i++) {
+//            pdfContent.append("<tr>");
+//            pdfContent.append(
+//                            "<th style=\"border: 1px solid black;padding: 5px; background-color: #e0e0e0; font-weight: bold;\">")
+//                    .append(headers[i]).append("</th>");
+//            pdfContent.append("<td style=\"border: 1px solid black;\">").append(values[i]).append("</td>");
+//            pdfContent.append("</tr>");
+//        }
+//
+//        // Close the table
+//        pdfContent.append("</table>");
+//
+//        pdfContent.append("</form>");
+//
+//        ITextRenderer renderer = new ITextRenderer();
+//        renderer.setDocumentFromString(pdfContent.toString());
+//        renderer.layout();
+//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//        renderer.createPDF(outputStream);
+//        return outputStream.toByteArray();
+//    }
 

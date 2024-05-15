@@ -42,7 +42,7 @@ public interface QualityTransactionService {
      * @param reportResponse the ReportResponse object containing the report details
      * @return a byte array representing the generated quality report
      */
-    byte[] generateQualityReport(ReportResponse reportResponse);
+//    byte[] generateQualityReport(ReportResponse reportResponse);
 
     /**
      * Retrieves details for a quality transaction based on the given ticket number.

@@ -13,14 +13,21 @@ public class ReportResponse {
     private String materialOrProduct;
     private String materialTypeOrProductType;
     private String supplierOrCustomerName;
+    private String supplierOrCustomerAddress;
     private String transactionType;
 
-    private double moisture;
-    private double vm;
-    private double ash;
-    private double fc;
-    private double size_20mm;
-    private double size_03mm;
-    private double fe_t;
-    private double loi;
+    //for coal
+    private Double moisture;
+    private Double vm;
+    private Double ash;
+    private Double fc;
+    //for iron
+    private Double size;
+    private Double fe_m;
+    private Double fe_t;
+    private Double mtz;
+    private Double carbon;
+    private Double sulphur;
+    private Double non_mag;
+    private Double loi;
 }

@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller for handling quality transaction related operations.
@@ -63,22 +65,44 @@ public class QualityTransactionController {
      * @param ticketNo the ticket number for the quality report
      * @return a ResponseEntity containing the generated quality report as a byte array with
      */
-    @GetMapping("/generate-report/{ticketNo}")
-    public ResponseEntity<byte[]> generateQualityReport(@PathVariable Integer ticketNo) {
+
+    @GetMapping("/report-response/{ticketNo}")
+    public ResponseEntity<ReportResponse> checkReportResponse(@PathVariable Integer ticketNo) {
         ReportResponse reportResponse = qualityTransactionService.getReportResponse(ticketNo);
-        if (reportResponse != null) {
-            byte[] reportBytes = qualityTransactionService.generateQualityReport(reportResponse);
-            if (reportBytes != null) {
-                return ResponseEntity.ok()
-                        .header("Content-Disposition", "attachment; filename=quality_report.pdf")
-                        .body(reportBytes);
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        if (reportResponse == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+
+//        String productType= reportResponse.getMaterialTypeOrProductType();
+//        Map<String,Object> response=new HashMap<>();
+//        switch(productType.toLowerCase()){
+//            case "Coal":
+//                response.put("moisture",reportResponse.getMoisture());
+//                response.put("vm",reportResponse.getVm());
+//                response.put("ash",reportResponse.getVm());
+//                response.put("fc",reportResponse.getFc());
+//                break;
+//            case "Sponge Iron":
+//                response.put("size",reportResponse.getSize());
+//                response.put("fe(M)",reportResponse.getFe_m());
+//                response.put("fe(t)",reportResponse.getFe_t());
+//                response.put("mtz",reportResponse.getMtz());
+//                response.put("carbon",reportResponse.getCarbon());
+//                response.put("sulphur",reportResponse.getSulphur());
+//                response.put("Non-mag",reportResponse.getNon_mag());
+//                break;
+//            case "Iron":
+//                response.put("size",reportResponse.getSize());
+//                response.put("fe(t)",reportResponse.getFe_t());
+//                response.put("loi",reportResponse.getLoi());
+//                break;
+//            default:
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+//
+//        }
+        return ResponseEntity.ok(reportResponse);
     }
+
 
     /**
      * Rerieves a quality details for the given ticket number.

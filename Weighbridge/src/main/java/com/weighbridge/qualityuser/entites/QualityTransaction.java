@@ -55,12 +55,12 @@ public class QualityTransaction {
     /**
      * Size of the product in 20mm category.
      */
-    private Double size_20mm;
+    private Double size;
 
     /**
      * Size of the product in 0.3mm category.
      */
-    private Double size_03mm;
+    private Double fe_m;
 
     /**
      * Iron content of the product.
@@ -70,6 +70,10 @@ public class QualityTransaction {
     /**
      * Loss of Ignition of the product.
      */
+    private Double mtz;
+    private Double carbon;
+    private Double sulphur;
+    private Double non_mag;
     private Double loi;
 
     /**
