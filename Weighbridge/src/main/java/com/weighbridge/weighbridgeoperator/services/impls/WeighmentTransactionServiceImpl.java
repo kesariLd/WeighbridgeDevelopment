@@ -214,16 +214,29 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                         timestamp1 = byTicketNo2.getTimestamp();
                         resTimeStamp1 = timestamp1.withSecond(0).withNano(0);
                     }
-                    response.setWeighmentNo(String.valueOf(row[1]));
+                    String weighmentNo = row[1]!=null ? String.valueOf(row[1]):" ";
+                    response.setWeighmentNo(weighmentNo);
                     response.setTransactionType((String) row[2]);
                     response.setTransactionDate((LocalDate) row[3]);
                     response.setVehicleIn((LocalDateTime) row[4]);
                     if (((String) row[2]).equalsIgnoreCase("Inbound")) {
-                        response.setGrossWeight(String.valueOf(row[8]) + "/" + resTimeStamp);
-                        response.setTareWeight(row[6] + "/" + resTimeStamp1);
+                        if(row[8]!=null&&row[6]!=null) {
+                            response.setGrossWeight(String.valueOf(row[8]) + "/" + resTimeStamp);
+                            response.setTareWeight(row[6] + "/" + resTimeStamp1);
+                        }
+                        else{
+                            response.setGrossWeight("");
+                            response.setTareWeight("");
+                        }
                     } else {
-                        response.setTareWeight(String.valueOf(row[8]) + "/" + resTimeStamp1);
-                        response.setGrossWeight(row[5] + "/" + resTimeStamp);
+                        if(row[8]!=null&&row[5]!=null) {
+                            response.setTareWeight(String.valueOf(row[8]) + "/" + resTimeStamp1);
+                            response.setGrossWeight(row[5] + "/" + resTimeStamp);
+                        }
+                        else{
+                            response.setGrossWeight("");
+                            response.setTareWeight("");
+                        }
                     }
                     response.setNetWeight(String.valueOf(row[7] + "/" + resTimeStamp1));
                     response.setVehicleNo((String) row[9]);
