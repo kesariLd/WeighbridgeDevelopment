@@ -10,4 +10,6 @@ public interface SalesOrderRespository extends JpaRepository<SalesOrder,String> 
     SalesOrder findByPurchaseOrderNo(String purchaseOrderNo);
 
     Long countByPurchaseOrderNoStartingWith(String formattedDate);
+
+    SalesOrder findBySaleOrderNo(String s);
 }

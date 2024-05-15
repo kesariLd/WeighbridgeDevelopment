@@ -9,9 +9,13 @@ public interface SalesProcessRepository extends JpaRepository<SalesProcess,Strin
 
   //   Boolean existsByPurchasePassNo();
 
-     Long countByPurchaseSalePurchaseOrderNo(String purchaseOrderNo);
 
-    SalesProcess findByPurchasePassNo(String tpNo);
+
+
 
     List<SalesProcess> findByPurchaseSalePurchaseOrderNo(String purchaseOrderNo);
+
+    Long countByPurchaseSaleSaleOrderNo(String saleOrderNo);
+
+    SalesProcess findBySalePassNo(String tpNo);
 }

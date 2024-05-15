@@ -8,28 +8,23 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
 @Data
 public class SalesOrder {
     @Id
-    private String purchaseOrderNo;
-
-    @NotNull
-    private Date purchaseOrderedDate;
-
-    @NotNull
     private String saleOrderNo;
 
     @NotNull
-    private String customerName;
+    private LocalDate purchaseOrderedDate;
 
-    private String customerAddress;
+    @NotNull
+    private String purchaseOrderNo;
 
-    private String customerContact;
-
-    private String customerEmail;
+    @NotNull
+    private long customerId;
 
     @NotNull
     private String productName;

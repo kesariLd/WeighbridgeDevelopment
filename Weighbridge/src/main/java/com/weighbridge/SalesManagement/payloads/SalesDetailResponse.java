@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class SalesDetailResponse {
-    private String purchaseOrderNo;
+    private String saleOrderNo;
     private String productName;
 }

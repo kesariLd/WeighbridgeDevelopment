@@ -3,12 +3,13 @@ package com.weighbridge.SalesManagement.payloads;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
 public class SalesProcessRequest {
     @NotBlank
-    private String purchaseOrderNo;
+    private String saleOrderNo;
     private String productName;
     private String productType;
     @NotBlank
@@ -17,5 +18,6 @@ public class SalesProcessRequest {
     private String transporterName;
 
     @NotBlank
-    private Date purchaseProcessDate;
+    private LocalDate purchaseProcessDate;
+    private double consignmentWeight;
 }

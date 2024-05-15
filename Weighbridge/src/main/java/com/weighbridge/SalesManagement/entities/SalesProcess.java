@@ -6,20 +6,21 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
 @Data
 public class SalesProcess {
     @Id
-    private String purchasePassNo;
+    private String salePassNo;
     @ManyToOne
-    @JoinColumn(name = "purchase_order_no")
+    @JoinColumn(name = "sale_order_no")
     private SalesOrder purchaseSale;
     private String productName;
     private String productType;
     private String vehicleNo;
     private String transporterName;
-    private double netWeight;
-    private Date purchaseProcessDate;
+    private double consignmentWeight;
+    private LocalDate purchaseProcessDate;
 }

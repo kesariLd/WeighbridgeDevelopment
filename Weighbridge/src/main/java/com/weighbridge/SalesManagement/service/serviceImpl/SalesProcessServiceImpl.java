@@ -58,28 +58,29 @@ public class SalesProcessServiceImpl implements SalesProcessService {
             SalesProcess process = new SalesProcess();
             process.setPurchaseProcessDate(salesProcessRequest.getPurchaseProcessDate());
             process.setVehicleNo(salesProcessRequest.getVehicleNo());
+            process.setConsignmentWeight(salesProcessRequest.getConsignmentWeight());
           //  process.setNetWeight(salesProcessRequest.getNetWeight());
 
-        MaterialMaster byMaterialName = productMasterRepository.findByMaterialName(salesProcessRequest.getProductName());
+       /* MaterialMaster byMaterialName = productMasterRepository.findByMaterialName(salesProcessRequest.getProductName());
         Boolean material = materialTypeMasterRepository.existsByMaterialMasterMaterialId(byMaterialName.getMaterialId());
         if(!material){
             MaterialTypeMaster materialTypeMaster=new MaterialTypeMaster();
             materialTypeMaster.setMaterialTypeName(salesProcessRequest.getProductType());
             materialTypeMaster.setMaterialMaster(byMaterialName);
             materialTypeMasterRepository.save(materialTypeMaster);
-        }
-
+        }*/
             process.setProductName(salesProcessRequest.getProductName());
             process.setProductType(salesProcessRequest.getProductType());
-            SalesOrder byPurchaseOrderNo = salesOrderRespository.findByPurchaseOrderNo(String.valueOf(salesProcessRequest.getPurchaseOrderNo()));
-            process.setPurchaseSale(byPurchaseOrderNo);
+            SalesOrder bySaleOrderNo = salesOrderRespository.findBySaleOrderNo(String.valueOf(salesProcessRequest.getSaleOrderNo()));
+        System.out.println(bySaleOrderNo);
+            process.setPurchaseSale(bySaleOrderNo);
             process.setTransporterName(salesProcessRequest.getTransporterName());
-            process.setPurchasePassNo(generatePurchasePassNo(salesProcessRequest.getPurchaseOrderNo()));
-            process.setTransporterName(salesProcessRequest.getTransporterName());
+            process.setSalePassNo(generateSalePassNo(salesProcessRequest.getSaleOrderNo()));
             salesProcessRepository.save(process);
 
             //Add vehicle and transporter to VehicleMaster and TransporterMaster
-            TransporterMaster transporterMaster = transporterMasterRepository.findByTransporterName(salesProcessRequest.getTransporterName());
+
+ /*           TransporterMaster transporterMaster = transporterMasterRepository.findByTransporterName(salesProcessRequest.getTransporterName());
 //            Boolean vehicle = vehicleMasterRepository.existsByVehicleNO(salesProcessRequest.getVehicleNo());
             VehicleMaster vehicleMaster = vehicleMasterRepository.findByVehicleNo(salesProcessRequest.getVehicleNo());
             if (transporterMaster == null && vehicleMaster != null) {
@@ -111,18 +112,18 @@ public class SalesProcessServiceImpl implements SalesProcessService {
 
                 transporterMaster.setVehicles(vehicleMasterSet);
                 transporterMasterRepository.save(transporterMaster);
-            }
+            }*/
 
         return "Sales data added successfully";
     }
 
-    private String generatePurchasePassNo(String purchaseOrderNo) {
-        Long count = salesProcessRepository.countByPurchaseSalePurchaseOrderNo(purchaseOrderNo);
+    private String generateSalePassNo(String saleOrderNo) {
+        Long count = salesProcessRepository.countByPurchaseSaleSaleOrderNo(saleOrderNo);
 
         // Increment the count for the current purchase order and format it as a 2-digit string
         String incrementedNumber = String.format("%02d", count + 1);
 
-        String purchasePassNo = purchaseOrderNo + "/" + incrementedNumber;
-        return purchasePassNo;
+        String salePassNo = saleOrderNo + "/" + incrementedNumber;
+        return salePassNo;
     }
 }

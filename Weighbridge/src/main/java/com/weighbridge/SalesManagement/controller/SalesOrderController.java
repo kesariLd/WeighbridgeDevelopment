@@ -3,6 +3,7 @@ package com.weighbridge.SalesManagement.controller;
 import com.weighbridge.SalesManagement.payloads.SalesDashboardResponse;
 import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
 import com.weighbridge.SalesManagement.payloads.SalesOrderRequest;
+import com.weighbridge.SalesManagement.payloads.VehicleAndTransporterDetail;
 import com.weighbridge.SalesManagement.service.SalesOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -29,12 +30,16 @@ public class SalesOrderController {
         return ResponseEntity.ok(allSalesDetails);
     }
 
-    @GetMapping("/getPoDetails/{purchaseOrderNo}")
-    public ResponseEntity<SalesDetailResponse> getSalesDetail(@PathVariable String purchaseOrderNo){
-        SalesDetailResponse salesDetails = salesOrderService.getSalesDetails(purchaseOrderNo);
+    @GetMapping("/getPoDetails/{saleOrderNo}")
+    public ResponseEntity<SalesDetailResponse> getSalesDetail(@PathVariable String saleOrderNo){
+        SalesDetailResponse salesDetails = salesOrderService.getSalesDetails(saleOrderNo);
         return ResponseEntity.ok(salesDetails);
     }
 
-    
+    @GetMapping("/getVehicles/ByPurchasePassNo")
+    public ResponseEntity<List<VehicleAndTransporterDetail>> getVehiclesDetail(){
+        List<VehicleAndTransporterDetail> vehiclesAndTransporterDetails = salesOrderService.getVehiclesAndTransporterDetails();
+        return ResponseEntity.ok(vehiclesAndTransporterDetails);
+    }
 
 }

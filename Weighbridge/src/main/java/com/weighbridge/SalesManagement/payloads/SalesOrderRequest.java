@@ -3,13 +3,14 @@ package com.weighbridge.SalesManagement.payloads;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Data
 public class SalesOrderRequest {
 
     @NotBlank
-    private Date purchaseOrderedDate;
+    private LocalDate purchaseOrderedDate;
     @NotBlank
     private String purchaseOrderNo;
     @NotBlank
@@ -20,11 +21,6 @@ public class SalesOrderRequest {
 
     @NotBlank
     private String customerAddress;
-
-    private String customerContact;
-
-    private String customerEmail;
-
     @NotBlank
     private String productName;
 

@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SalesOrderServiceImpl implements SalesOrderService {
@@ -47,10 +48,10 @@ public class SalesOrderServiceImpl implements SalesOrderService {
      */
     @Override
     public String AddSalesDetails(SalesOrderRequest salesOrderRequest){
-        Boolean salesOrder1 = salesOrderRespository.existsBySaleOrderNo(salesOrderRequest.getSaleOrderNo());
+      /*  Boolean salesOrder1 = salesOrderRespository.existsBySaleOrderNo(salesOrderRequest.getSaleOrderNo());
         if(salesOrder1){
             throw new ResponseStatusException(HttpStatus.CONFLICT,"this salesNumber already exists");
-        }
+        }*/
         SalesOrder salesOrder=new SalesOrder();
         salesOrder.setPurchaseOrderNo(salesOrderRequest.getPurchaseOrderNo());
         salesOrder.setSaleOrderNo(salesOrderRequest.getSaleOrderNo());
@@ -59,7 +60,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         salesOrder.setBrokerName(salesOrderRequest.getBrokerName());
 
       //Added customer to CustomerMaster if customer doesnot exist
-       String address=salesOrderRequest.getCustomerAddress();
+        String address=salesOrderRequest.getCustomerAddress();
         String addressLine1=null;
         String addressLine2=null;
        if (address!=null) {
@@ -67,6 +68,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
            addressLine1=parts[0].trim();
            addressLine2=parts[1].trim();
        }
+       /*
         Boolean customer = customerMasterRepository.existsByCustomerNameAndCustomerAddressLine1AndCustomerAddressLine2(salesOrderRequest.getCustomerName(), addressLine1, addressLine2);
         if(!customer){
             CustomerMaster customerMaster=new CustomerMaster();
@@ -76,23 +78,20 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             customerMaster.setCustomerAddressLine1(addressLine1);
             customerMaster.setCustomerAddressLine2(addressLine2);
             customerMasterRepository.save(customerMaster);
-        }
-
-        salesOrder.setCustomerName(salesOrderRequest.getCustomerName());
-        salesOrder.setCustomerAddress(salesOrderRequest.getCustomerAddress());
-        salesOrder.setCustomerContact(salesOrderRequest.getCustomerContact());
-        salesOrder.setCustomerEmail(salesOrderRequest.getCustomerEmail());
+        }*/
+        Long customerIdByCustomerNameAndAddressLines = customerMasterRepository.findCustomerIdByCustomerNameAndAddressLines(salesOrderRequest.getCustomerName(), addressLine1, addressLine2);
+        salesOrder.setCustomerId(customerIdByCustomerNameAndAddressLines);
         salesOrder.setBrokerAddress(salesOrderRequest.getBrokerAddress());
 
 
         //Added material to material master if doesnot exist in MaterialMaster
-        boolean material = materialMasterRepository.existsByMaterialName(salesOrderRequest.getProductName());
+     /*   boolean material = materialMasterRepository.existsByMaterialName(salesOrderRequest.getProductName());
         if(!material){
             MaterialMaster materialMaster=new MaterialMaster();
             materialMaster.setMaterialName(salesOrderRequest.getProductName());
             materialMasterRepository.save(materialMaster);
         }
-
+*/
         salesOrder.setProductName(salesOrderRequest.getProductName());
        // salesOrder.setProgressiveQuantity(salesOrderRequest.getProgressiveQuantity());
         salesOrder.setBalanceQuantity(salesOrderRequest.getOrderedQuantity());
@@ -110,14 +109,16 @@ public class SalesOrderServiceImpl implements SalesOrderService {
                     SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
                     salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
                     salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
-                    salesDashboardResponse.setCustomerName(salesOrder.getCustomerName());
+                    CustomerMaster byId = customerMasterRepository.findById(salesOrder.getCustomerId()).get();
+                    salesDashboardResponse.setCustomerName(byId.getCustomerName());
                     salesDashboardResponse.setSaleOrderNo(salesOrder.getSaleOrderNo());
                     salesDashboardResponse.setProductName(salesOrder.getProductName());
                     salesDashboardResponse.setBrokerName(salesOrder.getBrokerName());
+                    salesDashboardResponse.setProgressiveQty(salesOrder.getProgressiveQuantity());
+                    salesDashboardResponse.setBalanceQty(salesOrder.getBalanceQuantity());
                     // Assuming getPurchasePassNo() is a method of SalesProcess, not List<SalesProcess>
                     list.add(salesDashboardResponse);
                 }
-
         return list;
     }
 
@@ -125,46 +126,28 @@ public class SalesOrderServiceImpl implements SalesOrderService {
      * @return
      */
     @Override
-    public SalesDetailResponse getSalesDetails(String purchaseOrderNo) {
-        SalesOrder byPurchaseOrderNo = salesOrderRespository.findByPurchaseOrderNo(purchaseOrderNo);
+    public SalesDetailResponse getSalesDetails(String saleOrderNo) {
+        SalesOrder byPurchaseOrderNo = salesOrderRespository.findBySaleOrderNo(saleOrderNo);
         SalesDetailResponse salesDetailResponse=new SalesDetailResponse();
         salesDetailResponse.setProductName(byPurchaseOrderNo.getProductName());
-        salesDetailResponse.setPurchaseOrderNo(byPurchaseOrderNo.getPurchaseOrderNo());
+        salesDetailResponse.setSaleOrderNo(byPurchaseOrderNo.getSaleOrderNo());
         return salesDetailResponse;
     }
+
 
     public List<VehicleAndTransporterDetail> getVehiclesAndTransporterDetails(){
         List<SalesProcess> allVehiclesDetails= salesProcessRepository.findAll();
         List<VehicleAndTransporterDetail> listOfVehicle=new ArrayList<>();
         for (SalesProcess salesProcess:allVehiclesDetails) {
             VehicleAndTransporterDetail vehicleAndTransporterDetail = new VehicleAndTransporterDetail();
-            vehicleAndTransporterDetail.setPurchasePassNo(salesProcess.getPurchasePassNo());
+            vehicleAndTransporterDetail.setSalePassNo(salesProcess.getSalePassNo());
             vehicleAndTransporterDetail.setTransporterName(salesProcess.getTransporterName());
             vehicleAndTransporterDetail.setVehicleNo(salesProcess.getVehicleNo());
             vehicleAndTransporterDetail.setProductName(salesProcess.getProductName());
             vehicleAndTransporterDetail.setProductType(salesProcess.getProductType());
-            SalesOrder byPurchaseOrderNo = salesOrderRespository.findByPurchaseOrderNo(salesProcess.getPurchaseSale().getPurchaseOrderNo());
-            vehicleAndTransporterDetail.setBalanceQty(byPurchaseOrderNo.getBalanceQuantity());
-            vehicleAndTransporterDetail.setProgressiveQty(byPurchaseOrderNo.getProgressiveQuantity());
+            vehicleAndTransporterDetail.setConsignmentWeight(salesProcess.getConsignmentWeight());
             listOfVehicle.add(vehicleAndTransporterDetail);
         }
         return listOfVehicle;
     }
-
-
-/*    public String generatePurchaseOrderNo() {
-        LocalDate currentDate = LocalDate.now();
-        String formattedDate = dateFormatter.format(currentDate);
-
-        // Assuming you have a method countByPurchaseNo in your repository or service
-        Long count=salesOrderRespository.countByPurchaseOrderNoStartingWith(formattedDate);
-
-        // Increment the count for the current day and format it as a 2-digit string
-        String incrementedNumber = String.format("%02d", count + 1);
-
-        // Combine the formatted date and incremented number to create the purchase pass number
-        String purchaseOrderId = formattedDate + incrementedNumber;
-
-        return purchaseOrderId;
-    }*/
 }

@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class WeighmentTransactionServiceImpl implements WeighmentTransactionService{
+public class WeighmentTransactionServiceImpl implements WeighmentTransactionService {
     @Autowired
     private WeighmentTransactionRepository weighmentTransactionRepository;
 
@@ -84,15 +84,14 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             userId = session.getAttribute("userId").toString();
             userSite = session.getAttribute("userSite").toString();
             userCompany = session.getAttribute("userCompany").toString();
-        }
-        else {
+        } else {
             throw new SessionExpiredException("Session Expired, Login again !");
         }
         GateEntryTransaction gateEntryId = gateEntryTransactionRepository.findById(weighmentRequest.getTicketNo()).get();
         WeighmentTransaction weighmentTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(weighmentRequest.getTicketNo());
         VehicleTransactionStatus byTicketNo = vehicleTransactionStatusRepository.findByTicketNo(weighmentRequest.getTicketNo());
-        if(weighmentTicketNo ==null){
-            WeighmentTransaction weighmentTransaction=new WeighmentTransaction();
+        if (weighmentTicketNo == null) {
+            WeighmentTransaction weighmentTransaction = new WeighmentTransaction();
             weighmentTransaction.setGateEntryTransaction(gateEntryId);
             weighmentTransaction.setMachineId(weighmentRequest.getMachineId());
             weighmentTransaction.setTemporaryWeight(weighmentRequest.getWeight());
@@ -104,36 +103,33 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             transactionLog.setTicketNo(weighmentRequest.getTicketNo());
             transactionLog.setTimestamp(LocalDateTime.now());
 
-            if(gateEntryId.getTransactionType().equalsIgnoreCase("Inbound")) {
+            if (gateEntryId.getTransactionType().equalsIgnoreCase("Inbound")) {
                 byTicketNo.setStatusCode("GWT");
                 transactionLog.setStatusCode("GWT");
-            }
-            else{
+            } else {
                 byTicketNo.setStatusCode("TWT");
                 transactionLog.setStatusCode("TWT");
             }
             vehicleTransactionStatusRepository.save(byTicketNo);
             transactionLogRepository.save(transactionLog);
             return "First Weight saved.";
-        }
-        else {
+        } else {
             //History save with vehicle intime and vehicle out time
-            if(gateEntryId.getTransactionType().equalsIgnoreCase("Inbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("TWT")){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Tare Weight already saved.");
+            if (gateEntryId.getTransactionType().equalsIgnoreCase("Inbound") && byTicketNo.getStatusCode().equalsIgnoreCase("TWT")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tare Weight already saved.");
             }
 
-            if(gateEntryId.getTransactionType().equalsIgnoreCase("Outbound")&&byTicketNo.getStatusCode().equalsIgnoreCase("GWT")){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Gross Weight already saved.");
+            if (gateEntryId.getTransactionType().equalsIgnoreCase("Outbound") && byTicketNo.getStatusCode().equalsIgnoreCase("GWT")) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Gross Weight already saved.");
             }
-            
+
             double temporaryWeight = weighmentTicketNo.getTemporaryWeight();
-            if (temporaryWeight>weighmentRequest.getWeight()){
+            if (temporaryWeight > weighmentRequest.getWeight()) {
                 weighmentTicketNo.setGrossWeight(temporaryWeight);
                 weighmentTicketNo.setTareWeight(weighmentRequest.getWeight());
-            }
-            else{
-               weighmentTicketNo.setTareWeight(temporaryWeight);
-               weighmentTicketNo.setGrossWeight(weighmentRequest.getWeight());
+            } else {
+                weighmentTicketNo.setTareWeight(temporaryWeight);
+                weighmentTicketNo.setGrossWeight(weighmentRequest.getWeight());
             }
             double netWeight = Math.abs(temporaryWeight - weighmentRequest.getWeight());
             weighmentTicketNo.setNetWeight(netWeight);
@@ -146,32 +142,25 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
 
 
             //Vehiclestatus details
-            if(gateEntryId.getTransactionType().equalsIgnoreCase("Outbound")) {
+            if (gateEntryId.getTransactionType().equalsIgnoreCase("Outbound")) {
                 byTicketNo.setStatusCode("GWT");
                 transactionLog.setStatusCode("GWT");
-            }
-            else {
+            } else {
                 byTicketNo.setStatusCode("TWT");
                 transactionLog.setStatusCode("TWT");
             }
             vehicleTransactionStatusRepository.save(byTicketNo);
             transactionLogRepository.save(transactionLog);
 
-           if(gateEntryId.getTransactionType().equalsIgnoreCase("Outbound")){
-               gateEntryId.setSupplyConsignmentWeight(netWeight);
-               gateEntryTransactionRepository.save(gateEntryId);
-               SalesProcess byPurchasePassNo = salesProcessRepository.findByPurchasePassNo(gateEntryId.getTpNo());
-               byPurchasePassNo.setNetWeight(netWeight);
-               salesProcessRepository.save(byPurchasePassNo);
-               String purchaseOrderNo = byPurchasePassNo.getPurchaseSale().getPurchaseOrderNo();
-               SalesOrder byPurchaseOrderNo = salesOrderRespository.findByPurchaseOrderNo(purchaseOrderNo);
-               double progressiveQty = byPurchaseOrderNo.getProgressiveQuantity() + netWeight/1000;
-               double balanceQty=byPurchaseOrderNo.getBalanceQuantity()-progressiveQty/1000;
-                 byPurchaseOrderNo.setProgressiveQuantity(progressiveQty);
-                 byPurchaseOrderNo.setBalanceQuantity(balanceQty);
-                 salesOrderRespository.save(byPurchaseOrderNo);
-           }
-
+            if (gateEntryId.getTransactionType().equalsIgnoreCase("Outbound")) {
+                SalesProcess bySalePassNo = salesProcessRepository.findBySalePassNo(gateEntryId.getTpNo());
+                SalesOrder bySaleOrderNo = salesOrderRespository.findBySaleOrderNo(bySalePassNo.getPurchaseSale().getSaleOrderNo());
+                double progressiveQty = bySaleOrderNo.getProgressiveQuantity() + netWeight / 1000;
+                double balanceQty = bySaleOrderNo.getBalanceQuantity() - progressiveQty / 1000;
+                bySaleOrderNo.setProgressiveQuantity(progressiveQty);
+                bySaleOrderNo.setBalanceQuantity(balanceQty);
+                salesOrderRespository.save(bySaleOrderNo);
+            }
             return "Second weight saved";
         }
     }
@@ -187,18 +176,16 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             userId = session.getAttribute("userId").toString();
             userSite = session.getAttribute("userSite").toString();
             userCompany = session.getAttribute("userCompany").toString();
-        }
-        else {
+        } else {
             throw new SessionExpiredException("Session Expired, Login again !");
         }
         System.out.println(userSite);
-        List<Object[]> allUsers=weighmentTransactionRepository.getAllGateEntries(userSite);
+        List<Object[]> allUsers = weighmentTransactionRepository.getAllGateEntries(userSite);
         System.out.println(allUsers);
         List<WeighmentTransactionResponse> responses = new ArrayList<>();
-        if(allUsers==null){
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"No gateEntries yet.");
-        }
-        else {
+        if (allUsers == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No gateEntries yet.");
+        } else {
             try {
                 for (Object[] row : allUsers) {
                     WeighmentTransactionResponse response = new WeighmentTransactionResponse();
@@ -241,11 +228,10 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     response.setNetWeight(String.valueOf(row[7] + "/" + resTimeStamp1));
                     response.setVehicleNo((String) row[9]);
                     response.setVehicleFitnessUpTo((LocalDate) row[10]);
-                    if(((String) row[2]).equalsIgnoreCase("Inbound")){
+                    if (((String) row[2]).equalsIgnoreCase("Inbound")) {
                         response.setSupplierName((String) row[11]);
                         response.setCustomerName("");
-                    }
-                    else{
+                    } else {
                         response.setCustomerName((String) row[11]);
                         response.setSupplierName("");
                     }
@@ -263,6 +249,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             return responses;
         }
     }
+
     // todo NWT status insert
     @Override
     public TicketResponse getResponseByTicket(Integer ticketNo) {
@@ -270,7 +257,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
         if (gateEntryTransaction == null) {
             throw new ResourceNotFoundException("ticket", "ticketNo", ticketNo.toString());
         } else {
-            System.out.println("site id"+gateEntryTransaction.getSupplierId());
+            System.out.println("site id" + gateEntryTransaction.getSupplierId());
             TicketResponse ticketResponse = new TicketResponse();
             ticketResponse.setPoNo(gateEntryTransaction.getPoNo());
             ticketResponse.setTpNo(gateEntryTransaction.getTpNo());
@@ -293,7 +280,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
 
             String transactionType = gateEntryTransaction.getTransactionType();
             WeighmentTransaction byGateEntryTransactionTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(ticketNo);
-            if(byGateEntryTransactionTicketNo!=null) {
+            if (byGateEntryTransactionTicketNo != null) {
                 if (transactionType.equalsIgnoreCase("Inbound")) {
                     ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
                     ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight());

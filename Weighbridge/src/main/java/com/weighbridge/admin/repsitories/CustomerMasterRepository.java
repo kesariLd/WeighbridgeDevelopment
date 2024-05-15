@@ -28,6 +28,8 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
 
     Boolean existsByCustomerNameAndCustomerAddressLine1AndCustomerAddressLine2(String customerName, String addressLine1, String addressLine2);
 
+
     @Query("SELECT cm FROM CustomerMaster cm WHERE cm.customerId = :customerId")
     String findCustomerNameByCustomerId(@Param("customerId") long customerId);
+
 }
