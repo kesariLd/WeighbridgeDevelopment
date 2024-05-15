@@ -8,5 +8,5 @@ import java.util.List;
 public class WeighbridgeReportResponse {
     private String materialName;
     private String supplierOrCustomer;
-    private List<WeighbridgeReportResponse2> weighbridgeResponse2List;
+    private List<WeighbridgeReportResponseList> weighbridgeResponse2List;
 }

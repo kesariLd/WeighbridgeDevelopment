@@ -20,6 +20,7 @@ import com.weighbridge.gateuser.services.GateEntryTransactionService;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentPrintResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
+import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponseList;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.services.WeighmentReportService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +33,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -75,19 +78,6 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
     @Autowired
     private SiteMasterRepository siteMasterRepository;
 
-    @Override
-    public Map<String, Map<String, List<WeighmentReportResponse>>> generateWeighmentReport(LocalDate startDate, LocalDate endDate) {
-        // Default to today's date if startDate is not provided
-        if (startDate == null) {
-            startDate = LocalDate.now();
-        }
-        LocalDate finalStartDate = startDate;
-        return gateEntryTransactionService.getAllGateEntryTransaction().stream()
-                .filter(response -> isValidTransaction(response, finalStartDate, endDate))
-                .map(this::mapToWeighmentReportResponse)
-                .collect(Collectors.groupingBy(WeighmentReportResponse::getMaterialName,
-                        Collectors.groupingBy(WeighmentReportResponse::getSupplier)));
-    }
 
     @Override
     public WeighmentPrintResponse getAllWeighmentTransactions(Integer ticketNo) {
@@ -193,7 +183,15 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         // Return true only if the transaction is within the date range and is valid based on the status code
         return isWithinDateRange && isValidTransaction;
     }
-    //new
+
+    /**
+     *
+     * @param startDate The starting date for the report (format: YYYY-MM-DD), optional.
+     *                  If not provided, end Date will considered as startDate.
+     * @param endDate The ending date for the report (format: YYYY-MM-DD), optional.
+                        If not provided, start Date will considered as endDate.
+     * @return
+     */
     public List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate) {
         if (startDate == null && endDate == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date is not provided");
@@ -208,7 +206,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         LocalDate finalEndDate = endDate;
         List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransaction();
 
-        Map<String, Map<String, List<WeighbridgeReportResponse2>>> groupedReports = new HashMap<>();
+        Map<String, Map<String, List<WeighbridgeReportResponseList>>> groupedReports = new HashMap<>();
 
         gateEntryTransactionResponses.stream()
                 .filter(response -> {
@@ -222,7 +220,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
                             response.getSupplier() : response.getCustomer();
                     String key = materialName + "-" + supplierOrCustomer;
 
-                    WeighbridgeReportResponse2 weighbridgeResponse2 = mapToWeighbridgeReportResponse(response);
+                    WeighbridgeReportResponseList weighbridgeResponse2 = mapToWeighbridgeReportResponse(response);
                     groupedReports.computeIfAbsent(key, k -> new HashMap<>())
                             .computeIfAbsent(supplierOrCustomer, k -> new ArrayList<>())
                             .add(weighbridgeResponse2);
@@ -240,27 +238,35 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
                 .collect(Collectors.toList());
     }
 
-    private WeighbridgeReportResponse2 mapToWeighbridgeReportResponse(GateEntryTransactionResponse gateEntryResponse) {
+    /**
+     * simply it'll return the WeighbridgeReportResponseList to called method so that report can be generated
+     * @param gateEntryResponse
+     * @return
+     */
+    private WeighbridgeReportResponseList mapToWeighbridgeReportResponse(GateEntryTransactionResponse gateEntryResponse) {
         WeighmentTransaction weighmentTransaction = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(gateEntryResponse.getTicketNo());
-        WeighbridgeReportResponse2 weighbridgeReportResponse2 = new WeighbridgeReportResponse2();
-        weighbridgeReportResponse2.setTransactionDate(gateEntryResponse.getTransactionDate());
-        weighbridgeReportResponse2.setVehicleNo(gateEntryResponse.getVehicleNo());
-        weighbridgeReportResponse2.setTpNo(gateEntryResponse.getTpNo());
-        weighbridgeReportResponse2.setChallanDate(gateEntryResponse.getChallanDate());
+        WeighbridgeReportResponseList weighbridgeReportResponseList = new WeighbridgeReportResponseList();
+        weighbridgeReportResponseList.setTransactionDate(gateEntryResponse.getTransactionDate());
+        weighbridgeReportResponseList.setVehicleNo(gateEntryResponse.getVehicleNo());
+        weighbridgeReportResponseList.setTpNo(gateEntryResponse.getTpNo());
+        weighbridgeReportResponseList.setChallanDate(gateEntryResponse.getChallanDate());
 
         if (weighmentTransaction != null) {
             double supplyConsignmentWeight = gateEntryResponse.getTpNetWeight();
-            weighbridgeReportResponse2.setSupplyConsignmentWeight(supplyConsignmentWeight);
+            weighbridgeReportResponseList.setSupplyConsignmentWeight(supplyConsignmentWeight);
+            /*
+            SupplyConsignmentWeight is what it'll given at the time of gate entry, it means provided by supplier or Own Company Sales team
+             */
             Double netWeight = (Double) weighmentTransaction.getNetWeight() != null ? weighmentTransaction.getNetWeight() : 0.0;
-            weighbridgeReportResponse2.setWeighQuantity(netWeight);
-            weighbridgeReportResponse2.setExcessQty(supplyConsignmentWeight - netWeight);
+            weighbridgeReportResponseList.setWeighQuantity(netWeight);
+            weighbridgeReportResponseList.setExcessQty(supplyConsignmentWeight - netWeight);
         } else {
-            weighbridgeReportResponse2.setSupplyConsignmentWeight(0.0);
-            weighbridgeReportResponse2.setWeighQuantity(0.0);
-            weighbridgeReportResponse2.setExcessQty(0.0);
+            weighbridgeReportResponseList.setSupplyConsignmentWeight(0.0);
+            weighbridgeReportResponseList.setWeighQuantity(0.0);
+            weighbridgeReportResponseList.setExcessQty(0.0);
         }
 
-        return weighbridgeReportResponse2;
+        return weighbridgeReportResponseList;
     }
 
 }

@@ -5,11 +5,32 @@ import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Interface defining a service for generating weighment reports.
+ *
+ * This service provides methods to retrieve weighment data and format it
+ * into reports based on optional start and end dates.
+ */
 public interface WeighmentReportService {
 
-    Map<String, Map<String, List<WeighmentReportResponse>>> generateWeighmentReport(LocalDate startDate, LocalDate endDate);
 
     WeighmentPrintResponse getAllWeighmentTransactions(Integer ticketNo);
   
-    List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate);
+
+        /**
+         * Generates a weighment report based on optional start and end dates.
+         *
+         * This method retrieves weighment data from the underlying storage system
+         * and formats it into a list of {@link WeighbridgeReportResponse} objects
+         * representing the report data.
+         *
+         * @param startDate The starting date for the report (format: YYYY-MM-DD), optional.
+         *                  If not provided, all weighment data is returned.
+         * @param endDate The ending date for the report (format: YYYY-MM-DD), optional.
+         * @param startDate endDate is both null than a response will come , Date is not provided
+         * @return A list of {@link WeighbridgeReportResponse} objects containing
+         *         the weighment report data.
+         */
+        List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate);
+
 }
