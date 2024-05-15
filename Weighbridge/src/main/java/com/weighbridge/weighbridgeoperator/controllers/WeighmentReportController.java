@@ -1,5 +1,6 @@
 package com.weighbridge.weighbridgeoperator.controllers;
 
+import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentReportResponse;
 import com.weighbridge.weighbridgeoperator.services.WeighmentReportService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,5 +26,12 @@ public class WeighmentReportController {
         System.out.println("startDate" +startDate+"endDate "+endDate);
         Map<String, Map<String, List<WeighmentReportResponse>>> report = weighmentReportService.generateWeighmentReport(startDate,endDate);
         return ResponseEntity.ok(report);
+    }
+    @GetMapping("/report2")
+    public ResponseEntity<List<WeighbridgeReportResponse>> generateWeighmentReport2(@RequestParam(required = false) LocalDate startDate,
+                                                                                    @RequestParam(required = false) LocalDate endDate) {
+        System.out.println("startDate" +startDate+"endDate "+endDate);
+
+        return ResponseEntity.ok(weighmentReportService.generateWeighmentReportDemo(startDate,endDate));
     }
 }
