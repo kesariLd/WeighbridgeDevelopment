@@ -1,7 +1,7 @@
 package com.weighbridge.weighbridgeoperator.controllers;
 
+import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentPrintResponse;
-import com.weighbridge.weighbridgeoperator.payloads.WeighmentReportResponse;
 import com.weighbridge.weighbridgeoperator.services.WeighmentReportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,19 +10,34 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Rest Controller class for handling weighment report related API requests.
+ */
 @RestController
 @RequestMapping("/api/v1/weighment")
 public class WeighmentReportController {
 
+    /**
+     * Autowired instance of WeighmentReportService for generating weighment reports.
+     */
     @Autowired
     private WeighmentReportService weighmentReportService;
 
+    /**
+     * Generates a weighment report based on optional start and end dates.
+     *
+     * @param startDate The starting date for the report (format: YYYY-MM-DD), optional.
+     * @param endDate The ending date for the report (format: YYYY-MM-DD), optional.
+     * @return ResponseEntity containing a list of WeighbridgeReportResponse objects
+     *         representing the weighment report data.
+     */
     @GetMapping("/report")
-    public ResponseEntity<List<WeighbridgeReportResponse>> generateWeighmentReport2(@RequestParam(required = false) LocalDate startDate,
-                                                                                    @RequestParam(required = false) LocalDate endDate) {
-        System.out.println("startDate" +startDate+"endDate "+endDate);
+    public ResponseEntity<List<WeighbridgeReportResponse>> generateWeighmentReport2(
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+        System.out.println("startDate" + startDate + " endDate " + endDate);
 
-        return ResponseEntity.ok(weighmentReportService.generateWeighmentReport(startDate,endDate));
+        return ResponseEntity.ok(weighmentReportService.generateWeighmentReport(startDate, endDate));
     }
 
     @GetMapping("/transactions/print/{ticketNo}")
@@ -31,3 +46,4 @@ public class WeighmentReportController {
         return ResponseEntity.ok(weighmentPrintResponse);
     }
 }
+
