@@ -119,17 +119,6 @@
 https://mvnrepository.com/artifact/com.itextpdf/itext7-core
 -->
 
-		<dependency>
-
-			<groupId>com.itextpdf</groupId>
-
-			<artifactId>itext7-core</artifactId>
-
-			<version>7.0.4</version>
-
-			<type>pom</type>
-
-		</dependency>
 
 		<!--
         https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox
@@ -145,19 +134,7 @@ https://mvnrepository.com/artifact/com.itextpdf/itext7-core
 
 		</dependency>
 
-		<!--
-        https://mvnrepository.com/artifact/org.xhtmlrenderer/flying-saucer-pdf
-        -->
 
-		<dependency>
-
-			<groupId>org.xhtmlrenderer</groupId>
-
-			<artifactId>flying-saucer-pdf</artifactId>
-
-			<version>9.7.2</version>
-
-		</dependency>
 
 	</dependencies>
 
