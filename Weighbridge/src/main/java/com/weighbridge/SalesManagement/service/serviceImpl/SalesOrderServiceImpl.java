@@ -150,4 +150,6 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         }
         return listOfVehicle;
     }
+
+
 }
