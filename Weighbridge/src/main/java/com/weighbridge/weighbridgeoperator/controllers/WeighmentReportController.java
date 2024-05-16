@@ -4,15 +4,18 @@ import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentPrintResponse;
 import com.weighbridge.weighbridgeoperator.services.WeighmentReportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Rest Controller class for handling weighment report related API requests.
  */
+// todo do customize report , field can be choose
 @RestController
 @RequestMapping("/api/v1/weighment")
 public class WeighmentReportController {
@@ -44,6 +47,11 @@ public class WeighmentReportController {
     public ResponseEntity<WeighmentPrintResponse> printWeighmentTransaction(@PathVariable Integer ticketNo) {
         WeighmentPrintResponse  weighmentPrintResponse = weighmentReportService.getAllWeighmentTransactions(ticketNo);
         return ResponseEntity.ok(weighmentPrintResponse);
+    }
+    @GetMapping("/getDe")
+    public ResponseEntity<List<Map<String, Object>>> getDemoData(@RequestBody List<String> selectedFields){
+
+        return new ResponseEntity<>(weighmentReportService.getDemoData(selectedFields), HttpStatus.OK);
     }
 }
 

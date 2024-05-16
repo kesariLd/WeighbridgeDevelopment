@@ -30,6 +30,9 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
 
 
     @Query("SELECT cm FROM CustomerMaster cm WHERE cm.customerId = :customerId")
+    String findCustomerMasterByCustomerId(@Param("customerId") long customerId);
+
+    @Query("SELECT cm.customerName FROM CustomerMaster cm WHERE cm.customerId = :customerId")
     String findCustomerNameByCustomerId(@Param("customerId") long customerId);
 
 }
