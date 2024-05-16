@@ -10,6 +10,9 @@ import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.gateuser.services.GateEntryTransactionService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.modelmapper.ModelMapper;
@@ -48,6 +51,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     private HttpServletRequest httpServletRequest;
     @Autowired
     private CustomerMasterRepository customerMasterRepository;
+
 
     /**
      * Saves a gate entry transaction based on the provided request data.

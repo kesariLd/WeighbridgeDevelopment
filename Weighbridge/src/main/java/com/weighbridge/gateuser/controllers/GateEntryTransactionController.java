@@ -55,4 +55,5 @@ public class GateEntryTransactionController {
         String status = gateEntryTransactionService.setOutTime(ticketNo);
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
+
 }

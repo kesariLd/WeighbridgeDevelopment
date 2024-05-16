@@ -4,6 +4,7 @@ import com.weighbridge.weighbridgeoperator.payloads.WeighmentPrintResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Interface defining a service for generating weighment reports.
@@ -32,5 +33,7 @@ public interface WeighmentReportService {
          *         the weighment report data.
          */
         List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate);
+
+    List<Map<String, Object>> getDemoData(List<String> selectedFields);
 
 }

@@ -36,5 +36,7 @@ public interface GateEntryTransactionService {
      *         transaction type, material, supplier, vehicle information, timestamps, and other related data.
      */
     List<GateEntryTransactionResponse> getAllGateEntryTransaction();
+
+//    List<Object[]> getDemoData(List<String> selectedFields);
 }
 

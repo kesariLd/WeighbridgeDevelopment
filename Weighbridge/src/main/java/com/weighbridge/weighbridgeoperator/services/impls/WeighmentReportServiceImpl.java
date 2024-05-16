@@ -13,6 +13,7 @@ import com.weighbridge.admin.repsitories.SupplierMasterRepository;
 import com.weighbridge.admin.repsitories.TransporterMasterRepository;
 import com.weighbridge.admin.repsitories.UserMasterRepository;
 import com.weighbridge.admin.repsitories.VehicleMasterRepository;
+import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
@@ -23,6 +24,10 @@ import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponseList;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.services.WeighmentReportService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,11 +38,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class WeighmentReportServiceImpl implements WeighmentReportService {
@@ -77,6 +80,8 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
 
     @Autowired
     private SiteMasterRepository siteMasterRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
     @Override
@@ -130,7 +135,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         }
 
         if ("Outbound".equals(weighmentTransaction.getGateEntryTransaction().getTransactionType())) {
-            String customerName = customerMasterRepository.findCustomerNameByCustomerId(weighmentTransaction.getGateEntryTransaction().getCustomerId());
+            String customerName = customerMasterRepository.findCustomerMasterByCustomerId(weighmentTransaction.getGateEntryTransaction().getCustomerId());
             weighmentPrintResponse.setSupplierOrCustomerName(customerName);
         }
 
@@ -267,6 +272,91 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         }
 
         return weighbridgeReportResponseList;
+    }
+    @Override
+    public List<Map<String, Object>> getDemoData(List<String> selectedFields) {
+        HttpSession session = httpServletRequest.getSession();
+        if (session == null || session.getAttribute("userId") == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
+        }
+
+        String userSite = session.getAttribute("userSite").toString();
+        String userCompany = session.getAttribute("userCompany").toString();
+
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+        Root<GateEntryTransaction> gateEntryTransactionRoot = criteriaQuery.from(GateEntryTransaction.class);
+        Root<WeighmentTransaction> weighmentTransactionRoot = criteriaQuery.from(WeighmentTransaction.class);
+
+        // Build selection criteria based on selectedFields
+        List<Selection<?>> selections = new ArrayList<>();
+        Map<String, Expression<?>> fieldToExpressionMap = new HashMap<>();
+        for (String field : selectedFields) {
+            switch (field) {
+                case "materialId":
+                case "supplierId":
+                case "customerId":
+                case "vehicleId":
+                case "transactionDate":
+                case "challanNo":
+                case "challanDate":
+                case "supplyConsignmentWeight":
+                case "ticketNo":
+                    Selection<?> selection = gateEntryTransactionRoot.get(field);
+                    selections.add(selection.alias(field));
+                    fieldToExpressionMap.put(field, gateEntryTransactionRoot.get(field));
+                    break;
+                case "netWeight":
+                    selections.add(weighmentTransactionRoot.get("netWeight").alias("netWeight"));
+                    fieldToExpressionMap.put(field, weighmentTransactionRoot.get("netWeight"));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid field name: " + field);
+            }
+        }
+        criteriaQuery.multiselect(selections);
+
+        // Add where clause for siteId and companyId
+        Predicate siteCompanyPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(gateEntryTransactionRoot.get("siteId"), userSite),
+                criteriaBuilder.equal(gateEntryTransactionRoot.get("companyId"), userCompany),
+                criteriaBuilder.equal(gateEntryTransactionRoot.get("ticketNo"), weighmentTransactionRoot.get("gateEntryTransaction").get("ticketNo"))
+        );
+        criteriaQuery.where(siteCompanyPredicate);
+
+        // Order by transactionDate descending
+        criteriaQuery.orderBy(criteriaBuilder.desc(gateEntryTransactionRoot.get("transactionDate")));
+
+        List<Tuple> resultList = entityManager.createQuery(criteriaQuery).getResultList();
+        System.out.println("result list tuple "+resultList);
+        List<Map<String, Object>> mappedResultList = new ArrayList<>();
+        for (Tuple tuple : resultList) {
+            Map<String, Object> mappedResult = new HashMap<>();
+            for (String field : selectedFields) {
+                Object value = tuple.get(fieldToExpressionMap.get(field));
+                if ("materialId".equals(field) && value != null) {
+                    long materialId = (long) value;
+                    value = Optional.ofNullable(materialMasterRepository.findMaterialNameByMaterialId(materialId))
+                            .orElse("Unknown Material");
+                } else if ("supplierId".equals(field) && value != null) {
+                    long supplierId = (long) value;
+                    value = Optional.ofNullable(supplierMasterRepository.findSupplierNameBySupplierId(supplierId))
+                            .orElse("");
+                } else if ("customerId".equals(field) && value != null) {
+                    long customerId = (long) value;
+                    value = Optional.ofNullable(customerMasterRepository.findCustomerNameByCustomerId(customerId))
+                            .orElse("");
+                } else if ("vehicleId".equals(field) && value != null) {
+                    long vehicleId = (long) value;
+                    value = Optional.ofNullable(vehicleMasterRepository.findVehicleNoById(vehicleId))
+                            .orElse("");
+                }
+                mappedResult.put(field, value);
+            }
+            mappedResultList.add(mappedResult);
+        }
+
+        return mappedResultList;
     }
 
 }

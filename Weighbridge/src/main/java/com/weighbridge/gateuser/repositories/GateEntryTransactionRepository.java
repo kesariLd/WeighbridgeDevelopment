@@ -2,6 +2,7 @@ package com.weighbridge.gateuser.repositories;
 
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 
 import java.util.List;
@@ -19,6 +20,9 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
      * @return A list of gate entry transactions matching the provided site ID and company ID.
      */
     List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTicketNoDesc(String siteId, String companyId);
+
+//    @Query
+//    List<Object[]> findGateEntryTransactions(Long siteId, Long companyId, List<String> selectedFields);
 
     GateEntryTransaction findByTicketNo(Integer ticketNo);
 
