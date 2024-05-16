@@ -224,8 +224,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                             response.setGrossWeight("");
                             response.setTareWeight("");
                         }
-                    }
-                    response.setNetWeight(String.valueOf(row[7] + "/" + resTimeStamp1));
+               gi     }
+                    response.setNetWeight(row[7] != null ? String.valueOf(row[7]) : "");
                     response.setVehicleNo((String) row[9]);
                     response.setVehicleFitnessUpTo((LocalDate) row[10]);
                     if (((String) row[2]).equalsIgnoreCase("Inbound")) {
