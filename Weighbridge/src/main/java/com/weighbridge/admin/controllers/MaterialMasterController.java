@@ -5,13 +5,7 @@ import com.weighbridge.admin.payloads.MaterialWithParameters;
 import com.weighbridge.admin.services.MaterialMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -104,9 +98,13 @@ public class MaterialMasterController {
         materialMasterService.deleteMaterial(materialName);
         return ResponseEntity.ok("Material is deleted successfully");
     }
-    @GetMapping("/{materialName}/parameters")
-    public ResponseEntity<List<MaterialWithParameters>> getQualityRangesByMaterialName(@PathVariable String materialName) {
-        List<MaterialWithParameters> acceptableQualityRanges = materialMasterService.getQualityRangesByMaterialName(materialName);
+
+    // https:localhost:8080/api/v1/materials/parameters?materialName=Coal&supplierName=MCL&supplierAddress=MCL Bhubaneswari
+    @GetMapping("/parameters")
+    public ResponseEntity<List<MaterialWithParameters>> getQualityRangesByMaterialName(@RequestParam String materialName,
+                                                                                       @RequestParam(required = false) String supplierName,
+                                                                                       @RequestParam(required = false) String supplierAddress) {
+        List<MaterialWithParameters> acceptableQualityRanges = materialMasterService.getQualityRangesByMaterialNameAndSupplierNameAndAddress(materialName, supplierName, supplierAddress);
         return ResponseEntity.ok(acceptableQualityRanges);
     }
 }

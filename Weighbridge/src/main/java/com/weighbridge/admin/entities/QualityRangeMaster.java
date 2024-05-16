@@ -20,7 +20,6 @@ public class QualityRangeMaster {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "quality_range_id")
     private Long qualityRangeId;
-
     private String parameterName;
 
     @Column(name = "range_from", scale = 3)
@@ -29,9 +28,13 @@ public class QualityRangeMaster {
     @Column(name = "range_to", scale = 3)
     private Double rangeTo;
 
+   private String supplierName;
+   private String supplierAddress;
+
     @ManyToOne
     @JoinColumn(name = "material_id", referencedColumnName = "material_id")
     private MaterialMaster materialMaster;
+
 
 }
 

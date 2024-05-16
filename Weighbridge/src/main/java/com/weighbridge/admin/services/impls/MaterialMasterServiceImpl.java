@@ -4,11 +4,13 @@ import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.entities.MaterialMaster;
 import com.weighbridge.admin.entities.MaterialTypeMaster;
 import com.weighbridge.admin.entities.QualityRangeMaster;
+import com.weighbridge.admin.entities.SupplierMaster;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
 import com.weighbridge.admin.payloads.MaterialWithParameters.Parameter;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
 import com.weighbridge.admin.repsitories.MaterialTypeMasterRepository;
 import com.weighbridge.admin.repsitories.QualityRangeMasterRepository;
+import com.weighbridge.admin.repsitories.SupplierMasterRepository;
 import com.weighbridge.admin.services.MaterialMasterService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -36,13 +38,15 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     private final HttpServletRequest httpServletRequest;
     private final MaterialTypeMasterRepository materialTypeMasterRepository;
     private final QualityRangeMasterRepository qualityRangeMasterRepository;
+    private final SupplierMasterRepository supplierMasterRepository;
 
-    public MaterialMasterServiceImpl(MaterialMasterRepository materialMasterRepository, ModelMapper modelMapper, HttpServletRequest httpServletRequest, MaterialTypeMasterRepository materialTypeMasterRepository, QualityRangeMasterRepository qualityRangeMasterRepository) {
+    public MaterialMasterServiceImpl(MaterialMasterRepository materialMasterRepository, ModelMapper modelMapper, HttpServletRequest httpServletRequest, MaterialTypeMasterRepository materialTypeMasterRepository, QualityRangeMasterRepository qualityRangeMasterRepository, SupplierMasterRepository supplierMasterRepository) {
         this.materialMasterRepository = materialMasterRepository;
         this.modelMapper = modelMapper;
         this.httpServletRequest = httpServletRequest;
         this.materialTypeMasterRepository = materialTypeMasterRepository;
         this.qualityRangeMasterRepository = qualityRangeMasterRepository;
+        this.supplierMasterRepository = supplierMasterRepository;
     }
 
     @Override
@@ -75,6 +79,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
         HttpSession session = httpServletRequest.getSession();
         String user = session.getAttribute("userId").toString();
         LocalDateTime currentDateTime = LocalDateTime.now();
+
         MaterialMaster materialMaster = materialMasterRepository.findByMaterialName(request.getMaterialName());
         if (materialMaster == null) {
             materialMaster = new MaterialMaster();
@@ -86,6 +91,14 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
             materialMaster = materialMasterRepository.save(materialMaster);
         }
 
+//        SupplierMaster supplierMaster=supplierMasterRepository.findBySupplierName(request.getMaterialName());
+//        if(supplierMaster==null){
+//            supplierMaster=new SupplierMaster();
+//            supplierMaster.setSupplierName(request.getSupplierName());
+//            supplierMaster.setSupplierAddressLine1(request.getSupplierAddress());
+//            supplierMaster=supplierMasterRepository.save(supplierMaster);
+//        }
+
         MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
         if (request.getMaterialTypeName() != null && materialTypeMaster == null) {
             materialTypeMaster = new MaterialTypeMaster();
@@ -94,7 +107,11 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
             materialTypeMasterRepository.save(materialTypeMaster);
         }
 
-        List<QualityRangeMaster> qualityRangeMasters = createQualityRanges(request.getParameters(), materialMaster);
+        List<QualityRangeMaster> qualityRangeMasters = createQualityRanges(request.getParameters(), materialMaster,request.getSupplierName(), request.getSupplierAddress());
+//        for (QualityRangeMaster qualityRangeMaster : qualityRangeMasters) {
+//            qualityRangeMaster.setSupplierName(supplierMaster.getSupplierName());
+//            qualityRangeMaster.setSupplierAddress(supplierMaster.getSupplierAddressLine1());
+//        }
         qualityRangeMasterRepository.saveAll(qualityRangeMasters);
         return "Data saved successfully";
     }
@@ -106,8 +123,8 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     }
 
     @Override
-    public List<MaterialWithParameters> getQualityRangesByMaterialName(String materialName) {
-        List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialName(materialName);
+    public List<MaterialWithParameters> getQualityRangesByMaterialNameAndSupplierNameAndAddress(String materialName, String supplierName, String supplierAddress) {
+        List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(materialName, supplierName, supplierAddress);
         return mapQualityRangesToMaterialWithParameters(qualityRangeMasters);
     }
 
@@ -136,7 +153,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     }
 
 
-    private List<QualityRangeMaster> createQualityRanges(List<Parameter> parameters, MaterialMaster materialMaster) {
+    private List<QualityRangeMaster> createQualityRanges(List<Parameter> parameters, MaterialMaster materialMaster, String supplierName, String supplierAddress) {
 
         return parameters.stream()
                 .map(parameter -> {
@@ -146,6 +163,8 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
                         qualityRangeMaster.setRangeFrom(parameter.getRangeFrom());
                         qualityRangeMaster.setRangeTo(parameter.getRangeTo());
                         qualityRangeMaster.setMaterialMaster(materialMaster);
+                        qualityRangeMaster.setSupplierName(supplierName);
+                        qualityRangeMaster.setSupplierAddress(supplierAddress);
                     } else {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Parameter is already set");
                     }
