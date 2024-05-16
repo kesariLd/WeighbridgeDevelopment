@@ -16,5 +16,5 @@ public interface MaterialMasterService {
 
     List<String> getTypeWithMaterial(String materialName);
 
-    List<MaterialWithParameters> getQualityRangesByMaterialName(String materialName);
+    List<MaterialWithParameters> getQualityRangesByMaterialNameAndSupplierNameAndAddress(String materialName, String supplierName, String supplierAddress);
 }
