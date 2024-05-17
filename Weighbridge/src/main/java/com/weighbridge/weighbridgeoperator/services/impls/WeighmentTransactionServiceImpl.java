@@ -231,13 +231,14 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     if (((String) row[2]).equalsIgnoreCase("Inbound")) {
                         response.setSupplierName((String) row[11]);
                         response.setCustomerName("");
+                        response.setMaterialName((String) row[13]);
                     } else {
                         response.setCustomerName((String) row[11]);
                         response.setSupplierName("");
+                        response.setMaterialName((String) row[13]);
                     }
 
                     response.setTransporterName((String) row[12]);
-                    response.setMaterialName((String) row[13]);
                     // Set other fields similarly
                     responses.add(response);
                 }

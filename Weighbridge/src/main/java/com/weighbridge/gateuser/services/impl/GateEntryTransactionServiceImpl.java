@@ -51,6 +51,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     private HttpServletRequest httpServletRequest;
     @Autowired
     private CustomerMasterRepository customerMasterRepository;
+    @Autowired
+    private ProductMasterRepository productMasterRepository;
 
 
     /**
@@ -90,6 +92,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             String addressLine2;
             long supplierId = 0;
             long customerId = 0;
+            long materialId = 0;
 
             if (gateEntryTransactionRequest.getTransactionType().equals("Inbound")) {
                 if (supplierAddress != null && supplierAddress.contains(",")) {
@@ -103,11 +106,17 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 }
                 supplierId = supplierMasterRepository.findSupplierIdBySupplierNameAndAddressLines(
                         supplierName, addressLine1, addressLine2);
+
                 if (supplierId == 0) {
                     throw new ResourceNotFoundException("Supplier not exist");
                 }
-            } else { // Outbound transaction
+                materialId = materialMasterRepository.findByMaterialIdByMaterialName(materialName);
+
+            }
+            if (gateEntryTransactionRequest.getTransactionType().equals("Outbound")) {
+                // Outbound transaction
                 if (customerAddress != null && customerAddress.contains(",")) {
+                    System.out.println("customer "+customerName);
                     String[] parts = customerAddress.split(",", 2); // Split into two parts
                     addressLine1 = parts[0].trim(); // Trim to remove leading/trailing spaces
                     addressLine2 = parts[1].trim();
@@ -115,15 +124,19 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                     // If there's no comma, store everything in customerAddressLine1
                     addressLine1 = customerAddress;
                     addressLine2 = null; // Set customerAddressLine2 to null
+                    System.out.println("================================================================");
                 }
                 customerId = customerMasterRepository.findCustomerIdByCustomerNameAndAddressLines(customerName,addressLine1,addressLine2);
+                System.out.println("custom"+ customerId);
+                materialId = productMasterRepository.findProductIdByProductName(materialName);
+                System.out.println("material"+ materialId);
                 if (customerId == 0) {
                     throw new ResourceNotFoundException("Customer not exist");
                 }
             }
 
-            //finding the entities by names from database
-            long materialId = materialMasterRepository.findByMaterialIdByMaterialName(materialName);
+
+                //finding the entities by names from database
             long vehicleId = vehicleMasterRepository.findVehicleIdByVehicleNo(vehicleNo);
             long transporterId = transporterMasterRepository.findTransporterIdByTransporterName(transporterName);
             String dlNo = gateEntryTransactionRequest.getDlNo();
@@ -275,7 +288,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
                 GateEntryTransactionResponse response = new GateEntryTransactionResponse();
                 // Fetching associated entity names
-                String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
                 System.out.println("vehicle id" + transaction.getVehicleId());
                 System.out.println(" hasg" + vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId()));
                 Object[] vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId = vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId());
@@ -284,7 +296,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 // Setting values to response object
                 response.setTicketNo(transaction.getTicketNo());
                 response.setTransactionType(transaction.getTransactionType());
-                response.setMaterial(materialName);
                 response.setMaterialType(transaction.getMaterialType());
 
                 // Check the transaction type and set the appropriate entity
@@ -298,6 +309,9 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                         response.setSupplier(supplierName);
                         response.setSupplierAddress(supplierAddress);
                     }
+                    String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
+                    response.setMaterial(materialName);
+
                 } else if ("Outbound".equals(transaction.getTransactionType())) {
                     Object[] customerNameByCustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(transaction.getCustomerId());
 
@@ -309,6 +323,9 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                         response.setCustomer(customerName);
                         response.setCustomerAddress(customerAddress);
                     }
+                    String materialName = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
+                    response.setMaterial(materialName);
+
                 }
 
                 Object[] vehicleInfo = (Object[]) vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId[0];

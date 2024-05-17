@@ -47,13 +47,13 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
         customerMaster.setZip(customerMasterDto.getZip());
 
         HttpSession session = httpServletRequest.getSession();
-        String userId = String.valueOf(session.getAttribute("userId"));
-        LocalDateTime currentTime = LocalDateTime.now();
+        String userId = session.getAttribute("userId").toString();
+        LocalDateTime currentDateTime = LocalDateTime.now();
 
         customerMaster.setCustomerCreatedBy(userId);
-        customerMaster.setCustomerCreatedDate(currentTime);
+        customerMaster.setCustomerCreatedDate(currentDateTime);
         customerMaster.setCustomerModifiedBy(userId);
-        customerMaster.setCustomerModifiedDate(currentTime);
+        customerMaster.setCustomerModifiedDate(currentDateTime);
 
         try {
             customerMasterRepository.save(customerMaster);

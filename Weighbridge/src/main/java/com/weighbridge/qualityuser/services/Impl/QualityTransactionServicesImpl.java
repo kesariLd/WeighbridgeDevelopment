@@ -1,8 +1,5 @@
 package com.weighbridge.qualityuser.services.Impl;
 
-import com.itextpdf.io.IOException;
-import com.itextpdf.io.source.ByteArrayOutputStream;
-import com.lowagie.text.DocumentException;
 import com.weighbridge.admin.entities.*;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
 import com.weighbridge.admin.repsitories.*;
@@ -51,6 +48,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     private final TransactionLogRepository transactionLogRepository;
     private final QualityRangeMasterRepository qualityRangeMasterRepository;
     private final CompanyMasterRepository companyMasterRepository;
+    private final ProductMasterRepository productMasterRepository;
 
     public QualityTransactionServicesImpl(QualityTransactioRepository qualityTransactioRepository,
                                           GateEntryTransactionRepository gateEntryTransactionRepository,
@@ -62,7 +60,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                                           TransporterMasterRepository transporterMasterRepository,
                                           VehicleMasterRepository vehicleMasterRepository,
                                           TransactionLogRepository transactionLogRepository,
-                                          QualityRangeMasterRepository qualityRangeMasterRepository, CompanyMasterRepository companyMasterRepository) {
+                                          QualityRangeMasterRepository qualityRangeMasterRepository, CompanyMasterRepository companyMasterRepository, ProductMasterRepository productMasterRepository) {
         this.qualityTransactioRepository = qualityTransactioRepository;
         this.gateEntryTransactionRepository = gateEntryTransactionRepository;
         this.httpServletRequest = httpServletRequest;
@@ -75,6 +73,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         this.transactionLogRepository = transactionLogRepository;
         this.qualityRangeMasterRepository = qualityRangeMasterRepository;
         this.companyMasterRepository = companyMasterRepository;
+        this.productMasterRepository = productMasterRepository;
     }
 
     @Override
@@ -94,52 +93,133 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
         List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany);
 
-        List<QualityDashboardResponse> qualityDashboardResponses = allTransactions.stream()
-                .filter(transaction -> transaction.getTransactionType().equals("Inbound") || transaction.getTransactionType().equals("Outbound"))
-                .flatMap(transaction -> {
-                    VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
-                    if (transactionStatus != null && (transactionStatus.getStatusCode().equals("GWT") || transactionStatus.getStatusCode().equals("TWT"))) {
-                        QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
-                        qualityDashboardResponse.setTicketNo(transaction.getTicketNo());
-                        qualityDashboardResponse.setTpNo(transaction.getTpNo());
-                        qualityDashboardResponse.setPoNo(transaction.getPoNo());
-                        qualityDashboardResponse.setChallanNo(transaction.getChallanNo());
-                        qualityDashboardResponse.setTransactionType(transaction.getTransactionType());
+//        List<QualityDashboardResponse> qualityDashboardResponses = allTransactions.stream()
+//                .filter(transaction -> transaction.getTransactionType().equals("Inbound") || transaction.getTransactionType().equals("Outbound"))
+//                .flatMap(transaction -> {
+//                    VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
+//                    if (transactionStatus != null && (transactionStatus.getStatusCode().equals("GWT") || transactionStatus.getStatusCode().equals("TWT"))) {
+//                        QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+//                        qualityDashboardResponse.setTicketNo(transaction.getTicketNo());
+//                        qualityDashboardResponse.setTpNo(transaction.getTpNo());
+//                        qualityDashboardResponse.setPoNo(transaction.getPoNo());
+//                        qualityDashboardResponse.setChallanNo(transaction.getChallanNo());
+//                        qualityDashboardResponse.setTransactionType(transaction.getTransactionType());
+//
+//                        SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(transaction.getSupplierId());
+//                        if (supplierMaster != null) {
+//                            qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
+//                            qualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
+//                        }
+//
+//                        if (transaction.getTransactionType().equals("Inbound")){
+//                            MaterialMaster materialMaster = materialMasterRepository.findById(transaction.getMaterialId())
+//                                    .orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
+//                            if (materialMaster != null) {
+//                                qualityDashboardResponse.setMaterialName(materialMaster.getMaterialName());
+//                            }
+//                            qualityDashboardResponse.setMaterialType(transaction.getMaterialType());
+//                        }
+//
+//                        if ("Outbound".equals(transaction.getTransactionType())){
+//                            log.info("MaterialId" + transaction.getMaterialId());
+//                            ProductMaster productMaster = productMasterRepository.findById(transaction.getMaterialId())
+//                                    .orElseThrow(() -> new ResourceNotFoundException("Product is not found"));
+//                            if (productMaster != null) {
+//                                qualityDashboardResponse.setMaterialName(productMaster.getProductName());
+//                            }
+//                            qualityDashboardResponse.setMaterialType(transaction.getMaterialType());
+//                        }
+//
+//
+//                        TransporterMaster transporterMaster = transporterMasterRepository.findById(transaction.getTransporterId())
+//                                .orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
+//                        if (transporterMaster != null) {
+//                            qualityDashboardResponse.setTransporterName(transporterMaster.getTransporterName());
+//                        }
+//
+//                        VehicleMaster vehicleMaster = vehicleMasterRepository.findById(transaction.getVehicleId())
+//                                .orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
+//                        if (vehicleMaster != null) {
+//                            qualityDashboardResponse.setVehicleNo(vehicleMaster.getVehicleNo());
+//                        }
+//
+//                        qualityDashboardResponse.setIn(transaction.getVehicleIn());
+//                        qualityDashboardResponse.setOut(transaction.getVehicleOut());
+//                        qualityDashboardResponse.setDate(transaction.getTransactionDate());
+//                        return Stream.of(qualityDashboardResponse);
+//                    } else {
+//                        return Stream.empty();
+//                    }
+//                })
+//                .collect(Collectors.toList());
+        List<QualityDashboardResponse> qualityDashboardResponses = new ArrayList<>();
 
+        for (GateEntryTransaction transaction : allTransactions) {
+//            if (transaction.getTransactionType().equals("Inbound") || transaction.getTransactionType().equals("Outbound")) {
+                VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
+                if (transactionStatus != null && (transactionStatus.getStatusCode().equals("GWT") || transactionStatus.getStatusCode().equals("TWT") || transactionStatus.getStatusCode().equals("QCT"))) {
+                    QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+                    qualityDashboardResponse.setTicketNo(transaction.getTicketNo());
+                    qualityDashboardResponse.setTpNo(transaction.getTpNo());
+                    qualityDashboardResponse.setPoNo(transaction.getPoNo());
+                    qualityDashboardResponse.setChallanNo(transaction.getChallanNo());
+                    qualityDashboardResponse.setTransactionType(transaction.getTransactionType());
+
+
+
+                    if (transaction.getTransactionType().equals("Inbound")) {
                         SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(transaction.getSupplierId());
                         if (supplierMaster != null) {
                             qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
                             qualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
                         }
-
                         MaterialMaster materialMaster = materialMasterRepository.findById(transaction.getMaterialId())
                                 .orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
                         if (materialMaster != null) {
                             qualityDashboardResponse.setMaterialName(materialMaster.getMaterialName());
-                            qualityDashboardResponse.setMaterialType(transaction.getMaterialType());
                         }
-
-                        TransporterMaster transporterMaster = transporterMasterRepository.findById(transaction.getTransporterId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
-                        if (transporterMaster != null) {
-                            qualityDashboardResponse.setTransporterName(transporterMaster.getTransporterName());
-                        }
-
-                        VehicleMaster vehicleMaster = vehicleMasterRepository.findById(transaction.getVehicleId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
-                        if (vehicleMaster != null) {
-                            qualityDashboardResponse.setVehicleNo(vehicleMaster.getVehicleNo());
-                        }
-
-                        qualityDashboardResponse.setIn(transaction.getVehicleIn());
-                        qualityDashboardResponse.setOut(transaction.getVehicleOut());
-                        qualityDashboardResponse.setDate(transaction.getTransactionDate());
-                        return Stream.of(qualityDashboardResponse);
-                    } else {
-                        return Stream.empty();
+//                        qualityDashboardResponse.setMaterialType(transaction.getMaterialType());
                     }
-                })
-                .collect(Collectors.toList());
+
+                    if (transaction.getTransactionType().equals("Outbound")) {
+                        CustomerMaster customerMaster = customerMasterRepository.findByCustomerId(transaction.getCustomerId());
+                        if (customerMaster != null) {
+                            qualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
+                            qualityDashboardResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine1());
+                        }
+                        log.info("TicketNo" + transaction.getTicketNo());
+                        log.info("MaterialId" + transaction.getMaterialId());
+                        ProductMaster productMaster = productMasterRepository.findById(transaction.getMaterialId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Product is not found"));
+                        if (productMaster != null) {
+                            qualityDashboardResponse.setMaterialName(productMaster.getProductName());
+                        }
+                    }
+
+                    qualityDashboardResponse.setMaterialType(transaction.getMaterialType());
+                    TransporterMaster transporterMaster = transporterMasterRepository.findById(transaction.getTransporterId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
+                    if (transporterMaster != null) {
+                        qualityDashboardResponse.setTransporterName(transporterMaster.getTransporterName());
+                    }
+
+                    VehicleMaster vehicleMaster = vehicleMasterRepository.findById(transaction.getVehicleId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
+                    if (vehicleMaster != null) {
+                        qualityDashboardResponse.setVehicleNo(vehicleMaster.getVehicleNo());
+                    }
+
+                    qualityDashboardResponse.setIn(transaction.getVehicleIn());
+                    qualityDashboardResponse.setOut(transaction.getVehicleOut());
+                    qualityDashboardResponse.setDate(transaction.getTransactionDate());
+
+                    qualityDashboardResponses.add(qualityDashboardResponse);
+                }
+//            }
+        }
+
+//        return qualityDashboardResponses;
+
 
         return qualityDashboardResponses;
     }
@@ -226,20 +306,32 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             qualityCreationResponse.setChallanNo(gateEntryTransaction.getChallanNo());
             qualityCreationResponse.setTransactionType(gateEntryTransaction.getTransactionType());
 
-            if ("Inbound".equals(gateEntryTransaction.getTransactionType())) {
-                Object[] supplierInfo = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(gateEntryTransaction.getSupplierId());
-                setSupplierOrCustomerInfo(qualityCreationResponse, supplierInfo);
-            } else if ("Outbound".equals(gateEntryTransaction.getTransactionType())) {
-                Object[] customerInfo = customerMasterRepository.findCustomerNameAndAddressBycustomerId(ticketNo);
-                setSupplierOrCustomerInfo(qualityCreationResponse, customerInfo);
+            SupplierMaster supplierMaster = null;
+            CustomerMaster customerMaster = null;
+
+            if (gateEntryTransaction.getTransactionType().equals("Inbound")) {
+                supplierMaster = supplierMasterRepository.findById(gateEntryTransaction.getSupplierId())
+                        .orElseThrow(() -> new ResourceNotFoundException("SupplierMaster not found"));
+                qualityCreationResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
+                qualityCreationResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
+            } else if (gateEntryTransaction.getTransactionType().equals("Outbound")) {
+                customerMaster = customerMasterRepository.findById(gateEntryTransaction.getCustomerId())
+                        .orElseThrow(() -> new ResourceNotFoundException("CustomerMaster not found"));
+                qualityCreationResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
+                qualityCreationResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine1());
             }
 
             String materialName = materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId());
             qualityCreationResponse.setMaterialName(materialName);
             qualityCreationResponse.setMaterialTypeName(gateEntryTransaction.getMaterialType());
 
-            List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialName(materialName);
-            qualityCreationResponse.setParameters(mapQualityRangesToParameter(qualityRangeMasters, ticketNo));
+            if (gateEntryTransaction.getTransactionType().equals("Inbound")) {
+                List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(materialName, supplierMaster.getSupplierName(), supplierMaster.getSupplierAddressLine1());
+                qualityCreationResponse.setParameters(mapQualityRangesToParameter(qualityRangeMasters, ticketNo));
+            } else if (gateEntryTransaction.getTransactionType().equals("Outbound")) {
+                List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByProductMasterProductName(materialName);
+                qualityCreationResponse.setParameters(mapQualityRangesToParameter(qualityRangeMasters, ticketNo));
+            }
         } catch (Exception e) {
             log.error("Error occurred while at : ", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while fetching quality ranges");
@@ -247,14 +339,14 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         return qualityCreationResponse;
     }
 
-    private void setSupplierOrCustomerInfo(QualityCreationResponse qualityCreationResponse, Object[] info) {
-        if (info != null && info.length >= 2) {
-            String name = (String) info[0];
-            String address = (String) info[1];
-            qualityCreationResponse.setSupplierOrCustomerName(name);
-            qualityCreationResponse.setSupplierOrCustomerAddress(address);
-        }
-    }
+//    private void setSupplierOrCustomerInfo(QualityCreationResponse qualityCreationResponse, Object[] info) {
+////        if (info != null && info.length >= 2) {
+//            String name = String.valueOf(info[0]);
+//            String address = String.valueOf(info[1]);
+//            qualityCreationResponse.setSupplierOrCustomerName(name);
+//            qualityCreationResponse.setSupplierOrCustomerAddress(address);
+//        }
+//    }
 
     private List<QualityCreationResponse.Parameter> mapQualityRangesToParameter(List<QualityRangeMaster> qualityRangeMasters, Integer ticketNo) {
         List<QualityCreationResponse.Parameter> parameterList = new ArrayList<>();
@@ -277,28 +369,28 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
     private void setParameterValue(QualityCreationResponse.Parameter parameter, String parameterName, QualityTransaction qualityTransaction) {
         switch (parameterName) {
-            case "moisture":
+            case "Moisture":
                 parameter.setParameterValue(qualityTransaction.getMoisture());
                 break;
-            case "vm":
+            case "Vm":
                 parameter.setParameterValue(qualityTransaction.getVm());
                 break;
-            case "ash":
+            case "Ash":
                 parameter.setParameterValue(qualityTransaction.getAsh());
                 break;
-            case "fc":
+            case "Fc":
                 parameter.setParameterValue(qualityTransaction.getFc());
                 break;
-            case "size_20mm":
+            case "Size_20mm":
                 parameter.setParameterValue(qualityTransaction.getSize());
                 break;
-            case "size_03mm":
+            case "Size_03mm":
                 parameter.setParameterValue(qualityTransaction.getSize());
                 break;
-            case "fe_t":
+            case "Fe_t":
                 parameter.setParameterValue(qualityTransaction.getFe_t());
                 break;
-            case "loi":
+            case "Loi":
                 parameter.setParameterValue(qualityTransaction.getLoi());
                 break;
             default:

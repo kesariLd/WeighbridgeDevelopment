@@ -23,5 +23,9 @@ public interface QualityRangeMasterRepository extends JpaRepository<QualityRange
     boolean existsByParameterNameAndMaterialMasterMaterialId(String parameterName, long materialId);
 
     List<QualityRangeMaster> findByMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(String materialName, String supplierName, String supplierAddress);
+
+    boolean existsByParameterNameAndProductMasterProductId(String parameterName, long productId);
+
+    List<QualityRangeMaster> findByProductMasterProductName(String productName);
 }
 

@@ -47,6 +47,4 @@ public class MaterialMaster {
 
     @OneToMany(mappedBy = "materialMaster")
     private List<MaterialTypeMaster> materialTypes;
-
-
 }

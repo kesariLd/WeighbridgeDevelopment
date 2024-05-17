@@ -91,14 +91,6 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
             materialMaster = materialMasterRepository.save(materialMaster);
         }
 
-//        SupplierMaster supplierMaster=supplierMasterRepository.findBySupplierName(request.getMaterialName());
-//        if(supplierMaster==null){
-//            supplierMaster=new SupplierMaster();
-//            supplierMaster.setSupplierName(request.getSupplierName());
-//            supplierMaster.setSupplierAddressLine1(request.getSupplierAddress());
-//            supplierMaster=supplierMasterRepository.save(supplierMaster);
-//        }
-
         MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
         if (request.getMaterialTypeName() != null && materialTypeMaster == null) {
             materialTypeMaster = new MaterialTypeMaster();
@@ -108,12 +100,8 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
         }
 
         List<QualityRangeMaster> qualityRangeMasters = createQualityRanges(request.getParameters(), materialMaster,request.getSupplierName(), request.getSupplierAddress());
-//        for (QualityRangeMaster qualityRangeMaster : qualityRangeMasters) {
-//            qualityRangeMaster.setSupplierName(supplierMaster.getSupplierName());
-//            qualityRangeMaster.setSupplierAddress(supplierMaster.getSupplierAddressLine1());
-//        }
         qualityRangeMasterRepository.saveAll(qualityRangeMasters);
-        return "Data saved successfully";
+        return "Material saved successfully";
     }
 
     @Override
@@ -125,10 +113,10 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     @Override
     public List<MaterialWithParameters> getQualityRangesByMaterialNameAndSupplierNameAndAddress(String materialName, String supplierName, String supplierAddress) {
         List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(materialName, supplierName, supplierAddress);
-        return mapQualityRangesToMaterialWithParameters(qualityRangeMasters);
+        return mapQualityRangesToMaterialWithParameters(qualityRangeMasters, supplierName, supplierAddress);
     }
 
-    private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRangeMaster> qualityRangeMasters) {
+    private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRangeMaster> qualityRangeMasters, String supplierName, String supplierAddress) {
         Map<String, MaterialWithParameters> materialWithParametersMap = new HashMap<>();
         for (QualityRangeMaster qualityRangeMaster : qualityRangeMasters) {
             String key = qualityRangeMaster.getMaterialMaster().getMaterialName();
@@ -137,6 +125,8 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
                 materialWithParameters = new MaterialWithParameters();
                 materialWithParameters.setMaterialName(qualityRangeMaster.getMaterialMaster().getMaterialName());
                 materialWithParameters.setMaterialTypeName(null);
+                materialWithParameters.setSupplierName(supplierName);
+                materialWithParameters.setSupplierAddress(supplierAddress);
                 materialWithParameters.setParameters(new ArrayList<>());
                 materialWithParametersMap.put(key, materialWithParameters);
             }
