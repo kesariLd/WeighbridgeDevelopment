@@ -157,7 +157,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         for (GateEntryTransaction transaction : allTransactions) {
 //            if (transaction.getTransactionType().equals("Inbound") || transaction.getTransactionType().equals("Outbound")) {
                 VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
-                if (transactionStatus != null && (transactionStatus.getStatusCode().equals("GWT") || transactionStatus.getStatusCode().equals("TWT") || transactionStatus.getStatusCode().equals("QCT"))) {
+                if (transactionStatus != null && (transactionStatus.getStatusCode().equals("GWT") || transactionStatus.getStatusCode().equals("TWT") )) {
                     QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
                     qualityDashboardResponse.setTicketNo(transaction.getTicketNo());
                     qualityDashboardResponse.setTpNo(transaction.getTpNo());
