@@ -191,6 +191,8 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         // vehicleAndTransporterDetail.setCustomerAddress();
         vehicleAndTransporterDetail.setSaleOrderNo(bySalePassNo.getPurchaseSale().getSaleOrderNo());
         vehicleAndTransporterDetail.setPurchaseOrderNo(bySalePassNo.getPurchaseSale().getPurchaseOrderNo());
+        vehicleAndTransporterDetail.setSaleOrderDate(bySalePassNo.getPurchaseSale().getPurchaseOrderedDate());
+        System.out.println(bySalePassNo.getPurchaseSale().getPurchaseOrderedDate());
         return vehicleAndTransporterDetail;
     }
 }

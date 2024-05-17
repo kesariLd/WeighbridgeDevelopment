@@ -27,6 +27,4 @@ public class SalesProcessController {
         return ResponseEntity.ok(bySalePassNo);
     }
 
-
-
 }
