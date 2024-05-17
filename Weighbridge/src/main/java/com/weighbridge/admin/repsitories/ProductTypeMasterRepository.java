@@ -13,4 +13,7 @@ public interface ProductTypeMasterRepository extends JpaRepository<ProductTypeMa
 
     @Query("SELECT ptm.productTypeName FROM ProductTypeMaster ptm WHERE ptm.productMaster.productName = :productName")
     List<String> findByProductMasterProductName(@Param("productName") String productName);
+
+    @Query("SELECT p.productName FROM ProductMaster p WHERE p.productId = :productId")
+    String findProductNameByProductId(@Param("productId") long productId);
 }
