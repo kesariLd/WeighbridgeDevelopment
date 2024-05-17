@@ -168,45 +168,51 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
 
                     if (transaction.getTransactionType().equals("Inbound")) {
-                        SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(transaction.getSupplierId());
-                        if (supplierMaster != null) {
-                            qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
-                            qualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
+                        supplierMasterRepository.findSupplierNameBySupplierId(transaction.getSupplierId());
+                        Object[] supplierNameBySupplierId = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(transaction.getSupplierId());
+                        // Inbound transaction
+                        Object[] supplierInfo = (Object[]) supplierNameBySupplierId[0];
+                        if (supplierInfo != null && supplierInfo.length >= 2) {
+                            String supplierName = (String) supplierInfo[0];
+                            String supplierAddress = (String) supplierInfo[1];
+                            qualityDashboardResponse.setSupplierOrCustomerName(supplierName);
+                            qualityDashboardResponse.setSupplierOrCustomerAddress(supplierAddress);
                         }
-                        MaterialMaster materialMaster = materialMasterRepository.findById(transaction.getMaterialId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
-                        if (materialMaster != null) {
-                            qualityDashboardResponse.setMaterialName(materialMaster.getMaterialName());
+                        String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
+                        if (materialName != null) {
+                            qualityDashboardResponse.setMaterialName(materialName);
                         }
 //                        qualityDashboardResponse.setMaterialType(transaction.getMaterialType());
                     }
 
                     if (transaction.getTransactionType().equals("Outbound")) {
-                        CustomerMaster customerMaster = customerMasterRepository.findByCustomerId(transaction.getCustomerId());
-                        if (customerMaster != null) {
-                            qualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
-                            qualityDashboardResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine1());
+                        Object[] customerNamebyId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(transaction.getCustomerId());
+                        // Inbound transaction
+                        Object[] customerInfo = (Object[]) customerNamebyId[0];
+                        if (customerInfo != null && customerInfo.length >= 2) {
+                            String customerName = (String) customerInfo[0];
+                            String customerAddress = (String) customerInfo[1];
+                            qualityDashboardResponse.setSupplierOrCustomerName(customerName);
+                            qualityDashboardResponse.setSupplierOrCustomerAddress(customerAddress);
                         }
                         log.info("TicketNo" + transaction.getTicketNo());
                         log.info("MaterialId" + transaction.getMaterialId());
-                        ProductMaster productMaster = productMasterRepository.findById(transaction.getMaterialId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Product is not found"));
-                        if (productMaster != null) {
-                            qualityDashboardResponse.setMaterialName(productMaster.getProductName());
+                        String productNameByProductId = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
+                        if (productNameByProductId != null) {
+                            qualityDashboardResponse.setMaterialName(productNameByProductId);
                         }
                     }
 
                     qualityDashboardResponse.setMaterialType(transaction.getMaterialType());
-                    TransporterMaster transporterMaster = transporterMasterRepository.findById(transaction.getTransporterId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Transporter is not found"));
-                    if (transporterMaster != null) {
-                        qualityDashboardResponse.setTransporterName(transporterMaster.getTransporterName());
+                    String transporterName = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getTransporterId());
+                    if (transporterName != null) {
+                        qualityDashboardResponse.setTransporterName(transporterName);
                     }
 
-                    VehicleMaster vehicleMaster = vehicleMasterRepository.findById(transaction.getVehicleId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
-                    if (vehicleMaster != null) {
-                        qualityDashboardResponse.setVehicleNo(vehicleMaster.getVehicleNo());
+
+                    String vehicleNoById = vehicleMasterRepository.findVehicleNoById(transaction.getVehicleId());
+                    if (vehicleNoById != null) {
+                        qualityDashboardResponse.setVehicleNo(vehicleNoById);
                     }
 
                     qualityDashboardResponse.setIn(transaction.getVehicleIn());
