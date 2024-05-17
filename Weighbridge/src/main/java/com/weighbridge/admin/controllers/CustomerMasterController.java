@@ -82,7 +82,7 @@ public class CustomerMasterController {
      * @throws Exception - If any unexpected error occurs during customer address retrieval.
      */
     @GetMapping("/get/{customerName}")
-    public ResponseEntity<List<String>> getCustsomerAddressByCustomerName(@PathVariable String customerName) throws Exception {
+    public ResponseEntity<List<String>> getCustsomerAddressByCustomerName(@PathVariable String customerName) {
         List<String> addressOfSupplier = customerMasterService.getAddressOfCustomer(customerName);
         return new ResponseEntity<>(addressOfSupplier, HttpStatus.OK);
     }
