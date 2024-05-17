@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -20,6 +21,10 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
      * @return A list of gate entry transactions matching the provided site ID and company ID.
      */
     List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTicketNoDesc(String siteId, String companyId);
+    List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String siteId, String companyId);
+
+    // Modified method to find by siteId, companyId, and transactionDate within the specified range
+    List<GateEntryTransaction> findBySiteIdAndCompanyIdAndTransactionDateBetweenOrderByTransactionDateDesc(String siteId, String companyId, LocalDate startDate, LocalDate endDate);
 
 //    @Query
 //    List<Object[]> findGateEntryTransactions(Long siteId, Long companyId, List<String> selectedFields);
