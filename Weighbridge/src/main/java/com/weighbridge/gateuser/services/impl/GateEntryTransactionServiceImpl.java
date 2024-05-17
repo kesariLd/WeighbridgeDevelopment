@@ -390,9 +390,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
             }
-            if (startDate == null && endDate == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date is not provided");
-            }
             if (startDate == null && endDate != null) {
                 startDate = endDate;
             }
