@@ -137,6 +137,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     public List<VehicleAndTransporterDetail> getVehiclesAndTransporterDetails(){
         List<SalesProcess> allVehiclesDetails= salesProcessRepository.findAll();
+        System.out.println(allVehiclesDetails);
         List<VehicleAndTransporterDetail> listOfVehicle=new ArrayList<>();
         for (SalesProcess salesProcess:allVehiclesDetails) {
             VehicleAndTransporterDetail vehicleAndTransporterDetail = new VehicleAndTransporterDetail();
@@ -146,10 +147,46 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             vehicleAndTransporterDetail.setProductName(salesProcess.getProductName());
             vehicleAndTransporterDetail.setProductType(salesProcess.getProductType());
             vehicleAndTransporterDetail.setConsignmentWeight(salesProcess.getConsignmentWeight());
+            Object[] customerNameAndAddressBycustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(salesProcess.getPurchaseSale().getCustomerId());
+            Object[] customerData = (Object[]) customerNameAndAddressBycustomerId[0];
+            if (customerData != null && customerData.length >= 2) {
+                String customerName = (String) customerData[0];
+                String customerAddress = (String) customerData[1];
+                vehicleAndTransporterDetail.setCustomerName(customerName);
+                vehicleAndTransporterDetail.setCustomerAddress(customerAddress);
+            }
+            //System.out.println(customerNameAndAddressBycustomerId[1]);
+           // vehicleAndTransporterDetail.setCustomerAddress();
+            vehicleAndTransporterDetail.setSaleOrderNo(salesProcess.getPurchaseSale().getSaleOrderNo());
+            vehicleAndTransporterDetail.setPurchaseOrderNo(salesProcess.getPurchaseSale().getPurchaseOrderNo());
             listOfVehicle.add(vehicleAndTransporterDetail);
         }
         return listOfVehicle;
     }
 
+
+    public VehicleAndTransporterDetail getBySalePassNo(String salePassNo){
+        SalesProcess bySalePassNo = salesProcessRepository.findBySalePassNo(salePassNo);
+        VehicleAndTransporterDetail vehicleAndTransporterDetail = new VehicleAndTransporterDetail();
+        vehicleAndTransporterDetail.setSalePassNo(bySalePassNo.getSalePassNo());
+        vehicleAndTransporterDetail.setTransporterName(bySalePassNo.getTransporterName());
+        vehicleAndTransporterDetail.setVehicleNo(bySalePassNo.getVehicleNo());
+        vehicleAndTransporterDetail.setProductName(bySalePassNo.getProductName());
+        vehicleAndTransporterDetail.setProductType(bySalePassNo.getProductType());
+        vehicleAndTransporterDetail.setConsignmentWeight(bySalePassNo.getConsignmentWeight());
+        Object[] customerNameAndAddressBycustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(bySalePassNo.getPurchaseSale().getCustomerId());
+        Object[] customerData = (Object[]) customerNameAndAddressBycustomerId[0];
+        if (customerData != null && customerData.length >= 2) {
+            String customerName = (String) customerData[0];
+            String customerAddress = (String) customerData[1];
+            vehicleAndTransporterDetail.setCustomerName(customerName);
+            vehicleAndTransporterDetail.setCustomerAddress(customerAddress);
+        }
+        //System.out.println(customerNameAndAddressBycustomerId[1]);
+        // vehicleAndTransporterDetail.setCustomerAddress();
+        vehicleAndTransporterDetail.setSaleOrderNo(bySalePassNo.getPurchaseSale().getSaleOrderNo());
+        vehicleAndTransporterDetail.setPurchaseOrderNo(bySalePassNo.getPurchaseSale().getPurchaseOrderNo());
+        return vehicleAndTransporterDetail;
+    }
 
 }

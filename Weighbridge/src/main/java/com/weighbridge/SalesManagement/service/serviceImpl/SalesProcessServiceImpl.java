@@ -5,6 +5,7 @@ import com.weighbridge.SalesManagement.entities.SalesProcess;
 import com.weighbridge.SalesManagement.payloads.SalesDetailBySalePassNo;
 import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
 import com.weighbridge.SalesManagement.payloads.SalesProcessRequest;
+import com.weighbridge.SalesManagement.payloads.VehicleAndTransporterDetail;
 import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.SalesManagement.service.SalesProcessService;
@@ -125,7 +126,7 @@ public class SalesProcessServiceImpl implements SalesProcessService {
      * @return
      */
     @Override
-    public List<SalesDetailBySalePassNo> getBySalePassNo(String saleOrderNo) {
+    public List<SalesDetailBySalePassNo> getBySaleOrderNo(String saleOrderNo) {
         List<SalesProcess> byPurchaseSaleSaleOrderNo = salesProcessRepository.findByPurchaseSaleSaleOrderNo(saleOrderNo);
         List<SalesDetailBySalePassNo> salesList=new ArrayList<>();
         for(SalesProcess salesProcess:byPurchaseSaleSaleOrderNo){
@@ -141,13 +142,14 @@ public class SalesProcessServiceImpl implements SalesProcessService {
         return salesList;
     }
 
+
     private String generateSalePassNo(String saleOrderNo) {
         Long count = salesProcessRepository.countByPurchaseSaleSaleOrderNo(saleOrderNo);
 
         // Increment the count for the current purchase order and format it as a 2-digit string
         String incrementedNumber = String.format("%02d", count + 1);
 
-        String salePassNo = saleOrderNo + "/" + incrementedNumber;
+        String salePassNo = saleOrderNo + "-" + incrementedNumber;
         return salePassNo;
     }
 }

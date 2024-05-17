@@ -73,7 +73,6 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
         materialMasterRepository.save(materialMaster);
     }
 
-
     @Override
     public String createMaterialWithParameterAndRange(MaterialWithParameters request) {
         HttpSession session = httpServletRequest.getSession();
@@ -162,6 +161,4 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
                 })
                 .collect(Collectors.toList());
     }
-
-
 }
