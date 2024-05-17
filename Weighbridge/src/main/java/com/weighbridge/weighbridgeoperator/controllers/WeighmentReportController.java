@@ -51,7 +51,7 @@ public class WeighmentReportController {
     @GetMapping("/getDe")
     public ResponseEntity<List<Map<String, Object>>> getDemoData(@RequestBody List<String> selectedFields){
 
-        return new ResponseEntity<>(weighmentReportService.getDemoData(selectedFields), HttpStatus.OK);
+        return new ResponseEntity<>(weighmentReportService.generateCustomizedReport(selectedFields), HttpStatus.OK);
     }
 }
 

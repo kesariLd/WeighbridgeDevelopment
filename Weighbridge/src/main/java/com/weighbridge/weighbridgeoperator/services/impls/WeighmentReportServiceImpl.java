@@ -198,27 +198,12 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
      * @return
      */
     public List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate) {
-        if (startDate == null && endDate == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date is not provided");
-        }
-        if (startDate == null && endDate != null) {
-            startDate = endDate;
-        }
-        if (startDate != null && endDate == null) {
-            endDate = startDate;
-        }
-        LocalDate finalStartDate = startDate;
-        LocalDate finalEndDate = endDate;
-        List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransaction();
+
+        List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransactionForWeighmentReport(startDate,endDate);
 
         Map<String, Map<String, List<WeighbridgeReportResponseList>>> groupedReports = new HashMap<>();
 
         gateEntryTransactionResponses.stream()
-                .filter(response -> {
-                    LocalDate transactionDate = response.getTransactionDate();
-                    return transactionDate != null && !transactionDate.isBefore(finalStartDate) && !transactionDate.isAfter(finalEndDate);
-                })
-                .filter(response -> isValidTransaction(response, finalStartDate, finalEndDate))
                 .forEach(response -> {
                     String materialName = response.getMaterial();
                     String supplierOrCustomer = response.getTransactionType().equalsIgnoreCase("Inbound") ?
@@ -274,7 +259,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         return weighbridgeReportResponseList;
     }
     @Override
-    public List<Map<String, Object>> getDemoData(List<String> selectedFields) {
+    public List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields) {
         HttpSession session = httpServletRequest.getSession();
         if (session == null || session.getAttribute("userId") == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");

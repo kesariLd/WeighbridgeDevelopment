@@ -34,6 +34,6 @@ public interface WeighmentReportService {
          */
         List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate);
 
-    List<Map<String, Object>> getDemoData(List<String> selectedFields);
+    List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields);
 
 }

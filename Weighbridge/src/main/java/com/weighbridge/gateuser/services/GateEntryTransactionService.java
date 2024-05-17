@@ -5,6 +5,7 @@ import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,6 +37,7 @@ public interface GateEntryTransactionService {
      *         transaction type, material, supplier, vehicle information, timestamps, and other related data.
      */
     List<GateEntryTransactionResponse> getAllGateEntryTransaction();
+    List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate , LocalDate endDate);
 
 //    List<Object[]> getDemoData(List<String> selectedFields);
 }
