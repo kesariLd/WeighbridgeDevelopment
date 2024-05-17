@@ -25,7 +25,6 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     // Modified method to find by siteId, companyId, and transactionDate within the specified range
     List<GateEntryTransaction> findBySiteIdAndCompanyIdAndTransactionDateBetweenOrderByTransactionDateDesc(String siteId, String companyId, LocalDate startDate, LocalDate endDate);
-
 //    @Query
 //    List<Object[]> findGateEntryTransactions(Long siteId, Long companyId, List<String> selectedFields);
 

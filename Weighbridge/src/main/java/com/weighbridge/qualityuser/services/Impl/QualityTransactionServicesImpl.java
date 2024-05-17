@@ -414,21 +414,30 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             VehicleMaster vehicleMaster = vehicleMasterRepository.findById(gateEntryTransaction.getVehicleId()).
                     orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
             reportResponse.setVehicleNo(vehicleMaster.getVehicleNo());
+            if(gateEntryTransaction.getTransactionType().equalsIgnoreCase("Inbound")){
+                MaterialMaster materialMaster = materialMasterRepository.findById(gateEntryTransaction.getMaterialId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
+                reportResponse.setMaterialOrProduct(materialMaster.getMaterialName());
+                SupplierMaster supplierMaster = supplierMasterRepository.findById(gateEntryTransaction.getSupplierId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Supplier is not found"));
+                reportResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
+                reportResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
+            }
+            if(gateEntryTransaction.getTransactionType().equalsIgnoreCase("Outbound")) {
+                ProductMaster productMaster = productMasterRepository.findById(gateEntryTransaction.getMaterialId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
+                reportResponse.setMaterialOrProduct(productMaster.getProductName());
+                CustomerMaster customerMaster = customerMasterRepository.findById(gateEntryTransaction.getCustomerId()).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+                reportResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
+                reportResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine1());
 
+            }
             CompanyMaster companyMaster = companyMasterRepository.findById(gateEntryTransaction.getCompanyId())
                     .orElseThrow(() -> new ResourceNotFoundException("Company is not found"));
             reportResponse.setCompanyName(companyMaster.getCompanyName());
             reportResponse.setCompanyAddress(companyMaster.getCompanyAddress());
-
-            MaterialMaster materialMaster = materialMasterRepository.findById(gateEntryTransaction.getMaterialId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Material is not found"));
-            reportResponse.setMaterialOrProduct(materialMaster.getMaterialName());
-            reportResponse.setMaterialTypeOrProductType(gateEntryTransaction.getMaterialType());
-
-            SupplierMaster supplierMaster = supplierMasterRepository.findById(gateEntryTransaction.getSupplierId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Supplier is not found"));
-            reportResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
-            reportResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1());
+            String materialType = gateEntryTransaction.getMaterialType() != null ? gateEntryTransaction.getMaterialType() : "";
+            reportResponse.setMaterialTypeOrProductType(materialType);
 
             QualityTransaction qualityTransaction = qualityTransactioRepository.findByTicketNo(ticketNo);
             if (qualityTransaction != null) {

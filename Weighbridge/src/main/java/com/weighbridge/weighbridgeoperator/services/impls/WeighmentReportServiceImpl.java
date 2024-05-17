@@ -259,7 +259,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         return weighbridgeReportResponseList;
     }
     @Override
-    public List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields) {
+    public List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields,LocalDate startDate,LocalDate endDate) {
         HttpSession session = httpServletRequest.getSession();
         if (session == null || session.getAttribute("userId") == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
@@ -307,6 +307,23 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
                 criteriaBuilder.equal(gateEntryTransactionRoot.get("companyId"), userCompany),
                 criteriaBuilder.equal(gateEntryTransactionRoot.get("ticketNo"), weighmentTransactionRoot.get("gateEntryTransaction").get("ticketNo"))
         );
+        // Add date filtering predicates if startDate or endDate are provided
+        if (startDate != null && endDate != null) {
+            siteCompanyPredicate = criteriaBuilder.and(
+                    siteCompanyPredicate,
+                    criteriaBuilder.between(gateEntryTransactionRoot.get("transactionDate"), startDate, endDate)
+            );
+        } else if (startDate != null) {
+            siteCompanyPredicate = criteriaBuilder.and(
+                    siteCompanyPredicate,
+                    criteriaBuilder.greaterThanOrEqualTo(gateEntryTransactionRoot.get("transactionDate"), startDate)
+            );
+        } else if (endDate != null) {
+            siteCompanyPredicate = criteriaBuilder.and(
+                    siteCompanyPredicate,
+                    criteriaBuilder.lessThanOrEqualTo(gateEntryTransactionRoot.get("transactionDate"), endDate)
+            );
+        }
         criteriaQuery.where(siteCompanyPredicate);
 
         // Order by transactionDate descending
