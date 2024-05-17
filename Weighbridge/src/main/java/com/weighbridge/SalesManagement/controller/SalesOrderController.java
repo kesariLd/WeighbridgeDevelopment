@@ -23,7 +23,6 @@ public class SalesOrderController {
         return ResponseEntity.ok(str);
     }
 
-
     @GetMapping("/getAll/sales")
     public ResponseEntity<List<SalesDashboardResponse>> getAllSales(){
         List<SalesDashboardResponse> allSalesDetails = salesOrderService.getAllSalesDetails();
@@ -36,10 +35,16 @@ public class SalesOrderController {
         return ResponseEntity.ok(salesDetails);
     }
 
-    @GetMapping("/getVehicles/ByPurchasePassNo")
+    @GetMapping("/getAllVehicleDetails")
     public ResponseEntity<List<VehicleAndTransporterDetail>> getVehiclesDetail(){
         List<VehicleAndTransporterDetail> vehiclesAndTransporterDetails = salesOrderService.getVehiclesAndTransporterDetails();
         return ResponseEntity.ok(vehiclesAndTransporterDetails);
     }
 
+
+    @GetMapping("/getBySalePassNo/{salePassNo}")
+    public ResponseEntity<VehicleAndTransporterDetail> getVehicleDetailByPassNo(@PathVariable String salePassNo){
+        VehicleAndTransporterDetail vehicleAndTransporterDetail=salesOrderService.getBySalePassNo(salePassNo);
+        return ResponseEntity.ok(vehicleAndTransporterDetail);
+    }
 }

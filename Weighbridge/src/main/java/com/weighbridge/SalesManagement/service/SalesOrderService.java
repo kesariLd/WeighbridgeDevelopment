@@ -16,4 +16,6 @@ public interface SalesOrderService{
     public SalesDetailResponse getSalesDetails(String purchaseOrderNo);
 
     public List<VehicleAndTransporterDetail> getVehiclesAndTransporterDetails();
+
+    public VehicleAndTransporterDetail getBySalePassNo(String salePassNo);
 }
