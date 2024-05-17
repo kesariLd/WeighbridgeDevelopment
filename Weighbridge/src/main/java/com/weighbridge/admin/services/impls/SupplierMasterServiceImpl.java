@@ -73,7 +73,8 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
         List<SupplierMaster> supplierMasterList = supplierMasterRepository.findAll();
 // Map SupplierMaster objects to their names and collect into a list
         List<String> supplierNames = supplierMasterList.stream()
-                .map(SupplierMaster::getSupplierName) // Assuming getSupplierName() returns the supplier name
+                .map(SupplierMaster::getSupplierName)
+                .distinct()// Assuming getSupplierName() returns the supplier name
                 .collect(Collectors.toList());
         return supplierNames;
     }

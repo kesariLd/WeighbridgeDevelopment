@@ -23,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 @Service
 public class SalesOrderServiceImpl implements SalesOrderService {
@@ -151,9 +152,9 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             Object[] customerData = (Object[]) customerNameAndAddressBycustomerId[0];
             if (customerData != null && customerData.length >= 2) {
                 String customerName = (String) customerData[0];
-                String customerAddress = (String) customerData[1];
+                String customerAddress1 = (String) customerData[1];
                 vehicleAndTransporterDetail.setCustomerName(customerName);
-                vehicleAndTransporterDetail.setCustomerAddress(customerAddress);
+                vehicleAndTransporterDetail.setCustomerAddress(customerAddress1);
             }
             //System.out.println(customerNameAndAddressBycustomerId[1]);
            // vehicleAndTransporterDetail.setCustomerAddress();
@@ -174,11 +175,15 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         vehicleAndTransporterDetail.setProductName(bySalePassNo.getProductName());
         vehicleAndTransporterDetail.setProductType(bySalePassNo.getProductType());
         vehicleAndTransporterDetail.setConsignmentWeight(bySalePassNo.getConsignmentWeight());
-        Object[] customerNameAndAddressBycustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(bySalePassNo.getPurchaseSale().getCustomerId());
+        Object[] customerNameAndAddressBycustomerId = customerMasterRepository.findCustomerNameAndAddress1andAddress2ByCustomerId(bySalePassNo.getPurchaseSale().getCustomerId());
         Object[] customerData = (Object[]) customerNameAndAddressBycustomerId[0];
         if (customerData != null && customerData.length >= 2) {
             String customerName = (String) customerData[0];
-            String customerAddress = (String) customerData[1];
+            String customerAddress1 = (String) customerData[1];
+            String customerAddress2 = (String) customerData[2];
+            String customerAddress = customerAddress1 + "," + customerAddress2;
+            vehicleAndTransporterDetail.setCustomerName(customerName);
+            vehicleAndTransporterDetail.setCustomerAddress(customerAddress);
             vehicleAndTransporterDetail.setCustomerName(customerName);
             vehicleAndTransporterDetail.setCustomerAddress(customerAddress);
         }
@@ -188,5 +193,4 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         vehicleAndTransporterDetail.setPurchaseOrderNo(bySalePassNo.getPurchaseSale().getPurchaseOrderNo());
         return vehicleAndTransporterDetail;
     }
-
 }

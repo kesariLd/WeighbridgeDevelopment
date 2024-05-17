@@ -25,7 +25,8 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
     Object[] findCustomerNameAndAddressBycustomerId(@Param("customerId") long customerId);
 
 
-
+    @Query("SELECT c.customerName,c.customerAddressLine1,c.customerAddressLine2 from CustomerMaster c where c.customerId =:customerId")
+    Object[] findCustomerNameAndAddress1andAddress2ByCustomerId(@Param("customerId") long customerId);
     Boolean existsByCustomerNameAndCustomerAddressLine1AndCustomerAddressLine2(String customerName, String addressLine1, String addressLine2);
 
 
