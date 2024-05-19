@@ -19,6 +19,6 @@ public class TicketResponse {
     private double grossWeight;
     private double tareWeight;
     private double netWeight;
-    private LocalDateTime grossWeightTime;
-    private LocalDateTime tareWeightTime;
+    private String grossWeightTime;
+    private String tareWeightTime;
 }

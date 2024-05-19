@@ -31,6 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -276,8 +277,14 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             LocalDateTime grossWeightTime = byTicketNoGWT.map(TransactionLog::getTimestamp).map(t -> t.withSecond(0).withNano(0)).orElse(null);
             LocalDateTime tareWeightTime = byTicketNoTWT.map(TransactionLog::getTimestamp).map(t -> t.withSecond(0).withNano(0)).orElse(null);
 
-            ticketResponse.setGrossWeightTime(grossWeightTime);
-            ticketResponse.setTareWeightTime(tareWeightTime);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            if (grossWeightTime != null) {
+                ticketResponse.setGrossWeightTime(grossWeightTime.format(formatter));
+            }
+
+            if (tareWeightTime != null) {
+                ticketResponse.setTareWeightTime(tareWeightTime.format(formatter));
+            }
 
             String transactionType = gateEntryTransaction.getTransactionType();
             WeighmentTransaction byGateEntryTransactionTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(ticketNo);
@@ -294,7 +301,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                         ticketResponse.setSupplierName(supplierName);
                         ticketResponse.setSupplierAddress(supplierAddress);
                     }
-                } else {
+                }
+                if (transactionType.equalsIgnoreCase("Outbound")) {
                     ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
                     ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight());
                     Object[] customerInfo = customerMasterRepository.findCustomerNameAndAddressBycustomerId(gateEntryTransaction.getCustomerId());
