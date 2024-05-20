@@ -311,6 +311,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             }
 //            ticketResponse.setSupplierName(supplierName);
             ticketResponse.setDriverDlNo(gateEntryTransaction.getDlNo());
+            ticketResponse.setConsignmentWeight(gateEntryTransaction.getSupplyConsignmentWeight());
 //            ticketResponse.setSupplierAddress(supplierAddress);
             return ticketResponse;
         }

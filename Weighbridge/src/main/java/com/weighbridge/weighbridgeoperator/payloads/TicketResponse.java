@@ -21,4 +21,5 @@ public class TicketResponse {
     private double netWeight;
     private LocalDateTime grossWeightTime;
     private LocalDateTime tareWeightTime;
+    private double consignmentWeight;
 }
