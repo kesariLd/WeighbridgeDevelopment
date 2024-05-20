@@ -1,6 +1,8 @@
 package com.weighbridge.gateuser.repositories;
 
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
@@ -21,6 +23,9 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
      * @return A list of gate entry transactions matching the provided site ID and company ID.
      */
     List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTicketNoDesc(String siteId, String companyId);
+    //Pagination get All user
+    Page<GateEntryTransaction> findBySiteIdAndCompanyId(Pageable pageable,String siteId, String companyId);
+
     List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String siteId, String companyId);
 
     // Modified method to find by siteId, companyId, and transactionDate within the specified range
