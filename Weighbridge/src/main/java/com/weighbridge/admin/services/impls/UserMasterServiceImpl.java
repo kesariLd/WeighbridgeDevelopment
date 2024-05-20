@@ -275,11 +275,11 @@ public class UserMasterServiceImpl implements UserMasterService {
                     .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
             // Check if the new email or contact number already exists for other users
-            boolean userExists = userMasterRepository.existsByUserEmailIdAndUserIdNotOrUserContactNoAndUserIdNot(
-                    updateRequest.getEmailId(), userId, updateRequest.getContactNo(), userId
+            boolean userExists = userMasterRepository.existsByUserEmailIdAndUserIdNot(
+                    updateRequest.getEmailId(), userId
             );
             if (userExists) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "EmailId and ContactNo is exists with another user");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "EmailId is exists with another user");
             }
 
             // Fetch company and site details
