@@ -15,7 +15,6 @@ import java.util.Map;
 /**
  * Rest Controller class for handling weighment report related API requests.
  */
-// todo do customize report , field can be choose
 @RestController
 @RequestMapping("/api/v1/weighment")
 public class WeighmentReportController {
