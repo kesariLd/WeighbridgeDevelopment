@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -150,8 +151,9 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                     qualityDashboardResponse.setVehicleNo(vehicleNoById);
                 }
 
-                qualityDashboardResponse.setIn(transaction.getVehicleIn());
-                qualityDashboardResponse.setOut(transaction.getVehicleOut());
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:SS");
+                qualityDashboardResponse.setIn(transaction.getVehicleIn().format(formatter));
+                qualityDashboardResponse.setOut(transaction.getVehicleOut().format(formatter));
                 qualityDashboardResponse.setDate(transaction.getTransactionDate());
                 qualityDashboardResponses.add(qualityDashboardResponse);
             }
