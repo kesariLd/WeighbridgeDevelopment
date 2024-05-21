@@ -136,7 +136,7 @@ public class ProductMasterServiceImpl implements ProductMasterService {
                         qualityRangeMaster.setRangeTo(parameter.getRangeTo());
                         qualityRangeMaster.setProductMaster(productMaster);
                     } else {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parameter is already set");
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,  parameter.getParameterName()+" is already set");
                     }
                     return qualityRangeMaster;
                 })
