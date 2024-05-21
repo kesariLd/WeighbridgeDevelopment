@@ -13,5 +13,4 @@ public interface SalesProcessService {
 
     public List<SalesDetailBySalePassNo> getBySaleOrderNo(String saleOrderNo);
 
-
 }

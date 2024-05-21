@@ -23,4 +23,7 @@ public class SalesProcess {
     private String transporterName;
     private double consignmentWeight;
     private LocalDate purchaseProcessDate;
+
+    // //to remove record from dashboard on basis of status
+    private boolean status=true;
 }
