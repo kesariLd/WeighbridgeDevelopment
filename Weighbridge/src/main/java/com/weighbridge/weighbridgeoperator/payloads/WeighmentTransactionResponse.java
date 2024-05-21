@@ -12,7 +12,7 @@ public class WeighmentTransactionResponse {
         private String ticketNo;
         private String weighmentNo;
         private String transactionType;
-        private LocalDate transactionDate;
+        private String transactionDate;
         private LocalDateTime vehicleIn;
         private String grossWeight;
         private String tareWeight;

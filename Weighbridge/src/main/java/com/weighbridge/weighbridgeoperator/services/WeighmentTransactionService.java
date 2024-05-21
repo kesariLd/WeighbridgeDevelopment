@@ -4,6 +4,8 @@ package com.weighbridge.weighbridgeoperator.services;
 import com.weighbridge.weighbridgeoperator.payloads.TicketResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -26,7 +28,7 @@ public interface WeighmentTransactionService {
      *
      * @return A list of WeighmentTransactionResponse containing all gate details.
      */
-    List<WeighmentTransactionResponse> getAllGateDetails();
+  List<WeighmentTransactionResponse> getAllGateDetails(Pageable pageable);
 
     /**
      * Retrieves the ticket response by ticket number.

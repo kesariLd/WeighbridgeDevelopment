@@ -2,6 +2,8 @@ package com.weighbridge.weighbridgeoperator.repositories;
 
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,8 +33,6 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
            "LEFT JOIN CustomerMaster c ON c.customerId = g.customerId " +
            "WHERE g.siteId = :siteId AND (w.netWeight IS NULL OR w.netWeight = 0.0) " +
            "ORDER BY g.ticketNo DESC")
-   List<Object[]> getAllGateEntries(@Param("siteId") String siteId);
-
-
+   Page<Object[]> getAllGateEntries(@Param("siteId") String siteId, Pageable pageable);
 
 }
