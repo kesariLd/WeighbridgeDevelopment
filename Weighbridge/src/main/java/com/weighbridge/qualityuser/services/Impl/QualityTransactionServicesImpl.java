@@ -152,8 +152,12 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 }
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:SS");
-                qualityDashboardResponse.setIn(transaction.getVehicleIn().format(formatter));
-                qualityDashboardResponse.setOut(transaction.getVehicleOut().format(formatter));
+                if (transaction.getVehicleIn() != null) {
+                    qualityDashboardResponse.setIn(transaction.getVehicleIn().format(formatter));
+                }
+                if (transaction.getVehicleOut() != null) {
+                    qualityDashboardResponse.setOut(transaction.getVehicleOut().format(formatter));
+                }
                 qualityDashboardResponse.setDate(transaction.getTransactionDate());
                 qualityDashboardResponses.add(qualityDashboardResponse);
             }
@@ -179,7 +183,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
 
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo)
-                .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with "+ ticketNo));
+                .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with " + ticketNo));
 
         if (gateEntryTransaction.getTransactionType().equals("Inbound")) {
             String materialName = materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId());
@@ -187,10 +191,11 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             StringBuilder qualityRangeIds = new StringBuilder();
             StringBuilder qualityValues = new StringBuilder();
             SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(gateEntryTransaction.getSupplierId());
+            String supplierAddress = supplierMaster.getSupplierAddressLine1()+","+supplierMaster.getSupplierAddressLine2();
             for (Map.Entry<String, Double> entry : transactionRequest.entrySet()) {
                 String key = entry.getKey();
                 Double value = entry.getValue();
-                Long qualityId = qualityRangeMasterRepository.findQualityRangeIdByParameterNameAndMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(key, materialName, supplierMaster.getSupplierName(), supplierMaster.getSupplierAddressLine1());
+                Long qualityId = qualityRangeMasterRepository.findQualityRangeIdByParameterNameAndMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(key, materialName, supplierMaster.getSupplierName(), supplierAddress);
                 qualityRangeIds.append(qualityId).append(",");
                 qualityValues.append(value).append(",");
             }
