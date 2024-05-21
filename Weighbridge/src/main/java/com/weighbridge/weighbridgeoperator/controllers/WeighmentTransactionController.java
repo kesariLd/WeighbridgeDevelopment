@@ -6,6 +6,10 @@ import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
 import com.weighbridge.weighbridgeoperator.services.WeighmentTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,8 +29,22 @@ public class WeighmentTransactionController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<List<WeighmentTransactionResponse>> getAlldetails(){
-        List<WeighmentTransactionResponse> response=weighmentTransactionService.getAllGateDetails();
+    public ResponseEntity<List<WeighmentTransactionResponse>> getAlldetails( @RequestParam(defaultValue = "0", required = false) int page,
+                                                                             @RequestParam(defaultValue = "5", required = false) int size,
+                                                                             @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
+                                                                             @RequestParam(defaultValue = "desc", required = false) String sortOrder){
+
+        Pageable pageable;
+        if(sortField!=null && !sortField.isEmpty()){
+            Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;
+            Sort sort = Sort.by(direction,sortField);
+            pageable = PageRequest.of(page,size,sort);
+        }
+        else{
+            pageable = PageRequest.of(page,size);
+        }
+
+      List<WeighmentTransactionResponse> response=weighmentTransactionService.getAllGateDetails(pageable);
         return ResponseEntity.ok(response);
     }
 
@@ -35,4 +53,5 @@ public class WeighmentTransactionController {
         TicketResponse responseByTicket = weighmentTransactionService.getResponseByTicket(ticketNo);
         return ResponseEntity.ok(responseByTicket);
     }
+
 }

@@ -25,6 +25,10 @@ import com.weighbridge.weighbridgeoperator.services.WeighmentTransactionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -167,7 +171,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
     }
 
     @Override
-    public List<WeighmentTransactionResponse> getAllGateDetails() {
+    public List<WeighmentTransactionResponse> getAllGateDetails(Pageable pageable) {
         HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompany;
@@ -181,7 +185,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             throw new SessionExpiredException("Session Expired, Login again !");
         }
         System.out.println(userSite);
-        List<Object[]> allUsers = weighmentTransactionRepository.getAllGateEntries(userSite);
+        Page<Object[]> pageResult = weighmentTransactionRepository.getAllGateEntries(userSite,pageable);
+        List<Object[]> allUsers = pageResult.getContent();
         System.out.println(allUsers);
         List<WeighmentTransactionResponse> responses = new ArrayList<>();
         if (allUsers == null) {
@@ -205,7 +210,10 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     String weighmentNo = row[1]!=null ? String.valueOf(row[1]):" ";
                     response.setWeighmentNo(weighmentNo);
                     response.setTransactionType((String) row[2]);
-                    response.setTransactionDate((LocalDate) row[3]);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDate transactionDateTime = (LocalDate) row[3];
+                    String formattedTimestamp = transactionDateTime != null ? transactionDateTime.format(formatter) : "";
+                    response.setTransactionDate(formattedTimestamp);
                     response.setVehicleIn((LocalDateTime) row[4]);
                     if (((String) row[2]).equalsIgnoreCase("Inbound")) {
                         if(row[8]!=null&&row[6]!=null) {
