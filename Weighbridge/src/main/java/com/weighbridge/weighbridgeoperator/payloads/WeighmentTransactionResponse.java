@@ -12,8 +12,8 @@ public class WeighmentTransactionResponse {
         private String ticketNo;
         private String weighmentNo;
         private String transactionType;
-        private String transactionDate;
-        private LocalDateTime vehicleIn;
+        private LocalDate transactionDate;
+        private String vehicleIn;
         private String grossWeight;
         private String tareWeight;
         private String netWeight;

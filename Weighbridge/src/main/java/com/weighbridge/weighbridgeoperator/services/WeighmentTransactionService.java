@@ -2,6 +2,7 @@ package com.weighbridge.weighbridgeoperator.services;
 
 
 import com.weighbridge.weighbridgeoperator.payloads.TicketResponse;
+import com.weighbridge.weighbridgeoperator.payloads.WeighbridgePageResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
 import org.springframework.data.domain.Page;
@@ -28,7 +29,7 @@ public interface WeighmentTransactionService {
      *
      * @return A list of WeighmentTransactionResponse containing all gate details.
      */
-  List<WeighmentTransactionResponse> getAllGateDetails(Pageable pageable);
+  WeighbridgePageResponse getAllGateDetails(Pageable pageable);
 
     /**
      * Retrieves the ticket response by ticket number.

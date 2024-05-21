@@ -2,6 +2,7 @@ package com.weighbridge.weighbridgeoperator.controllers;
 
 
 import com.weighbridge.weighbridgeoperator.payloads.TicketResponse;
+import com.weighbridge.weighbridgeoperator.payloads.WeighbridgePageResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
 import com.weighbridge.weighbridgeoperator.services.WeighmentTransactionService;
@@ -29,7 +30,7 @@ public class WeighmentTransactionController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<List<WeighmentTransactionResponse>> getAlldetails( @RequestParam(defaultValue = "0", required = false) int page,
+    public ResponseEntity<WeighbridgePageResponse> getAlldetails( @RequestParam(defaultValue = "0", required = false) int page,
                                                                              @RequestParam(defaultValue = "5", required = false) int size,
                                                                              @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
                                                                              @RequestParam(defaultValue = "desc", required = false) String sortOrder){
@@ -44,7 +45,7 @@ public class WeighmentTransactionController {
             pageable = PageRequest.of(page,size);
         }
 
-      List<WeighmentTransactionResponse> response=weighmentTransactionService.getAllGateDetails(pageable);
+      WeighbridgePageResponse response=weighmentTransactionService.getAllGateDetails(pageable);
         return ResponseEntity.ok(response);
     }
 
