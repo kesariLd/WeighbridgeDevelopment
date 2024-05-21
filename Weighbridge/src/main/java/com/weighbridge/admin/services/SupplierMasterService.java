@@ -12,4 +12,6 @@ public interface SupplierMasterService {
     List<String> getAllSupplierAsString();
 
     List<String> getAddressOfSupplier(String supplierName);
+
+    List<String> getSupplierAddressBySupplierName(String supplierName);
 }

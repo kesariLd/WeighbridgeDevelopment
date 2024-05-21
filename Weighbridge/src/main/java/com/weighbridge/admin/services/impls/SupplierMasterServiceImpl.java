@@ -86,5 +86,11 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
         return supplierAddressBySupplierName;
     }
 
+    @Override
+    public List<String> getSupplierAddressBySupplierName(String supplierName) {
+        List<String> supplierAddresses = supplierMasterRepository.findSupplierAddressLine1BySupplierName(supplierName);
+        return supplierAddresses;
+    }
+
 
 }

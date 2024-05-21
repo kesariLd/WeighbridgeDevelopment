@@ -1,7 +1,6 @@
 package com.weighbridge.qualityuser.controller;
 
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
-import com.weighbridge.qualityuser.payloads.QualityRequest;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,12 +48,12 @@ public class QualityTransactionController {
      * Add quality checks to the transaction.
      *
      * @param ticketNo the ticket number for the quality wil be checked
-     * @param qualityRequest the request object containing quality information for the transaction
+     * @param transactionRequest the request object containing quality information for the transaction
      * @return a ResponseEntity containing the success message with HTTP status code 201(CREATED)
      */
     @PostMapping("/{ticketNo}")
-    public ResponseEntity<String> createQualityTransaction(@PathVariable Integer ticketNo, @RequestBody QualityRequest qualityRequest) {
-        String response = qualityTransactionService.createQualityTransaction(ticketNo, qualityRequest);
+    public ResponseEntity<String> createQualityTransaction(@PathVariable Integer ticketNo, @RequestBody Map<String, Double> transactionRequest) {
+        String response = qualityTransactionService.createQualityTransaction(ticketNo, transactionRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -73,33 +71,7 @@ public class QualityTransactionController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
-//        String productType= reportResponse.getMaterialTypeOrProductType();
-//        Map<String,Object> response=new HashMap<>();
-//        switch(productType.toLowerCase()){
-//            case "Coal":
-//                response.put("moisture",reportResponse.getMoisture());
-//                response.put("vm",reportResponse.getVm());
-//                response.put("ash",reportResponse.getVm());
-//                response.put("fc",reportResponse.getFc());
-//                break;
-//            case "Sponge Iron":
-//                response.put("size",reportResponse.getSize());
-//                response.put("fe(M)",reportResponse.getFe_m());
-//                response.put("fe(t)",reportResponse.getFe_t());
-//                response.put("mtz",reportResponse.getMtz());
-//                response.put("carbon",reportResponse.getCarbon());
-//                response.put("sulphur",reportResponse.getSulphur());
-//                response.put("Non-mag",reportResponse.getNon_mag());
-//                break;
-//            case "Iron":
-//                response.put("size",reportResponse.getSize());
-//                response.put("fe(t)",reportResponse.getFe_t());
-//                response.put("loi",reportResponse.getLoi());
-//                break;
-//            default:
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//
-//        }
+
         return ResponseEntity.ok(reportResponse);
     }
 
