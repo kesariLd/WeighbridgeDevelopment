@@ -26,7 +26,7 @@ public class ProductMaster {
 
     @Column(name = "product_status")
     private String productStatus = "ACTIVE";
-
+    
     @Column(name = "product_created_by")
     private String productCreatedBy;
 

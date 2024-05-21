@@ -1,5 +1,6 @@
 package com.weighbridge.admin.repsitories;
 
+import com.weighbridge.admin.dtos.CustomerMasterDto;
 import com.weighbridge.admin.entities.CustomerMaster;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -27,8 +28,6 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
 
     @Query("SELECT c.customerName,c.customerAddressLine1,c.customerAddressLine2 from CustomerMaster c where c.customerId =:customerId")
     Object[] findCustomerNameAndAddress1andAddress2ByCustomerId(@Param("customerId") long customerId);
-    Boolean existsByCustomerNameAndCustomerAddressLine1AndCustomerAddressLine2(String customerName, String addressLine1, String addressLine2);
-
 
     @Query("SELECT cm FROM CustomerMaster cm WHERE cm.customerId = :customerId")
     String findCustomerMasterByCustomerId(@Param("customerId") long customerId);
@@ -37,4 +36,6 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
     String findCustomerNameByCustomerId(@Param("customerId") long customerId);
 
     CustomerMaster findByCustomerId(long customerId);
+
+    Boolean existsByCustomerEmailAndCustomerIdNot(String emailId,long id);
 }
