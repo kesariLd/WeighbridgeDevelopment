@@ -28,12 +28,12 @@ public class QualityDashboardResponse {
     /**
      * Timestamp when the vehicle entered the gate.
      */
-    private LocalDateTime in;
+    private String in;
 
     /**
      * Timestamp when the vehicle exit the gate.
      */
-    private LocalDateTime out;
+    private String out;
 
     /**
      * Transporter name of the vehicle.

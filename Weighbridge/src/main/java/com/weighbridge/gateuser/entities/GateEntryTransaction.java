@@ -43,7 +43,5 @@ public class GateEntryTransaction {
     private String ewaybillNo;
     private String transactionType;
     private LocalDate challanDate;
-    //todo add challan date at the time of gate entry
-
 
 }

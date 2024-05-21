@@ -1,8 +1,6 @@
 package com.weighbridge.admin.controllers;
 
-
 import com.weighbridge.admin.dtos.CustomerMasterDto;
-import com.weighbridge.admin.dtos.SupplierMasterDto;
 import com.weighbridge.admin.services.CustomerMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
