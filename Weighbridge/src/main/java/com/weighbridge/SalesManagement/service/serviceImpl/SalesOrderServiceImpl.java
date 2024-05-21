@@ -137,8 +137,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
 
     public List<VehicleAndTransporterDetail> getVehiclesAndTransporterDetails(){
-        List<SalesProcess> allVehiclesDetails= salesProcessRepository.findAll();
-        System.out.println(allVehiclesDetails);
+        List<SalesProcess> allVehiclesDetails= salesProcessRepository.findAllByStatus(true);
         List<VehicleAndTransporterDetail> listOfVehicle=new ArrayList<>();
         for (SalesProcess salesProcess:allVehiclesDetails) {
             VehicleAndTransporterDetail vehicleAndTransporterDetail = new VehicleAndTransporterDetail();
@@ -160,6 +159,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
            // vehicleAndTransporterDetail.setCustomerAddress();
             vehicleAndTransporterDetail.setSaleOrderNo(salesProcess.getPurchaseSale().getSaleOrderNo());
             vehicleAndTransporterDetail.setPurchaseOrderNo(salesProcess.getPurchaseSale().getPurchaseOrderNo());
+            vehicleAndTransporterDetail.setSaleOrderDate(salesProcess.getPurchaseSale().getPurchaseOrderedDate());
             listOfVehicle.add(vehicleAndTransporterDetail);
         }
         return listOfVehicle;
@@ -195,4 +195,5 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         System.out.println(bySalePassNo.getPurchaseSale().getPurchaseOrderedDate());
         return vehicleAndTransporterDetail;
     }
+
 }

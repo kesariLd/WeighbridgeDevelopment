@@ -29,7 +29,7 @@ public class SalesOrderController {
         return ResponseEntity.ok(allSalesDetails);
     }
 
-    @GetMapping("/getPoDetails/{saleOrderNo}")
+    @GetMapping("/getSoDetails/{saleOrderNo}")
     public ResponseEntity<SalesDetailResponse> getSalesDetail(@PathVariable String saleOrderNo){
         SalesDetailResponse salesDetails = salesOrderService.getSalesDetails(saleOrderNo);
         return ResponseEntity.ok(salesDetails);

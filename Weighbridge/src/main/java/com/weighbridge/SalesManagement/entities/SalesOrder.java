@@ -16,26 +16,20 @@ import java.util.Date;
 public class SalesOrder {
     @Id
     private String saleOrderNo;
-
     @NotNull
     private LocalDate purchaseOrderedDate;
-
     @NotNull
     private String purchaseOrderNo;
-
     @NotNull
     private long customerId;
-
     @NotNull
     private String productName;
-
     private double orderedQuantity;
-
     private double progressiveQuantity=0.0;
-
     private double balanceQuantity;
-
     private String brokerName;
-
     private String brokerAddress;
+
+    //to remove record from dashboard on basis of status
+    private boolean status=true;
 }

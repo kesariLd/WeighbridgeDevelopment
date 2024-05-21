@@ -1,4 +1,7 @@
 package com.weighbridge.gateuser.services.impl;
+import com.weighbridge.SalesManagement.entities.SalesOrder;
+import com.weighbridge.SalesManagement.entities.SalesProcess;
+import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
@@ -61,6 +64,9 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     private CustomerMasterRepository customerMasterRepository;
     @Autowired
     private ProductMasterRepository productMasterRepository;
+
+    @Autowired
+    private SalesProcessRepository salesProcessRepository;
 
 
     /**
@@ -141,10 +147,11 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 if (customerId == 0) {
                     throw new ResourceNotFoundException("Customer not exist");
                 }
+                SalesProcess bySalePassNo = salesProcessRepository.findBySalePassNo(gateEntryTransactionRequest.getTpNo());
+                bySalePassNo.setStatus(false);
             }
 
-
-                //finding the entities by names from database
+            //finding the entities by names from database
             long vehicleId = vehicleMasterRepository.findVehicleIdByVehicleNo(vehicleNo);
             long transporterId = transporterMasterRepository.findTransporterIdByTransporterName(transporterName);
             String dlNo = gateEntryTransactionRequest.getDlNo();

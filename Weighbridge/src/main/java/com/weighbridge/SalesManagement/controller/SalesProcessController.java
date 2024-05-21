@@ -21,7 +21,7 @@ public class SalesProcessController {
         return ResponseEntity.ok(sales);
     }
 
-    @GetMapping("/bySaleOrderNo/{saleOrderNo}")
+    @GetMapping("/bySaleOrderNo/View/{saleOrderNo}")
     public ResponseEntity<List<SalesDetailBySalePassNo>> getBySaleOrderNo(@PathVariable String saleOrderNo){
         List<SalesDetailBySalePassNo> bySalePassNo = salesProcessService.getBySaleOrderNo(saleOrderNo);
         return ResponseEntity.ok(bySalePassNo);
