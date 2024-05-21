@@ -13,8 +13,8 @@ public class GateEntryTransactionResponse {
 
     private Integer ticketNo;
     private String vehicleNo;
-    private LocalDateTime vehicleIn;
-    private LocalDateTime vehicleOut;
+    private String vehicleIn;
+    private String vehicleOut;
     private String vehicleType;
     private Integer vehicleWheelsNo;
     private String transporter;

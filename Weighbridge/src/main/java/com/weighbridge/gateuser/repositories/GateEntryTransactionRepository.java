@@ -24,9 +24,9 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
      */
     List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTicketNoDesc(String siteId, String companyId);
     //Pagination get All user
-    Page<GateEntryTransaction> findBySiteIdAndCompanyId(Pageable pageable,String siteId, String companyId);
+    Page<GateEntryTransaction> findBySiteIdAndCompanyIdAndVehicleOutIsNull(Pageable pageable,String siteId, String companyId);
 
-    List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String siteId, String companyId);
+//    List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String siteId, String companyId);
 
     // Modified method to find by siteId, companyId, and transactionDate within the specified range
     List<GateEntryTransaction> findBySiteIdAndCompanyIdAndTransactionDateBetweenOrderByTransactionDateDesc(String siteId, String companyId, LocalDate startDate, LocalDate endDate);
@@ -35,6 +35,7 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     GateEntryTransaction findByTicketNo(Integer ticketNo);
 
+    Integer countBySiteIdAndCompanyIdAndVehicleOutIsNull(String siteId, String companyId);
 //    List<GateEntryTransaction> findBySiteIdAndCompanyId(String userSite, String userCompany);
 }
 

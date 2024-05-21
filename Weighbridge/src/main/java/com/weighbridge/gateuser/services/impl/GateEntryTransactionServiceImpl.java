@@ -4,6 +4,7 @@ import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
+import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
@@ -14,6 +15,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -264,7 +267,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         }
     }
     @Override
-    public List<GateEntryTransactionResponse> getAllGateEntryTransaction(Pageable pageable) {
+    public GateEntryTransactionPageResponse getAllGateEntryTransaction(Pageable pageable) {
         try {
             // Set user session details
             HttpSession session = httpServletRequest.getSession();
@@ -278,9 +281,11 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
             }
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
-            Page<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyId(pageable, userSite, userCompany);
+            Page<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdAndVehicleOutIsNull(pageable, userSite, userCompany);
             System.out.println("GateEntryTransactionServiceImpl.getAllGateEntryTransaction: " + allTransactions);
+            Integer totalPage = allTransactions.getTotalPages();
 
             List<GateEntryTransactionResponse> responseList = allTransactions.stream()
                     .map(transaction -> {
@@ -346,13 +351,13 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                         if (transaction.getVehicleIn() != null) {
                             // Vehicle out transaction log exists
                             // Process the vehicle out data
-                            response.setVehicleIn(transaction.getVehicleIn());
+                            response.setVehicleIn(transaction.getVehicleIn().format(formatter));
                         }
                         // Check if vehicle out transaction log exists
                         if (transaction.getVehicleOut() != null) {
                             // Vehicle out transaction log exists
                             // Process the vehicle out data
-                            response.setVehicleOut(transaction.getVehicleOut());
+                            response.setVehicleOut(transaction.getVehicleOut().format(formatter));
                         }
                         response.setPoNo(transaction.getPoNo());
                         response.setChallanNo(transaction.getChallanNo());
@@ -366,8 +371,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                     })
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
-
-            return responseList;
+            GateEntryTransactionPageResponse gateEntryTransactionPageResponse = new GateEntryTransactionPageResponse();
+            gateEntryTransactionPageResponse.setTransactions(responseList);
+            gateEntryTransactionPageResponse.setTotalPages(totalPage);
+            return gateEntryTransactionPageResponse;
         } catch (ResponseStatusException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -400,6 +407,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             }
             LocalDate finalStartDate = startDate;
             LocalDate finalEndDate = endDate;
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
 
             List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdAndTransactionDateBetweenOrderByTransactionDateDesc(userSite, userCompany,startDate,endDate);
             System.out.println("GateEntryTransactionServiceImpl.getAllGateEntryTransaction" + allTransactions);
@@ -468,13 +477,15 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 if (transaction.getVehicleIn() != null) {
                     // Vehicle out transaction log exists
                     // Process the vehicle out data
-                    response.setVehicleIn(transaction.getVehicleIn());
+                    LocalDateTime vehicleIn = transaction.getVehicleIn();
+                    response.setVehicleIn(vehicleIn.format(formatter));
+
                 }
                 // Check if vehicle out transaction log exists
                 if (transaction.getVehicleOut() != null) {
                     // Vehicle out transaction log exists
                     // Process the vehicle out data
-                    response.setVehicleOut(transaction.getVehicleOut());
+                    response.setVehicleOut(transaction.getVehicleOut().format(formatter));
                 }
                 response.setPoNo(transaction.getPoNo());
                 response.setChallanNo(transaction.getChallanNo());

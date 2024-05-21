@@ -44,6 +44,4 @@ public class GateEntryTransaction {
     private String transactionType;
     private LocalDate challanDate;
 
-
-
 }
