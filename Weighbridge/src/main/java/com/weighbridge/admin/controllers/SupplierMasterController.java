@@ -81,9 +81,15 @@ public class SupplierMasterController {
      *         An empty list is returned if the supplier is not found.
      */
     @GetMapping("/get/{supplierName}")
-    public ResponseEntity<List<String>> getSupplierAddressBySupplierName(@PathVariable String supplierName) {
+    public ResponseEntity<List<String>> getSupplierAddressesBySupplierName(@PathVariable String supplierName) {
         List<String> addressOfSupplier = supplierMasterService.getAddressOfSupplier(supplierName);
         return new ResponseEntity<>(addressOfSupplier, HttpStatus.OK);
+    }
+
+    @GetMapping("/{supplierName}/addresses")
+    public ResponseEntity<List<String>> getSupplierAddressBySupplierName(@PathVariable String supplierName){
+        List<String> supplierAddresses = supplierMasterService.getSupplierAddressBySupplierName(supplierName);
+        return new ResponseEntity<>(supplierAddresses, HttpStatus.OK);
     }
 }
 

@@ -1,11 +1,11 @@
 package com.weighbridge.qualityuser.services;
 
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
-import com.weighbridge.qualityuser.payloads.QualityRequest;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This interface provides methods for managing quality transactions.
@@ -23,10 +23,9 @@ public interface QualityTransactionService {
      * Creates a new quality transaction for a given ticket number.
      *
      * @param ticketNo the ticket number for which the quality transaction is being created
-     * @param qualityTransaction the QualityRequest object containing the quality transaction details
      * @return a string representing the result of the operation
      */
-    String createQualityTransaction(Integer ticketNo, QualityRequest qualityTransaction);
+    String createQualityTransaction(Integer ticketNo, Map<String, Double> transactionRequest);
 
     /**
      * Retrieves a report response for a given ticket number.
@@ -51,4 +50,6 @@ public interface QualityTransactionService {
      * @return a QualityCreationResponse object containing the quality transaction details
      */
     QualityCreationResponse getDetailsForQualityTransaction(Integer ticketNo);
+
+
 }

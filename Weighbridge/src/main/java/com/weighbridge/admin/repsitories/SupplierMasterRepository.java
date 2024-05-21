@@ -36,4 +36,7 @@ public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,L
 
     @Query("SELECT sm.supplierName FROM SupplierMaster sm WHERE sm.supplierId = :supplierId")
     String findSupplierNameBySupplierId(@Param("supplierId") long supplierId);
+
+    @Query("SELECT sm.supplierAddressLine1 FROM SupplierMaster sm WHERE sm.supplierName = :supplierName")
+    List<String> findSupplierAddressLine1BySupplierName(@Param("supplierName") String supplierName);
 }

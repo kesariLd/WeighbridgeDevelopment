@@ -2,6 +2,8 @@ package com.weighbridge.admin.repsitories;
 
 import com.weighbridge.admin.entities.QualityRangeMaster;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -27,5 +29,21 @@ public interface QualityRangeMasterRepository extends JpaRepository<QualityRange
     boolean existsByParameterNameAndProductMasterProductId(String parameterName, long productId);
 
     List<QualityRangeMaster> findByProductMasterProductName(String productName);
+
+    @Query("SELECT q.qualityRangeId FROM QualityRangeMaster q " +
+            "WHERE q.parameterName = :key " +
+            "AND q.materialMaster.materialName = :materialName " +
+            "AND q.supplierName = :supplierName " +
+            "AND q.supplierAddress = :supplierAddress")
+    Long findQualityRangeIdByParameterNameAndMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(
+            @Param("key") String key,
+            @Param("materialName") String materialName,
+            @Param("supplierName") String supplierName,
+            @Param("supplierAddress") String supplierAddress
+    );
+
+    @Query("SELECT q.qualityRangeId FROM QualityRangeMaster q WHERE q.parameterName = :key AND q.productMaster.productName = :productName")
+    Long findQualityRangeIdByParameterNameAndProductMasterProductName(@Param("key") String key, @Param("productName") String productName);
+
 }
 
