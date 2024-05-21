@@ -2,6 +2,7 @@ package com.weighbridge.gateuser.services;
 
 import com.weighbridge.gateuser.dtos.GateEntryTransactionDto;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
+import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
 import org.springframework.data.domain.Page;
@@ -38,7 +39,8 @@ public interface GateEntryTransactionService {
      * @return A list of gate entry transaction responses containing various details such as ticket number,
      *         transaction type, material, supplier, vehicle information, timestamps, and other related data.
      */
-    List<GateEntryTransactionResponse> getAllGateEntryTransaction(Pageable pageable);
+    GateEntryTransactionPageResponse getAllGateEntryTransaction(Pageable pageable);
+
     List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate , LocalDate endDate);
 
 //    List<Object[]> getDemoData(List<String> selectedFields);

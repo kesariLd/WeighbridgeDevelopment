@@ -1,6 +1,7 @@
 package com.weighbridge.gateuser.controllers;
 
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
+import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
 import com.weighbridge.gateuser.services.GateEntryTransactionService;
@@ -44,8 +45,8 @@ public class GateEntryTransactionController {
      * @return A list of all gate entry transactions.
      */
     @GetMapping
-    public ResponseEntity<List<GateEntryTransactionResponse>> getAllTransaction( @RequestParam(defaultValue = "0", required = false) int page,
-                                                                                 @RequestParam(defaultValue = "10", required = false) int size,
+    public ResponseEntity<GateEntryTransactionPageResponse> getAllTransaction( @RequestParam(defaultValue = "0", required = false) int page,
+                                                                                 @RequestParam(defaultValue = "5", required = false) int size,
                                                                                  @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
                                                                                  @RequestParam(defaultValue = "desc", required = false) String sortOrder) {
         Pageable pageable;
@@ -57,7 +58,7 @@ public class GateEntryTransactionController {
         else{
             pageable = PageRequest.of(page,size);
         }
-        List<GateEntryTransactionResponse> allGateEntryTransaction = gateEntryTransactionService.getAllGateEntryTransaction(pageable);
+        GateEntryTransactionPageResponse allGateEntryTransaction = gateEntryTransactionService.getAllGateEntryTransaction(pageable);
         return new ResponseEntity<>(allGateEntryTransaction, HttpStatus.OK);
     }
 
