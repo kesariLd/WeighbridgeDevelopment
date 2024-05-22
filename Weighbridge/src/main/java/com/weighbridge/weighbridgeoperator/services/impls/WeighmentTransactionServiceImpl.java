@@ -259,6 +259,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             WeighbridgePageResponse weighbridgePageResponse=new WeighbridgePageResponse();
             weighbridgePageResponse.setWeighmentTransactionResponses(responses);
             weighbridgePageResponse.setTotalPages(pageResult.getTotalPages());
+            weighbridgePageResponse.setTotalElements(pageResult.getTotalElements());
             return weighbridgePageResponse;
         }
     }

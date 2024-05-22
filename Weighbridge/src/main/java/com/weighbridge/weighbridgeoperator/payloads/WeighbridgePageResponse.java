@@ -9,4 +9,5 @@ public class WeighbridgePageResponse {
 
     private List<WeighmentTransactionResponse> weighmentTransactionResponses;
     private Integer totalPages;
+    private Long totalElements;
 }

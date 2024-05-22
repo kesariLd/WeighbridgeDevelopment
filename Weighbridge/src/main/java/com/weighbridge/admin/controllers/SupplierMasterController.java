@@ -1,11 +1,15 @@
 package com.weighbridge.admin.controllers;
 
 
+import com.weighbridge.admin.dtos.CustomerMasterDto;
+import com.weighbridge.admin.payloads.CustomerRequest;
+import com.weighbridge.admin.payloads.SupplierRequest;
 import com.weighbridge.admin.services.SupplierMasterService;
 import com.weighbridge.admin.dtos.SupplierMasterDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -90,6 +94,17 @@ public class SupplierMasterController {
     public ResponseEntity<List<String>> getSupplierAddressBySupplierName(@PathVariable String supplierName){
         List<String> supplierAddresses = supplierMasterService.getSupplierAddressBySupplierName(supplierName);
         return new ResponseEntity<>(supplierAddresses, HttpStatus.OK);
+    }
+    @GetMapping("/get/id/{supplierId}")
+    public ResponseEntity<SupplierMasterDto> getSupplierDetailsBySupplierId(@PathVariable long supplierId) {
+        SupplierMasterDto supplier= supplierMasterService.getSupplierById(supplierId);
+        return new ResponseEntity<>(supplier, HttpStatus.OK);
+    }
+
+    @PostMapping("/update/{supplierId}")
+    public ResponseEntity<String> updateSupplierBySupplierId(@Validated @RequestBody SupplierRequest supplierRequest, @PathVariable long supplierId){
+        String supplierResponse = supplierMasterService.updateSupplierById(supplierRequest, supplierId);
+        return new ResponseEntity<>(supplierResponse,HttpStatus.OK);
     }
 }
 

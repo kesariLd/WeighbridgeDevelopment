@@ -1,6 +1,10 @@
 package com.weighbridge.admin.services.impls;
 
+import com.weighbridge.admin.dtos.SupplierMasterDto;
 import com.weighbridge.admin.entities.SupplierMaster;
+import com.weighbridge.admin.entities.SupplierMaster;
+import com.weighbridge.admin.exceptions.SessionExpiredException;
+import com.weighbridge.admin.payloads.SupplierRequest;
 import com.weighbridge.admin.repsitories.SupplierMasterRepository;
 import com.weighbridge.admin.services.SupplierMasterService;
 import com.weighbridge.admin.dtos.SupplierMasterDto;
@@ -92,5 +96,56 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
         return supplierAddresses;
     }
 
+    @Override
+    public SupplierMasterDto getSupplierById(long id) {
+        if ((Long) id == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id is not given");
+        }
+        SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(id);
+        if (supplierMaster == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Supplier is not available with: " + id);
+        }
+        ModelMapper modelMapper = new ModelMapper();
+        SupplierMasterDto supplierMasterDto = modelMapper.map(supplierMaster, SupplierMasterDto.class);
+        return supplierMasterDto;
+    }
+
+    @Override
+    public String updateSupplierById(SupplierRequest supplierRequest, long id) {
+        try {
+            SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(id);
+            if (supplierMaster == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Supplier is not available with given Id " + id);
+            }
+            // Check if the new email or contact number already exists for other users
+            boolean SupplierExist = supplierMasterRepository.existsBySupplierEmailAndSupplierIdNot(
+                    supplierRequest.getSupplierEmail(), id
+            );
+            if (SupplierExist) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "EmailId is exists with another user");
+            }
+            supplierMaster.setSupplierName(supplierRequest.getSupplierName());
+            supplierMaster.setSupplierEmail(supplierRequest.getSupplierEmail());
+            supplierMaster.setSupplierAddressLine1(supplierRequest.getSupplierAddressLine1());
+            supplierMaster.setSupplierAddressLine2(supplierRequest.getSupplierAddressLine2());
+            supplierMaster.setCity(supplierRequest.getCity());
+            supplierMaster.setState(supplierRequest.getState());
+            supplierMaster.setCountry(supplierRequest.getCountry());
+            supplierMaster.setSupplierContactNo(supplierRequest.getSupplierContactNo());
+            HttpSession session = httpServletRequest.getSession();
+            if (session == null && session.getAttribute("userID") == null) {
+                throw new SessionExpiredException("Session Expired ! Login again");
+            }
+            String userId = session.getAttribute("userId").toString();
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            supplierMaster.setSupplierModifiedBy(userId);
+            supplierMaster.setSupplierModifiedDate(currentDateTime);
+            supplierMasterRepository.save(supplierMaster);
+            return "Supplier Update Succesfully";
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to Update Supplier", e);
+        }
+
+    }
 
 }
