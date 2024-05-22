@@ -6,5 +6,6 @@ import java.util.List;
 @Data
 public class GateEntryTransactionPageResponse {
     private List<GateEntryTransactionResponse> transactions;
-    private int totalPages;
+    private Integer totalPages;
+    private Long totalElements;
 }
