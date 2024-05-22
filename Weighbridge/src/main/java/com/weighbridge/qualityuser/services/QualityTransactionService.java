@@ -1,8 +1,11 @@
 package com.weighbridge.qualityuser.services;
 
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
+import com.weighbridge.qualityuser.payloads.QualityDashboardPaginationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +20,7 @@ public interface QualityTransactionService {
      *
      * @return a list of QualityDashboardResponse objects
      */
-    List<QualityDashboardResponse> getAllGateDetails();
+    QualityDashboardPaginationResponse getAllGateDetails(Pageable pageable);
 
     /**
      * Creates a new quality transaction for a given ticket number.

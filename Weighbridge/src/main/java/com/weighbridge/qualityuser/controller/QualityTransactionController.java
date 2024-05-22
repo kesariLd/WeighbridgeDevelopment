@@ -1,17 +1,16 @@
 package com.weighbridge.qualityuser.controller;
 
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
+import com.weighbridge.qualityuser.payloads.QualityDashboardPaginationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -39,8 +38,11 @@ public class QualityTransactionController {
      * @return a ResponseEntity containing a list of all gate entry transaction details
      */
     @GetMapping("/getAllTransaction")
-    public ResponseEntity<List<QualityDashboardResponse>> getAllTickets() {
-        List<QualityDashboardResponse> response = qualityTransactionService.getAllGateDetails();
+    public ResponseEntity<QualityDashboardPaginationResponse> getAllTickets(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        QualityDashboardPaginationResponse response = qualityTransactionService.getAllGateDetails(pageable);
         return ResponseEntity.ok(response);
     }
 
