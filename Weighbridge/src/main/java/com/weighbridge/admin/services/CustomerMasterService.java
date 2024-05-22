@@ -16,4 +16,6 @@ public interface CustomerMasterService {
     CustomerMasterDto getCustomerById(long id);
     String updateCustomerById(CustomerRequest customerRequest, long id);
 
+    String deleteCustomerById(long id);
+
 }

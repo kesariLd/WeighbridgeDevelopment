@@ -90,13 +90,10 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
 
     @Override
     public List<String> getAllCustomerNames() {
-        List<CustomerMaster> customerMasterList = customerMasterRepository.findAll();
-        List<String> allCustomerNames = new ArrayList<>();
-        customerMasterList.forEach(customerMaster -> {
-            String customerName = customerMaster.getCustomerName();
-            allCustomerNames.add(customerName);
-        });
-        return allCustomerNames;
+        List<String> customerMasterList = customerMasterRepository.findListCustomerName();
+        return customerMasterList.stream()
+                .distinct()//returns the Customer name
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -155,5 +152,15 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to Update Customer", e);
         }
 
+    }
+    @Override
+    public String deleteCustomerById(long id) {
+        CustomerMaster byCustomerId = customerMasterRepository.findByCustomerId(id);
+        if(byCustomerId==null){
+            throw new ResponseStatusException( HttpStatus.BAD_REQUEST,"Id is not found ");
+        }
+        byCustomerId.setCustomerStatus("INACTIVE");
+        customerMasterRepository.save(byCustomerId);
+        return "Deleted Succesfully";
     }
 }
