@@ -74,10 +74,9 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
 
     @Override
     public List<String> getAllSupplierAsString() {
-        List<SupplierMaster> supplierMasterList = supplierMasterRepository.findAll();
-// Map SupplierMaster objects to their names and collect into a list
+        List<String> supplierMasterList = supplierMasterRepository.findListSupplierName();
+        // Map SupplierMaster objects to their names and collect into a list
         List<String> supplierNames = supplierMasterList.stream()
-                .map(SupplierMaster::getSupplierName)
                 .distinct()// Assuming getSupplierName() returns the supplier name
                 .collect(Collectors.toList());
         return supplierNames;
@@ -146,6 +145,17 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to Update Supplier", e);
         }
 
+    }
+
+    @Override
+    public String deleteSupplierById(long id) {
+        SupplierMaster bySupplierId = supplierMasterRepository.findBySupplierId(id);
+        if (bySupplierId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id is not found ");
+        }
+        bySupplierId.setSupplierStatus("INACTIVE");
+        supplierMasterRepository.save(bySupplierId);
+        return "Deleted Succesfully";
     }
 
 }

@@ -106,5 +106,10 @@ public class SupplierMasterController {
         String supplierResponse = supplierMasterService.updateSupplierById(supplierRequest, supplierId);
         return new ResponseEntity<>(supplierResponse,HttpStatus.OK);
     }
+    @DeleteMapping("/delete/{supplierId}")
+    public ResponseEntity<String> deleteSupplierBySupplierId(@PathVariable long supplierId){
+        String response = supplierMasterService.deleteSupplierById(supplierId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
 }
 

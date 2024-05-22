@@ -135,7 +135,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         }
 
         if ("Outbound".equals(weighmentTransaction.getGateEntryTransaction().getTransactionType())) {
-            String customerName = customerMasterRepository.findCustomerMasterByCustomerId(weighmentTransaction.getGateEntryTransaction().getCustomerId());
+            String customerName = customerMasterRepository.findCustomerNameByCustomerId(weighmentTransaction.getGateEntryTransaction().getCustomerId());
             weighmentPrintResponse.setSupplierOrCustomerName(customerName);
         }
 

@@ -16,10 +16,6 @@ public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,L
 
     boolean existsBySupplierContactNoOrSupplierEmail(String emailId, String contactNo);
 
-    SupplierMaster findBySupplierName(String supplierName);
-
-    @Query("SELECT s.supplierId FROM SupplierMaster s WHERE s.supplierName = :supplierName")
-    Long findSupplierIdBySupplierName(@Param("supplierName") String supplierName);
 
     @Query("SELECT s.supplierName,s.supplierAddressLine1 from SupplierMaster s where s.supplierId =:supplierId")
     Object[] findSupplierNameAndAddressBySupplierId(@Param("supplierId") long supplierId);
@@ -43,5 +39,7 @@ public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,L
     @Query("SELECT sm.supplierAddressLine1 FROM SupplierMaster sm WHERE sm.supplierName = :supplierName")
     List<String> findSupplierAddressLine1BySupplierName(@Param("supplierName") String supplierName);
 
+    @Query("SELECT sm.supplierName FROM SupplierMaster sm WHERE sm.supplierStatus= 'ACTIVE' ")
+    List<String> findListSupplierName();
 
 }
