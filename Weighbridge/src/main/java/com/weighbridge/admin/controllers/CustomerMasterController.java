@@ -1,9 +1,12 @@
 package com.weighbridge.admin.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.weighbridge.admin.dtos.CustomerMasterDto;
+import com.weighbridge.admin.payloads.CustomerRequest;
 import com.weighbridge.admin.services.CustomerMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -83,5 +86,16 @@ public class CustomerMasterController {
     public ResponseEntity<List<String>> getCustsomerAddressByCustomerName(@PathVariable String customerName) {
         List<String> addressOfSupplier = customerMasterService.getAddressOfCustomer(customerName);
         return new ResponseEntity<>(addressOfSupplier, HttpStatus.OK);
+    }
+    @GetMapping("/get/id/{customerId}")
+    public ResponseEntity<CustomerMasterDto> getCustsomerDetailsByCustomerId(@PathVariable long customerId) {
+        CustomerMasterDto customer= customerMasterService.getCustomerById(customerId);
+        return new ResponseEntity<>(customer, HttpStatus.OK);
+    }
+    
+    @PostMapping("/update/{customerId}")
+    public ResponseEntity<String> updateCustomerByCustomerId(@Validated @RequestBody CustomerRequest customerRequest, @PathVariable long customerId){
+        String customerResponse = customerMasterService.updateCustomerById(customerRequest, customerId);
+        return new ResponseEntity<>(customerResponse,HttpStatus.OK);
     }
 }

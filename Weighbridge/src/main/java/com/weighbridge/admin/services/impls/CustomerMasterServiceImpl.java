@@ -2,10 +2,14 @@ package com.weighbridge.admin.services.impls;
 
 import com.weighbridge.admin.dtos.CustomerMasterDto;
 import com.weighbridge.admin.entities.CustomerMaster;
+import com.weighbridge.admin.exceptions.SessionExpiredException;
+import com.weighbridge.admin.payloads.CustomerRequest;
 import com.weighbridge.admin.repsitories.CustomerMasterRepository;
 import com.weighbridge.admin.services.CustomerMasterService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.hibernate.sql.Update;
+import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -99,5 +103,57 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
     public List<String> getAddressOfCustomer(String name) {
         List<String> getAddress = customerMasterRepository.findCustomerAddressByCustomerName(name);
         return getAddress;
+    }
+    @Override
+    public CustomerMasterDto getCustomerById(long id) {
+        if((Long)id==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Id is not given");
+        }
+        CustomerMaster customer = customerMasterRepository.findByCustomerId(id);
+        if(customer==null){
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Customer is not available with: "+id);
+        }
+        ModelMapper modelMapper = new ModelMapper();
+        CustomerMasterDto customerMasterDto = modelMapper.map(customer, CustomerMasterDto.class);
+        return customerMasterDto;
+    }
+
+    @Override
+    public String updateCustomerById(CustomerRequest customerRequest, long id) {
+        try{
+            CustomerMaster customerMaster = customerMasterRepository.findByCustomerId(id);
+            if(customerMaster==null){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Customer is not available with given Id "+id);
+            }
+            // Check if the new email or contact number already exists for other users
+            boolean customerExist = customerMasterRepository.existsByCustomerEmailAndCustomerIdNot(
+                    customerRequest.getCustomerEmail(), id
+            );
+            if (customerExist) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "EmailId is exists with another user");
+            }
+            customerMaster.setCustomerName(customerRequest.getCustomerName());
+            customerMaster.setCustomerEmail(customerRequest.getCustomerEmail());
+            customerMaster.setCustomerAddressLine1(customerRequest.getCustomerAddressLine1());
+            customerMaster.setCustomerAddressLine2(customerRequest.getCustomerAddressLine2());
+            customerMaster.setCity(customerRequest.getCity());
+            customerMaster.setState(customerRequest.getState());
+            customerMaster.setCountry(customerMaster.getCountry());
+            customerMaster.setCustomerContactNo(customerMaster.getCustomerContactNo());
+            HttpSession session = httpServletRequest.getSession();
+            if(session==null && session.getAttribute("userID")==null){
+                throw new SessionExpiredException("Session Expired ! Login again");
+            }
+            String userId = session.getAttribute("userId").toString();
+            LocalDateTime currentDateTime = LocalDateTime.now();
+            customerMaster.setCustomerModifiedBy(userId);
+            customerMaster.setCustomerModifiedDate(currentDateTime);
+            customerMasterRepository.save(customerMaster);
+            return "Customer Update Succesfully";
+        }
+        catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to Update Customer", e);
+        }
+
     }
 }

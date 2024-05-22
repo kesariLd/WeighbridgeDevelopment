@@ -1,5 +1,6 @@
 package com.weighbridge.admin.repsitories;
 
+import com.weighbridge.admin.entities.CustomerMaster;
 import com.weighbridge.admin.entities.SupplierMaster;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,8 @@ import java.util.List;
 
 public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,Long> {
 
+
+    boolean existsBySupplierEmailAndSupplierIdNot(String supplierEmail, long id);
 
     boolean existsBySupplierContactNoOrSupplierEmail(String emailId, String contactNo);
 
@@ -39,4 +42,6 @@ public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,L
 
     @Query("SELECT sm.supplierAddressLine1 FROM SupplierMaster sm WHERE sm.supplierName = :supplierName")
     List<String> findSupplierAddressLine1BySupplierName(@Param("supplierName") String supplierName);
+
+
 }

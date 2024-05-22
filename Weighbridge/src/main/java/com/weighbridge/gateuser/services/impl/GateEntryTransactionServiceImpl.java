@@ -293,6 +293,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             Page<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdAndVehicleOutIsNull(pageable, userSite, userCompany);
             System.out.println("GateEntryTransactionServiceImpl.getAllGateEntryTransaction: " + allTransactions);
             Integer totalPage = allTransactions.getTotalPages();
+            Long totalElements = allTransactions.getTotalElements();
 
             List<GateEntryTransactionResponse> responseList = allTransactions.stream()
                     .map(transaction -> {
@@ -381,6 +382,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             GateEntryTransactionPageResponse gateEntryTransactionPageResponse = new GateEntryTransactionPageResponse();
             gateEntryTransactionPageResponse.setTransactions(responseList);
             gateEntryTransactionPageResponse.setTotalPages(totalPage);
+            gateEntryTransactionPageResponse.setTotalElements(totalElements);
             return gateEntryTransactionPageResponse;
         } catch (ResponseStatusException ex) {
             throw ex;

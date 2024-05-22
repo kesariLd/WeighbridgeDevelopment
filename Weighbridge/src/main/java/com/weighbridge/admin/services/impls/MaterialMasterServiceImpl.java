@@ -155,7 +155,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
                         qualityRangeMaster.setSupplierName(supplierName);
                         qualityRangeMaster.setSupplierAddress(supplierAddress);
                     } else {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Parameter is already set");
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,parameter.getParameterName() + " is already set");
                     }
                     return qualityRangeMaster;
                 })
