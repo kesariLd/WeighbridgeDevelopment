@@ -24,4 +24,12 @@ public interface TransporterService {
     public List<String> getAllTransporterNames();
 
     List<TransporterDto> getAllTransporter();
+
+    TransporterDto getTransporterById(Long transporterId);
+
+    String updateTransporterById(Long transporterId, TransporterDto transporterDto);
+
+    boolean deactivateTransporterById(Long transporterId);
+
+    boolean activateTransporterById(Long transporterId);
 }
