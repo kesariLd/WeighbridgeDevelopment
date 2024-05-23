@@ -38,4 +38,6 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
     CustomerMaster findByCustomerId(long customerId);
 
     Boolean existsByCustomerEmailAndCustomerIdNot(String emailId,long id);
+
+
 }
