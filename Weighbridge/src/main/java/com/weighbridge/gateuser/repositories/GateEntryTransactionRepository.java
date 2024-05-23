@@ -36,6 +36,13 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     GateEntryTransaction findByTicketNo(Integer ticketNo);
 
     Integer countBySiteIdAndCompanyIdAndVehicleOutIsNull(String siteId, String companyId);
+
+    List<GateEntryTransaction> findByVehicleId(long id);
+
+    List<GateEntryTransaction> findBySupplierId(Long supplierId);
+
+//    List<GateEntryTransaction> findBySupplierId(Object supplierIdBySupplierNameAndAddress);
+
 //    List<GateEntryTransaction> findBySiteIdAndCompanyId(String userSite, String userCompany);
 }
 

@@ -39,4 +39,6 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
     String findVehicleNoById(@Param("vehicleId") long vehicleId);
 
 
+
+
 }
