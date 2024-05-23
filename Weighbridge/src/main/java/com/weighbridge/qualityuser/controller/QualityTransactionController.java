@@ -8,10 +8,12 @@ import com.weighbridge.qualityuser.services.QualityTransactionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -89,6 +91,21 @@ public class QualityTransactionController {
         QualityCreationResponse qualityCreationResponse = qualityTransactionService.getDetailsForQualityTransaction(ticketNo);
         return ResponseEntity.ok(qualityCreationResponse);
     }
+
+    /**
+     * Handles GET requests to search for quality dashboard entries based on various optional criteria.
+     *
+     * @param ticketNo An optional parameter representing the ticket number to search for.
+     *                 If provided, the search will include entries matching this ticket number.
+     * @param vehicleNo An optional parameter representing the vehicle number to search for.
+     *                  If provided, the search will include entries matching this vehicle number.
+     * @param supplierOrCustomerName An optional parameter representing the supplier or customer name to search for.
+     *                               If provided, the search will include entries matching this name.
+     * @param supplierOrCustomerAddress An optional parameter representing the supplier or customer address to search for.
+     *                                  If provided, the search will include entries matching this address.
+     * @return A ResponseEntity containing a list of QualityDashboardResponse objects that match the provided search criteria.
+     *         The response has an HTTP status of 200 (OK) if the search is successful.
+     */
     @GetMapping("/search")
     public ResponseEntity<List<QualityDashboardResponse>>searchByTicketNoVehicleNoSupplierAndSupplierAddress(
             @RequestParam(required = false) Integer ticketNo,
@@ -99,4 +116,18 @@ public class QualityTransactionController {
         List<QualityDashboardResponse> response=qualityTransactionService.searchByTicketNoVehicleNoSupplierAndSupplierAddress(ticketNo,vehicleNo,supplierOrCustomerName,supplierOrCustomerAddress);
         return ResponseEntity.ok().body(response);
     }
+
+    @GetMapping("/search-Date")
+    public ResponseEntity<List<QualityDashboardResponse>> searchByDate(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String date
+    ) {
+        if (date != null) {
+            List<QualityDashboardResponse> response = qualityTransactionService.searchByDate(date);
+            return ResponseEntity.ok().body(response);
+        } else {
+
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
+    }
+
 }
