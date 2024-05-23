@@ -17,5 +17,6 @@ public interface CustomerMasterService {
     String updateCustomerById(CustomerRequest customerRequest, long id);
 
     String deleteCustomerById(long id);
+    String activeCustomerId(Long customerId);
 
 }

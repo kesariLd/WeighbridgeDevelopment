@@ -21,4 +21,6 @@ public interface SupplierMasterService {
     String updateSupplierById(SupplierRequest SupplierRequest, long id);
 
     String deleteSupplierById(long id);
+
+    String activeSupplier(Long supplierId);
 }

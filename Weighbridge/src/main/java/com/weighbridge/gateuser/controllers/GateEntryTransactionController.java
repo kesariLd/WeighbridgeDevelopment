@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -72,6 +73,30 @@ public class GateEntryTransactionController {
     public ResponseEntity<String> saveOutTime(@PathVariable Integer ticketNo) {
         String status = gateEntryTransactionService.setOutTime(ticketNo);
         return new ResponseEntity<>(status, HttpStatus.OK);
+    }
+
+    @GetMapping("/transactions")
+    public GateEntryTransactionPageResponse getTransactions(
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "5", required = false) int size,
+            @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
+            @RequestParam(defaultValue = "desc", required = false) String sortOrder,
+            @RequestParam(required = false) Integer ticketNo,
+            @RequestParam(required = false) String vehicleNo,
+            @RequestParam(required = false) String transactionType,
+            @RequestParam(required = false) String supplierName,
+            @RequestParam(required = false) LocalDate date) {
+        Pageable pageable;
+        if(sortField!=null && !sortField.isEmpty()){
+            Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;
+            Sort sort = Sort.by(direction,sortField);
+            pageable = PageRequest.of(page,size,sort);
+        }
+        else{
+            pageable = PageRequest.of(page,size);
+        }
+        GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName,transactionType,pageable);
+        return transactionsByFiltering;
     }
 
 }

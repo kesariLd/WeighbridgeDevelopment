@@ -93,7 +93,7 @@ public class CustomerMasterController {
         return new ResponseEntity<>(customer, HttpStatus.OK);
     }
     
-    @PostMapping("/update/{customerId}")
+    @PutMapping("/update/{customerId}")
     public ResponseEntity<String> updateCustomerByCustomerId(@Validated @RequestBody CustomerRequest customerRequest, @PathVariable long customerId){
         String customerResponse = customerMasterService.updateCustomerById(customerRequest, customerId);
         return new ResponseEntity<>(customerResponse,HttpStatus.OK);
@@ -102,6 +102,11 @@ public class CustomerMasterController {
     @DeleteMapping("/delete/{customerId}")
     public ResponseEntity<String> deleteCustomerByCustomerId(@PathVariable long customerId){
         String response = customerMasterService.deleteCustomerById(customerId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+    @GetMapping("/active/{customerId}")
+    public ResponseEntity<String> activeCustomerByCustomerId(@PathVariable long customerId){
+        String response = customerMasterService.activeCustomerId(customerId);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }

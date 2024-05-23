@@ -101,7 +101,7 @@ public class SupplierMasterController {
         return new ResponseEntity<>(supplier, HttpStatus.OK);
     }
 
-    @PostMapping("/update/{supplierId}")
+    @PutMapping("/update/{supplierId}")
     public ResponseEntity<String> updateSupplierBySupplierId(@Validated @RequestBody SupplierRequest supplierRequest, @PathVariable long supplierId){
         String supplierResponse = supplierMasterService.updateSupplierById(supplierRequest, supplierId);
         return new ResponseEntity<>(supplierResponse,HttpStatus.OK);
@@ -109,6 +109,12 @@ public class SupplierMasterController {
     @DeleteMapping("/delete/{supplierId}")
     public ResponseEntity<String> deleteSupplierBySupplierId(@PathVariable long supplierId){
         String response = supplierMasterService.deleteSupplierById(supplierId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+
+    @GetMapping("/active/{supplierId}")
+    public ResponseEntity<String> activeSuppleirBySupplierId(@PathVariable long supplierId){
+        String response = supplierMasterService.activeSupplier(supplierId);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }
