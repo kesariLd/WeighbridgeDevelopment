@@ -98,4 +98,10 @@ public class CustomerMasterController {
         String customerResponse = customerMasterService.updateCustomerById(customerRequest, customerId);
         return new ResponseEntity<>(customerResponse,HttpStatus.OK);
     }
+
+    @DeleteMapping("/delete/{customerId}")
+    public ResponseEntity<String> deleteCustomerByCustomerId(@PathVariable long customerId){
+        String response = customerMasterService.deleteCustomerById(customerId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
 }

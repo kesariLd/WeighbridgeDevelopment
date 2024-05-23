@@ -3,8 +3,7 @@ package com.weighbridge.admin.dtos;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -15,10 +14,7 @@ public class VehicleMasterDto {
     private Integer vehicleWheelsNo;
     private Double vehicleTareWeight;
     private Double vehicleLoadCapacity;
-    private Date vehicleFitnessUpTo;
-    private String vehicleCreatedBy;
-    private LocalDateTime vehicleCreatedDate;
-    private String vehicleModifiedBy;
-    private LocalDateTime vehicleModifiedDate;
+    private LocalDate vehicleFitnessUpTo;
+    private String status;
 
 }

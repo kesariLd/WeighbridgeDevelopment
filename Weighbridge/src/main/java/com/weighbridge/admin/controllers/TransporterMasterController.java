@@ -39,9 +39,60 @@ public class TransporterMasterController {
         return ResponseEntity.ok(allTransporter);
     }
 
+    /**
+     * Endpoint to retrieve all the transporters.
+     *
+     * @return ResponseEntity containing  alist of transporters dtos and HTTP status OK.
+     */
     @GetMapping("/details")
     public ResponseEntity<List<TransporterDto>> getAllTransporter() {
         List<TransporterDto> transporterDtos = transporterService.getAllTransporter();
         return ResponseEntity.ok(transporterDtos);
     }
+
+    /**
+     * Endpoint to retrieve a transporter by its ID.
+     *
+     * @param transporterId The unique identifier of the transporter.
+     * @return ResponseEntity containing the details with HTTP status OK.
+     */
+    @GetMapping("/{transporterId}")
+    public ResponseEntity<TransporterDto> getTransporterById(@PathVariable Long transporterId) {
+        TransporterDto transporterDto = transporterService.getTransporterById(transporterId);
+        return ResponseEntity.ok(transporterDto);
+    }
+
+    /**
+     * Endpoint to update a transporter by its ID.
+     *
+     * @param transporterId  The unique identifier of the transporter.
+     * @param transporterDto The transporter details to be updated.
+     * @return ResponseEntity containing a success message with HTTP status OK.
+     */
+    @PutMapping("/{transporterId}")
+    public ResponseEntity<String> updateTransporterById(@PathVariable Long transporterId, @RequestBody TransporterDto transporterDto) {
+        String response = transporterService.updateTransporterById(transporterId, transporterDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{transporterId}/deactivate")
+    public ResponseEntity<Void> deleteTransporterById(@PathVariable Long transporterId) {
+        boolean deactivated = transporterService.deactivateTransporterById(transporterId);
+        if (deactivated) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{transporterId}/activate")
+    public ResponseEntity<Void> activateTransporterById(@PathVariable Long transporterId) {
+        boolean activated = transporterService.activateTransporterById(transporterId);
+        if (activated) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

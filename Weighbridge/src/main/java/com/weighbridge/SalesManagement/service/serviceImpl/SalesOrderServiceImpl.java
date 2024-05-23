@@ -103,23 +103,21 @@ public class SalesOrderServiceImpl implements SalesOrderService {
     @Override
     public List<SalesDashboardResponse> getAllSalesDetails() {
         List<SalesOrder> allSales = salesOrderRespository.findAll();
-
         List<SalesDashboardResponse> list = new ArrayList<>();
-
         for(SalesOrder salesOrder : allSales) {
-                    SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
-                    salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
-                    salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
-                    CustomerMaster byId = customerMasterRepository.findById(salesOrder.getCustomerId()).get();
-                    salesDashboardResponse.setCustomerName(byId.getCustomerName());
-                    salesDashboardResponse.setSaleOrderNo(salesOrder.getSaleOrderNo());
-                    salesDashboardResponse.setProductName(salesOrder.getProductName());
-                    salesDashboardResponse.setBrokerName(salesOrder.getBrokerName());
-                    salesDashboardResponse.setProgressiveQty(salesOrder.getProgressiveQuantity());
-                    salesDashboardResponse.setBalanceQty(salesOrder.getBalanceQuantity());
-                    // Assuming getPurchasePassNo() is a method of SalesProcess, not List<SalesProcess>
-                    list.add(salesDashboardResponse);
-                }
+            SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
+            salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
+            salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
+            CustomerMaster byId = customerMasterRepository.findById(salesOrder.getCustomerId()).get();
+            salesDashboardResponse.setCustomerName(byId.getCustomerName());
+            salesDashboardResponse.setSaleOrderNo(salesOrder.getSaleOrderNo());
+            salesDashboardResponse.setProductName(salesOrder.getProductName());
+            salesDashboardResponse.setBrokerName(salesOrder.getBrokerName());
+            salesDashboardResponse.setProgressiveQty(salesOrder.getProgressiveQuantity());
+            salesDashboardResponse.setBalanceQty(salesOrder.getBalanceQuantity());
+            // Assuming getPurchasePassNo() is a method of SalesProcess, not List<SalesProcess>
+            list.add(salesDashboardResponse);
+        }
         return list;
     }
 
