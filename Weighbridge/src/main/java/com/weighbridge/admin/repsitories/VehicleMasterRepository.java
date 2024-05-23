@@ -44,4 +44,6 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
 
 
 
+
+
 }

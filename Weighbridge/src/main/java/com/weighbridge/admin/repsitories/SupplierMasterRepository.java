@@ -38,9 +38,12 @@ public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,L
 
     @Query("SELECT sm.supplierAddressLine1 FROM SupplierMaster sm WHERE sm.supplierName = :supplierName")
     List<String> findSupplierAddressLine1BySupplierName(@Param("supplierName") String supplierName);
-    
+
+
     @Query("SELECT s FROM SupplierMaster s WHERE s.supplierName LIKE %:supplierName% OR s.supplierAddressLine1 LIKE %:supplierAddressLine1%")
     List<SupplierMaster> findBySupplierNameContainingOrSupplierAddressLine1Containing(@Param("supplierName") String supplierName, @Param("supplierAddressLine1") String supplierAddressLine1);
+
+
     @Query("SELECT sm.supplierName FROM SupplierMaster sm WHERE sm.supplierStatus= 'ACTIVE' ")
     List<String> findListSupplierName();
 
@@ -48,3 +51,4 @@ public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,L
     List<Long> findListSupplierIdBySupplierName(@Param("supplierName") String supplierName);
 
 }
+
