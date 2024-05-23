@@ -89,4 +89,14 @@ public class QualityTransactionController {
         QualityCreationResponse qualityCreationResponse = qualityTransactionService.getDetailsForQualityTransaction(ticketNo);
         return ResponseEntity.ok(qualityCreationResponse);
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<QualityDashboardResponse>>searchByTicketNoVehicleNoSupplierAndSupplierAddress(
+            @RequestParam(required = false) Integer ticketNo,
+            @RequestParam (required = false)String vehicleNo,
+            @RequestParam (required = false)String supplierOrCustomerName,
+            @RequestParam(required = false) String supplierOrCustomerAddress
+    ){
+        List<QualityDashboardResponse> response=qualityTransactionService.searchByTicketNoVehicleNoSupplierAndSupplierAddress(ticketNo,vehicleNo,supplierOrCustomerName,supplierOrCustomerAddress);
+        return ResponseEntity.ok().body(response);
+    }
 }

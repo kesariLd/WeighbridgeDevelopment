@@ -42,4 +42,6 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
     List<String> findVehicleNosInGateEntryTransactions();
 
 
+
+
 }
