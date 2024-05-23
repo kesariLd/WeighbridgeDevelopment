@@ -10,6 +10,7 @@ import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
+import com.weighbridge.gateuser.payloads.GateEntryTransactionSpecification;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
@@ -67,6 +68,9 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
     @Autowired
     private SalesProcessRepository salesProcessRepository;
+
+    @Autowired
+    private GateEntryTransactionSpecification gateEntryTransactionSpecification;
 
 
     /**
@@ -517,6 +521,94 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         }
     }
 
+    @Override
+    public GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date,String supplierNameC,String transactionType,Pageable pageable) {
+        Page<GateEntryTransaction> gateEntryTransactionPage = gateEntryTransactionRepository.findAll(gateEntryTransactionSpecification.getTransactions(ticketNo, vehicleNo, date,supplierNameC,transactionType), pageable);
+        // Convert Page content to List
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        List<GateEntryTransactionResponse> transactionResponses = gateEntryTransactionPage.getContent().stream()
+                .map(transaction -> {
+                    // Set all fields from transaction to response
+                    GateEntryTransactionResponse response = new GateEntryTransactionResponse();
+                    // Fetching associated entity names
+                    Object[] vehicleNoAndVehicleTypeAndVehicleWheelsNoByVehicleId = vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId());
+                    String transporterName = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getTransporterId());
 
+                    // Setting values to response object
+                    response.setTicketNo(transaction.getTicketNo());
+                    response.setTransactionType(transaction.getTransactionType());
+                    response.setMaterialType(transaction.getMaterialType());
+
+                    // Check the transaction type and set the appropriate entity
+                    if ("Inbound".equals(transaction.getTransactionType())) {
+                        Object[] supplierNameBySupplierId = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(transaction.getSupplierId());
+                        // Inbound transaction
+                        Object[] supplierInfo = (Object[]) supplierNameBySupplierId[0];
+                        if (supplierInfo != null && supplierInfo.length >= 2) {
+                            String supplierName = (String) supplierInfo[0];
+                            String supplierAddress = (String) supplierInfo[1];
+                            response.setSupplier(supplierName);
+                            response.setSupplierAddress(supplierAddress);
+                        }
+                        String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
+                        response.setMaterial(materialName);
+                    } else if ("Outbound".equals(transaction.getTransactionType())) {
+                        Object[] customerNameByCustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(transaction.getCustomerId());
+
+                        // Outbound transaction
+                        Object[] customerInfo = (Object[]) customerNameByCustomerId[0];
+                        if (customerInfo != null && customerInfo.length >= 2) {
+                            String customerName = (String) customerInfo[0];
+                            String customerAddress = (String) customerInfo[1];
+                            response.setCustomer(customerName);
+                            response.setCustomerAddress(customerAddress);
+                        }
+                        String materialName = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
+                        response.setMaterial(materialName);
+                    }
+                    Object[] vehicleInfo = (Object[]) vehicleNoAndVehicleTypeAndVehicleWheelsNoByVehicleId[0];
+                    if (vehicleInfo != null && vehicleInfo.length >= 3) {
+                        String vehicleNoGet = (String) vehicleInfo[0];
+                        String vehicleType = (String) vehicleInfo[1];
+                        Integer vehicleWheelsNo = (Integer) vehicleInfo[2];
+                        response.setVehicleNo(vehicleNoGet);
+                        response.setVehicleType(vehicleType);
+                        response.setVehicleWheelsNo(vehicleWheelsNo);
+                    } else {
+                        // Handle case where vehicle info is not available
+                        response.setVehicleNo(null);
+                        response.setVehicleType(null);
+                        response.setVehicleWheelsNo(null);
+                    }
+                    // Check if vehicle out transaction log exists
+                    if (transaction.getVehicleIn() != null) {
+                        // Vehicle out transaction log exists
+                        // Process the vehicle out data
+                        response.setVehicleIn(transaction.getVehicleIn().format(formatter));
+                    }
+                    // Check if vehicle out transaction log exists
+                    if (transaction.getVehicleOut() != null) {
+                        // Vehicle out transaction log exists
+                        // Process the vehicle out data
+                        response.setVehicleOut(transaction.getVehicleOut().format(formatter));
+                    }
+                    response.setPoNo(transaction.getPoNo());
+                    response.setChallanNo(transaction.getChallanNo());
+                    response.setTpNo(transaction.getTpNo());
+                    response.setTpNetWeight(transaction.getSupplyConsignmentWeight());
+                    response.setTransporter(transporterName);
+                    response.setChallanDate(transaction.getChallanDate());
+                    response.setTransactionDate(transaction.getTransactionDate());
+                    System.out.println("response " + response);
+                    return response;
+                })
+                        .collect(Collectors.toList());
+
+        // Populate the custom response DTO
+        GateEntryTransactionPageResponse gateEntryTransactionPageResponse = new GateEntryTransactionPageResponse();
+        gateEntryTransactionPageResponse.setTransactions(transactionResponses);
+        gateEntryTransactionPageResponse.setTotalPages(gateEntryTransactionPage.getTotalPages());
+        gateEntryTransactionPageResponse.setTotalElements(gateEntryTransactionPage.getTotalElements());
+        return gateEntryTransactionPageResponse;
+    }
 }
- 

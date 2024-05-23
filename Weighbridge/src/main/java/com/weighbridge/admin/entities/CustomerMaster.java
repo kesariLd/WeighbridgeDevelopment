@@ -26,7 +26,7 @@ public class CustomerMaster {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "customer_id")
-    private long customerId;
+    private Long customerId;
 
     @Column(name = "customer_name",nullable = false)
     private String customerName;

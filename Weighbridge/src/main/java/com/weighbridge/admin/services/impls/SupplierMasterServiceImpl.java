@@ -158,4 +158,15 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
         return "Deleted Succesfully";
     }
 
+    @Override
+    public String activeSupplier(Long supplierId) {
+        SupplierMaster bySupplierId = supplierMasterRepository.findBySupplierId(supplierId);
+        if (bySupplierId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Id is not found ");
+        }
+        bySupplierId.setSupplierStatus("ACTIVE");
+        supplierMasterRepository.save(bySupplierId);
+        return "Active Successfully";
+    }
+
 }

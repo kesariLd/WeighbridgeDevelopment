@@ -14,6 +14,7 @@ public class SupplierMasterDto {
     private String supplierContactNo;
     private String supplierAddressLine1;
     private String supplierAddressLine2;
+    private String supplierStatus;
     private String city;
     private String state;
     private String country;

@@ -37,4 +37,7 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
     Boolean existsByCustomerEmailAndCustomerIdNot(String emailId,long id);
     @Query("SELECT c.customerName FROM CustomerMaster c WHERE c.customerStatus= 'ACTIVE' ")
     List<String> findListCustomerName();
+
+    @Query("SELECT c.customerId FROM CustomerMaster c WHERE c.customerName= :customerName")
+    List<Long> findListCustomerIdbyCustomerName(@Param("customerName") String customerName);
 }

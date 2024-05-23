@@ -83,6 +83,7 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
             customerMasterDto.setState(customerMaster.getState());
             customerMasterDto.setCity(customerMaster.getCity());
             customerMasterDto.setZip(customerMaster.getZip());
+            customerMasterDto.setCustomerStatus(customerMaster.getCustomerStatus());
             return customerMasterDto;
         }).collect(Collectors.toList());
         return customerMasterDtoList;
@@ -162,5 +163,16 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
         byCustomerId.setCustomerStatus("INACTIVE");
         customerMasterRepository.save(byCustomerId);
         return "Deleted Succesfully";
+    }
+
+    @Override
+    public String activeCustomerId(Long customerId) {
+        CustomerMaster byCustomerId = customerMasterRepository.findByCustomerId(customerId);
+        if(byCustomerId==null){
+            throw new ResponseStatusException( HttpStatus.BAD_REQUEST,"Id is not found ");
+        }
+        byCustomerId.setCustomerStatus("ACTIVE");
+        customerMasterRepository.save(byCustomerId);
+        return "Active Successfully";
     }
 }
