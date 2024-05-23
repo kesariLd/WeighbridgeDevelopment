@@ -77,7 +77,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         this.productMasterRepository = productMasterRepository;
     }
 
-    @Override
     public QualityDashboardPaginationResponse getAllGateDetails(Pageable pageable) {
 
         HttpSession session = httpServletRequest.getSession();
@@ -89,14 +88,13 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             userSite = session.getAttribute("userSite").toString();
             userCompany = session.getAttribute("userCompany").toString();
         } else {
-            throw new SessionExpiredException("Session Expired, Login again !");
+            throw new SessionExpiredException("Session Expired, Login again!");
         }
 
-        Page<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTicketNoDesc(userSite, userCompany, pageable);
+        Page<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDateDesc(userSite, userCompany, pageable);
         List<QualityDashboardResponse> qualityDashboardResponses = new ArrayList<>();
 
         for (GateEntryTransaction transaction : allTransactions) {
-//            if (transaction.getTransactionType().equals("Inbound") || transaction.getTransactionType().equals("Outbound")) {
             VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
             if (transactionStatus != null && (transactionStatus.getStatusCode().equals("GWT") || transactionStatus.getStatusCode().equals("TWT"))) {
                 QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
@@ -107,7 +105,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 qualityDashboardResponse.setTransactionType(transaction.getTransactionType());
 
                 if (transaction.getTransactionType().equals("Inbound")) {
-                    supplierMasterRepository.findSupplierNameBySupplierId(transaction.getSupplierId());
                     SupplierMaster supplierMaster = supplierMasterRepository.findById(transaction.getSupplierId()).orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", String.valueOf(transaction.getSupplierId())));
                     qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
                     String supplierAddress = supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2();
@@ -123,8 +120,8 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                     qualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
                     String customerAddress = customerMaster.getCustomerAddressLine1() + "," + customerMaster.getCustomerAddressLine2();
                     qualityDashboardResponse.setSupplierOrCustomerAddress(customerAddress);
-                    log.info("TicketNo" + transaction.getTicketNo());
-                    log.info("MaterialId" + transaction.getMaterialId());
+                    log.info("TicketNo: " + transaction.getTicketNo());
+                    log.info("MaterialId: " + transaction.getMaterialId());
                     String productNameByProductId = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
                     if (productNameByProductId != null) {
                         qualityDashboardResponse.setMaterialName(productNameByProductId);
@@ -142,7 +139,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                     qualityDashboardResponse.setVehicleNo(vehicleNoById);
                 }
 
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:SS");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
                 if (transaction.getVehicleIn() != null) {
                     qualityDashboardResponse.setIn(transaction.getVehicleIn().format(formatter));
                 }
@@ -151,9 +148,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 }
                 qualityDashboardResponse.setDate(transaction.getTransactionDate());
                 qualityDashboardResponses.add(qualityDashboardResponse);
-                System.out.println("res " + qualityDashboardResponses);
             }
-
         }
 
         QualityDashboardPaginationResponse qualityDashboardPaginationResponse = new QualityDashboardPaginationResponse();
@@ -162,6 +157,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         qualityDashboardPaginationResponse.setTotalElements(allTransactions.getTotalElements());
         return qualityDashboardPaginationResponse;
     }
+
 
     @Transactional
     @Override
@@ -316,14 +312,20 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             }
 
             // Search for supplierName and supplierAddress
-            if (supplierOrCustomerName != null || supplierOrCustomerAddress != null) {
+            if (supplierOrCustomerName != null || supplierOrCustomerAddress != null || ticketNo != null) {
                 List<SupplierMaster> supplierMasters = supplierMasterRepository.findBySupplierNameContainingOrSupplierAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
                 List<GateEntryTransaction> transactions = new ArrayList<>();
                 for (SupplierMaster supplierMaster : supplierMasters) {
-                    List<GateEntryTransaction> gateEntryTransaction = Optional.ofNullable(gateEntryTransactionRepository.findBySupplierId(supplierMaster.getSupplierId())).orElseThrow(() -> new ResourceNotFoundException("Supplier is not found with id" + supplierMaster.getSupplierId()));
+                    List<GateEntryTransaction> gateEntryTransaction;
+                    if (ticketNo != null) {
+                        gateEntryTransaction = Optional.ofNullable(gateEntryTransactionRepository.findBySupplierIdAndTicketNoOrderByTicketNoDesc(supplierMaster.getSupplierId(), ticketNo))
+                                .orElseThrow(() -> new ResourceNotFoundException("Supplier is not found with id" + supplierMaster.getSupplierId() + " or ticketNo " + ticketNo + " is not found."));
+                    } else {
+                        gateEntryTransaction = Optional.ofNullable(gateEntryTransactionRepository.findBySupplierIdOrderByTicketNoDesc(supplierMaster.getSupplierId()))
+                                .orElseThrow(() -> new ResourceNotFoundException("Supplier is not found with id" + supplierMaster.getSupplierId()));
+                    }
                     transactions.addAll(gateEntryTransaction);
                 }
-//                    List<GateEntryTransaction> transactions = gateEntryTransactionRepository.findBySupplierId(supplierMasterRepository.findSupplierIdBySupplierNameAndAddress(supplierOrCustomerName, supplierOrCustomerAddress));
                 for (GateEntryTransaction gateEntryTransaction : transactions) {
                     QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
                     setQualityDashboardResponseDetails(qualityDashboardResponse, gateEntryTransaction);
@@ -335,10 +337,10 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
             // Search by vehicleNo
             if (vehicleNo != null) {
-
                 VehicleMaster vehicleMaster = vehicleMasterRepository.findByVehicleNo(vehicleNo);
                 if (vehicleMaster != null) {
-                    List<GateEntryTransaction> transactionsByVehicleId = gateEntryTransactionRepository.findByVehicleId(vehicleMaster.getId());
+                    List<GateEntryTransaction> transactionsByVehicleId = gateEntryTransactionRepository.findByVehicleIdOrderByTicketNoDesc(vehicleMaster.getId());
+                    Collections.sort(transactionsByVehicleId, Comparator.comparing(GateEntryTransaction::getTicketNo).reversed());
                     for (GateEntryTransaction gateEntryTransaction : transactionsByVehicleId) {
                         QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
                         setQualityDashboardResponseDetails(qualityDashboardResponse, gateEntryTransaction);
@@ -347,6 +349,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 }
                 return responses;
             }
+
 
         } catch (Exception e) {
             log.error("Error occurred while searching: ", e);
