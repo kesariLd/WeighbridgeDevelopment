@@ -475,7 +475,8 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         if (gateEntryTransaction != null) {
             ReportResponse reportResponse = new ReportResponse();
             reportResponse.setTicketNo(gateEntryTransaction.getTicketNo());
-            reportResponse.setDate(gateEntryTransaction.getTransactionDate());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+            reportResponse.setDate(gateEntryTransaction.getTransactionDate().format(formatter));
             reportResponse.setTransactionType(gateEntryTransaction.getTransactionType());
 
             VehicleMaster vehicleMaster = vehicleMasterRepository.findById(gateEntryTransaction.getVehicleId()).
