@@ -104,7 +104,7 @@ public class CustomerMasterController {
         String response = customerMasterService.deleteCustomerById(customerId);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
-    @GetMapping("/active/{customerId}")
+    @PutMapping("/active/{customerId}")
     public ResponseEntity<String> activeCustomerByCustomerId(@PathVariable long customerId){
         String response = customerMasterService.activeCustomerId(customerId);
         return new ResponseEntity<>(response,HttpStatus.OK);
