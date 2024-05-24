@@ -386,10 +386,9 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 return responses;
             }
 
-
             // Search by vehicleNo
             if (vehicleNo != null) {
-                VehicleMaster vehicleMaster = vehicleMasterRepository.findByVehicleNo(vehicleNo);
+               VehicleMaster vehicleMaster = vehicleMasterRepository.findByVehicleNo(vehicleNo);
                 if (vehicleMaster != null) {
                     List<GateEntryTransaction> transactionsByVehicleId = gateEntryTransactionRepository.findByVehicleIdOrderByTicketNoDesc(vehicleMaster.getId());
                     Collections.sort(transactionsByVehicleId, Comparator.comparing(GateEntryTransaction::getTicketNo).reversed());
@@ -401,7 +400,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 }
                 return responses;
             }
-
 
         } catch (Exception e) {
             log.error("Error occurred while searching: ", e);
@@ -423,6 +421,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
         return responses;
     }
+
 
 
     /**
@@ -613,5 +612,3 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         throw new ResourceNotFoundException("Quality transaction not found for ticketNo: " + ticketNo);
     }
 }
-
-

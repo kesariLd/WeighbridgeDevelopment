@@ -60,7 +60,6 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     @Override
     public List<String> getAllMaterialNames() {
         List<String> listOfMaterialNames = materialMasterRepository.findAllMaterialNameByMaterialStatus("ACTIVE");
-
         return listOfMaterialNames;
     }
 
