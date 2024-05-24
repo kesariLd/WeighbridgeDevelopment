@@ -42,4 +42,6 @@ public interface SupplierMasterRepository extends JpaRepository<SupplierMaster,L
     @Query("SELECT sm.supplierName FROM SupplierMaster sm WHERE sm.supplierStatus= 'ACTIVE' ")
     List<String> findListSupplierName();
 
+    @Query("SELECT s.id FROM SupplierMaster s WHERE s.supplierName = :supplierName")
+    List<Long> findListSupplierIdBySupplierName(@Param("supplierName") String supplierName);
 }
