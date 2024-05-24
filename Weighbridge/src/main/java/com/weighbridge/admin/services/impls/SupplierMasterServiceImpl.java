@@ -130,6 +130,7 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
             supplierMaster.setCity(supplierRequest.getCity());
             supplierMaster.setState(supplierRequest.getState());
             supplierMaster.setCountry(supplierRequest.getCountry());
+            supplierMaster.setZip(supplierRequest.getZip());
             supplierMaster.setSupplierContactNo(supplierRequest.getSupplierContactNo());
             HttpSession session = httpServletRequest.getSession();
             if (session == null && session.getAttribute("userID") == null) {

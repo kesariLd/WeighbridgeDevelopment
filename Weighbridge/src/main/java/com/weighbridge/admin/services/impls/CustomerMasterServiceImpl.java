@@ -136,8 +136,9 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
             customerMaster.setCustomerAddressLine2(customerRequest.getCustomerAddressLine2());
             customerMaster.setCity(customerRequest.getCity());
             customerMaster.setState(customerRequest.getState());
-            customerMaster.setCountry(customerMaster.getCountry());
-            customerMaster.setCustomerContactNo(customerMaster.getCustomerContactNo());
+            customerMaster.setCountry(customerRequest.getCountry());
+            customerMaster.setZip(customerRequest.getZip());
+            customerMaster.setCustomerContactNo(customerRequest.getCustomerContactNo());
             HttpSession session = httpServletRequest.getSession();
             if(session==null && session.getAttribute("userID")==null){
                 throw new SessionExpiredException("Session Expired ! Login again");
