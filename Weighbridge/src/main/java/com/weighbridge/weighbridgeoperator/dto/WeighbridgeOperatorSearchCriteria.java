@@ -19,5 +19,8 @@ public class WeighbridgeOperatorSearchCriteria {
     private String transporterName;
     private String productName;
     private String materialName;
+    private String userId;
+    private String companyId;
+    private String siteId;
     private Boolean today; // Add this field
 }

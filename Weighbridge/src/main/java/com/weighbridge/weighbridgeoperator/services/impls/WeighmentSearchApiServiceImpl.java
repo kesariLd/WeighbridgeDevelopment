@@ -4,6 +4,7 @@ package com.weighbridge.weighbridgeoperator.services.impls;
 import com.weighbridge.admin.entities.MaterialMaster;
 import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
+import com.weighbridge.admin.exceptions.SessionExpiredException;
 import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
@@ -16,6 +17,8 @@ import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.services.WeighmentSearchApiService;
 import com.weighbridge.weighbridgeoperator.specification.WeighmentTransactionSpecification;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,10 +59,8 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
     @Autowired
     private TransporterMasterRepository transporterMasterRepository;
 
-
-
-
-
+    @Autowired
+     private HttpServletRequest httpServletRequest;
 
     /**
      * @return
@@ -122,6 +123,21 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
      */
     @Override
     public WeighbridgePageResponse getAllBySearchFields(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable) {
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompany;
+        String userSite;
+
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSite = session.getAttribute("userSite").toString();
+            userCompany = session.getAttribute("userCompany").toString();
+        } else {
+            throw new SessionExpiredException("Session Expired, Login again !");
+        }
+        criteria.setSiteId(userSite);
+        criteria.setCompanyId(userCompany);
+        criteria.setUserId(userId);
         WeighmentTransactionSpecification specification = new WeighmentTransactionSpecification(criteria,vehicleMasterRepository,materialMasterRepository,transporterMasterRepository,productMasterRepository,supplierMasterRepository,customerMasterRepository);
         Page<WeighmentTransaction> pageResult = weighmentTransactionRepository.findAll(specification,pageable);
         List<WeighmentTransactionResponse> responses = pageResult.stream()
@@ -133,7 +149,6 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
         response.setTotalElements(pageResult.getTotalElements());
         return response;
     }
-
 
     private WeighmentTransactionResponse mapToResponse(WeighmentTransaction transaction){
         VehicleMaster byId = vehicleMasterRepository.findById(transaction.getGateEntryTransaction().getVehicleId()).get();
