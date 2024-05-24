@@ -86,7 +86,7 @@ public class WeighmentTransactionSpecification implements Specification<Weighmen
             }
         }
         if(criteria.getCustomerName()!=null){
-            List<Long> listCustomerIdByCustomerName = customerMasterRepository.findListCustomerIdByCustomerName(criteria.getCustomerName());
+            List<Long> listCustomerIdByCustomerName = customerMasterRepository.findListCustomerIdbyCustomerName(criteria.getCustomerName());
             System.out.println(listCustomerIdByCustomerName);
             if(listCustomerIdByCustomerName.isEmpty()){
                 throw  new RuntimeException("customer not found with customerName "+criteria.getCustomerName());
