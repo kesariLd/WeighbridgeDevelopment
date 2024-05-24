@@ -27,7 +27,6 @@ public class WeighmentSearchApi {
         return ResponseEntity.ok(byTicketNo);
     }
 
-
     @GetMapping("/serachApi")
     public ResponseEntity<WeighbridgePageResponse> searchByVariable(@RequestParam(required = false)Integer ticketNo,
                                                                             @RequestParam(required = false) String transactionType,
