@@ -137,6 +137,7 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
             customerMaster.setCity(customerRequest.getCity());
             customerMaster.setState(customerRequest.getState());
             customerMaster.setCountry(customerMaster.getCountry());
+            customerMaster.setZip(customerMaster.getZip());
             customerMaster.setCustomerContactNo(customerMaster.getCustomerContactNo());
             HttpSession session = httpServletRequest.getSession();
             if(session==null && session.getAttribute("userID")==null){
