@@ -146,10 +146,6 @@ public class QualityTransactionController {
   }
 
 
-            return ResponseEntity.badRequest().body(Collections.emptyList());
-        }
-    }
-
 
 }
 
