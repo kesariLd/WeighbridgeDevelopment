@@ -38,5 +38,8 @@ public interface WeighmentTransactionService {
      * @return The TicketResponse corresponding to the provided ticket number.
      */
     TicketResponse getResponseByTicket(Integer ticketNo);
-}
 
+
+
+
+}
