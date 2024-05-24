@@ -16,7 +16,7 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
 
     @Query("SELECT DISTINCT v.id FROM VehicleMaster v WHERE v.vehicleNo = :vehicleNo")
     long findVehicleIdByVehicleNo(@Param("vehicleNo") String vehicleNo);
-  
+
     @Query("SELECT v.id FROM VehicleMaster v JOIN v.transporter t WHERE v.vehicleNo = :vehicleNo AND t.id = :transporterId")
     long findVehicleByVehicleNoAndTransporterId(@Param("vehicleNo") String vehicleNo, @Param("transporterId") long transporterId);
 
@@ -40,10 +40,6 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
 
     @Query("SELECT vm.vehicleNo FROM VehicleMaster vm WHERE vm.id IN (SELECT DISTINCT ge.vehicleId FROM GateEntryTransaction ge)")
     List<String> findVehicleNosInGateEntryTransactions();
-
-
-
-
 
 
 }

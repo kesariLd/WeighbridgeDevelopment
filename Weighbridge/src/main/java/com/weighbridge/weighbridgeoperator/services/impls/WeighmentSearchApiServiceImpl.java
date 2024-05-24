@@ -9,17 +9,25 @@ import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
+import com.weighbridge.weighbridgeoperator.dto.WeighbridgeOperatorSearchCriteria;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
+import com.weighbridge.weighbridgeoperator.payloads.WeighbridgePageResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.services.WeighmentSearchApiService;
+import com.weighbridge.weighbridgeoperator.specification.WeighmentTransactionSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService {
@@ -49,6 +57,10 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
     private TransporterMasterRepository transporterMasterRepository;
 
 
+
+
+
+
     /**
      * @return
      */
@@ -59,7 +71,6 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
         String customerNameByCustomerId = customerMasterRepository.findCustomerNameByCustomerId(byWeighmentId.getGateEntryTransaction().getCustomerId());
         String supplierNameBySupplierIdsearchField = supplierMasterRepository.findSupplierNameBySupplierId(byWeighmentId.getGateEntryTransaction().getSupplierId());
         String transporterNameByTransporterId = transporterMasterRepository.findTransporterNameByTransporterId(byWeighmentId.getGateEntryTransaction().getTransporterId());
-
         if(byWeighmentId==null){
             throw new RuntimeException("ticket not found with ticketNo "+ticketNo);
         }
@@ -107,12 +118,66 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
     }
 
     /**
-     * @param fieldName
      * @return
      */
     @Override
-    public List<WeighmentTransactionResponse> getBySearchfield(String fieldName) {
+    public WeighbridgePageResponse getAllBySearchFields(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable) {
+        WeighmentTransactionSpecification specification = new WeighmentTransactionSpecification(criteria,vehicleMasterRepository,materialMasterRepository,transporterMasterRepository,productMasterRepository,supplierMasterRepository,customerMasterRepository);
+        Page<WeighmentTransaction> pageResult = weighmentTransactionRepository.findAll(specification,pageable);
+        List<WeighmentTransactionResponse> responses = pageResult.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        WeighbridgePageResponse response = new WeighbridgePageResponse();
+        response.setWeighmentTransactionResponses(responses);
+        response.setTotalPages(pageResult.getTotalPages());
+        response.setTotalElements(pageResult.getTotalElements());
+        return response;
+    }
 
-        return null;
+
+    private WeighmentTransactionResponse mapToResponse(WeighmentTransaction transaction){
+        VehicleMaster byId = vehicleMasterRepository.findById(transaction.getGateEntryTransaction().getVehicleId()).get();
+        String customerNameByCustomerId = customerMasterRepository.findCustomerNameByCustomerId(transaction.getGateEntryTransaction().getCustomerId());
+        String supplierNameBySupplierIdsearchField = supplierMasterRepository.findSupplierNameBySupplierId(transaction.getGateEntryTransaction().getSupplierId());
+        String transporterNameByTransporterId = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getGateEntryTransaction().getTransporterId());
+        WeighmentTransactionResponse weighmentTransactionResponse=new WeighmentTransactionResponse();
+        weighmentTransactionResponse.setTicketNo(String.valueOf(transaction.getGateEntryTransaction().getTicketNo()));
+        weighmentTransactionResponse.setWeighmentNo(String.valueOf(transaction.getWeighmentNo()));
+        weighmentTransactionResponse.setVehicleFitnessUpTo(byId.getVehicleFitnessUpTo());
+        weighmentTransactionResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
+        weighmentTransactionResponse.setCustomerName(customerNameByCustomerId!=null?customerNameByCustomerId:"");
+        weighmentTransactionResponse.setSupplierName(supplierNameBySupplierIdsearchField!=null?supplierNameBySupplierIdsearchField:"");
+        weighmentTransactionResponse.setVehicleNo(byId.getVehicleNo());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        weighmentTransactionResponse.setVehicleIn(transaction.getGateEntryTransaction().getVehicleIn().format(formatter));
+        weighmentTransactionResponse.setTransactionDate(transaction.getGateEntryTransaction().getTransactionDate());
+        TransactionLog byTicketNo = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getGateEntryTransaction().getTicketNo(), "GWT");
+        TransactionLog byTicketNo2 = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getGateEntryTransaction().getTicketNo(), "TWT");
+        LocalDateTime timestamp = null, timestamp1 = null;
+        String restTimeStamp=null,restTimeStamp1=null;
+        if (byTicketNo != null) {
+            timestamp = byTicketNo.getTimestamp();
+            restTimeStamp = timestamp != null ? timestamp.format(formatter) : "";
+        }
+        if (byTicketNo2 != null) {
+            timestamp1 = byTicketNo2.getTimestamp();
+            restTimeStamp1 = timestamp1 != null ? timestamp1.format(formatter) : "";
+        }
+        if(transaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")) {
+            String materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId(transaction.getGateEntryTransaction().getMaterialId());
+            weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getTemporaryWeight())!=null? String.valueOf(transaction.getTemporaryWeight())+"/"+restTimeStamp :"");
+            weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTareWeight())!=null? String.valueOf(transaction.getTareWeight())+"/"+restTimeStamp1 :"");
+            weighmentTransactionResponse.setMaterialName(materialNameByMaterialId!=null?materialNameByMaterialId:"");
+        }
+        else {
+            String productNameByProductId = productMasterRepository.findProductNameByProductId(transaction.getGateEntryTransaction().getMaterialId());
+            weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTemporaryWeight())!=null? String.valueOf(transaction.getTemporaryWeight())+"/"+restTimeStamp1 :"");
+            weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getGrossWeight())!=null? String.valueOf(transaction.getGrossWeight())+"/"+restTimeStamp :"");
+            weighmentTransactionResponse.setMaterialName(productNameByProductId!=null?productNameByProductId:"");
+        }
+        weighmentTransactionResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
+        weighmentTransactionResponse.setNetWeight(String.valueOf(transaction.getNetWeight())!=null?String.valueOf(transaction.getNetWeight()):"");
+        weighmentTransactionResponse.setTransporterName(transporterNameByTransporterId!=null?transporterNameByTransporterId:"");
+        return weighmentTransactionResponse;
     }
 }
