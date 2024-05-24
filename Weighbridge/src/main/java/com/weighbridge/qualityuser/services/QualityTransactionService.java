@@ -55,4 +55,7 @@ public interface QualityTransactionService {
     QualityCreationResponse getDetailsForQualityTransaction(Integer ticketNo);
 
 
+    List<QualityDashboardResponse> searchByTicketNoVehicleNoSupplierAndSupplierAddress(Integer ticketNo, String vehicleNo, String supplierOrCustomerName, String supplierOrCustomerAddress);
+
+    List<QualityDashboardResponse> searchByDate(String date);
 }

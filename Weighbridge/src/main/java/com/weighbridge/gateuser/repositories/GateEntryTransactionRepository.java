@@ -4,6 +4,7 @@ import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * Repository interface for accessing gate entry transaction data.
  */
-public interface GateEntryTransactionRepository extends JpaRepository<GateEntryTransaction, Integer> {
+public interface GateEntryTransactionRepository extends JpaRepository<GateEntryTransaction, Integer>, JpaSpecificationExecutor<GateEntryTransaction> {
 
     /**
      * Retrieves a list of gate entry transactions based on the specified site ID and company ID.
@@ -22,7 +23,7 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
      * @param companyId The ID of the company to filter gate entry transactions.
      * @return A list of gate entry transactions matching the provided site ID and company ID.
      */
-    Page<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTicketNoDesc(String siteId, String companyId ,Pageable pageable);
+//    Page<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTicketNoDesc(String siteId, String companyId ,Pageable pageable);
     //Pagination get All user
     Page<GateEntryTransaction> findBySiteIdAndCompanyIdAndVehicleOutIsNull(Pageable pageable,String siteId, String companyId);
 
@@ -36,6 +37,23 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     GateEntryTransaction findByTicketNo(Integer ticketNo);
 
     Integer countBySiteIdAndCompanyIdAndVehicleOutIsNull(String siteId, String companyId);
+
+    List<GateEntryTransaction> findByVehicleId(long id);
+
+    List<GateEntryTransaction> findBySupplierId(Long supplierId);
+
+    Page<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String userSite, String userCompany, Pageable pageable);
+
+    List<GateEntryTransaction> findBySupplierIdAndTicketNoOrderByTicketNoDesc(Long supplierId, Integer ticketNo);
+
+    List<GateEntryTransaction> findBySupplierIdOrderByTicketNoDesc(Long supplierId);
+
+    List<GateEntryTransaction> findByVehicleIdOrderByTicketNoDesc(long id);
+
+    List<GateEntryTransaction> findByTransactionDate(LocalDate searchDate);
+
+//    List<GateEntryTransaction> findBySupplierId(Object supplierIdBySupplierNameAndAddress);
+
 //    List<GateEntryTransaction> findBySiteIdAndCompanyId(String userSite, String userCompany);
 }
 
