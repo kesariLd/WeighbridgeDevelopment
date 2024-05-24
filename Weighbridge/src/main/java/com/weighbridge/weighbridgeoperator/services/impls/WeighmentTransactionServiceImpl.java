@@ -186,7 +186,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             throw new SessionExpiredException("Session Expired, Login again !");
         }
         System.out.println(userSite);
-        Page<Object[]> pageResult = weighmentTransactionRepository.getAllGateEntries(userSite,pageable);
+        Page<Object[]> pageResult = weighmentTransactionRepository.getAllGateEntries(userSite,userCompany,pageable);
         List<Object[]> allUsers = pageResult.getContent();
         System.out.println(allUsers);
         List<WeighmentTransactionResponse> responses = new ArrayList<>();
@@ -270,7 +270,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo).get();
         if (gateEntryTransaction == null) {
             throw new ResourceNotFoundException("ticket", "ticketNo", ticketNo.toString());
-        } else {
+        }
+        else {
             System.out.println("site id" + gateEntryTransaction.getSupplierId());
             TicketResponse ticketResponse = new TicketResponse();
             ticketResponse.setPoNo(gateEntryTransaction.getPoNo());
@@ -323,8 +324,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                         String customerName = (String) customerData[0];
                         String customerAddress = (String) customerData[1];
                         System.out.println(customerName + " " + customerAddress);
-                        ticketResponse.setSupplierName(customerName);
-                        ticketResponse.setSupplierAddress(customerAddress);
+                        ticketResponse.setCustomerName(customerName);
+                        ticketResponse.setCustomerAdress(customerAddress);
                     }
                 }
                 ticketResponse.setNetWeight(byGateEntryTransactionTicketNo.getGrossWeight() - byGateEntryTransactionTicketNo.getTareWeight());
@@ -336,6 +337,4 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             return ticketResponse;
         }
     }
-
-
 }

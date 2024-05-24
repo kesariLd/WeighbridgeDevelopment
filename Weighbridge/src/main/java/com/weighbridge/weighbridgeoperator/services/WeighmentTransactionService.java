@@ -39,7 +39,4 @@ public interface WeighmentTransactionService {
      */
     TicketResponse getResponseByTicket(Integer ticketNo);
 
-
-
-
 }

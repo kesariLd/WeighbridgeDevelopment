@@ -54,5 +54,4 @@ public class WeighmentTransactionController {
         TicketResponse responseByTicket = weighmentTransactionService.getResponseByTicket(ticketNo);
         return ResponseEntity.ok(responseByTicket);
     }
-
 }

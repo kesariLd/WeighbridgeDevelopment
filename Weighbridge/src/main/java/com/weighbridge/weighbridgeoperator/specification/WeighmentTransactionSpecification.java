@@ -40,66 +40,112 @@ public class WeighmentTransactionSpecification implements Specification<Weighmen
         this.supplierMasterRepository = supplierMasterRepository;
         this.customerMasterRepository = customerMasterRepository;
     }
-
     @Override
     public Predicate toPredicate(Root<WeighmentTransaction> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
         List<Predicate> predicates = new ArrayList<>();
-        if(criteria.getTicketNo()!=null){
-            predicates.add(builder.equal(root.get("gateEntryTransaction").get("ticketNo"),criteria.getTicketNo()));
-        }
-        if (criteria.getTransactionType() != null) {
-            predicates.add(builder.equal(root.get("gateEntryTransaction").get("transactionType"), criteria.getTransactionType()));
-        }
-        if (criteria.getTransactionDate() != null) {
-            predicates.add(builder.equal(root.get("gateEntryTransaction").get("transactionDate"), criteria.getTransactionDate()));
-        }
-        if (criteria.getVehicleNo() != null) {
+        if((criteria.getCompanyId()!=null)&&(criteria.getSiteId()!=null)) {
+            if (criteria.getTicketNo() != null) {
+                Predicate combinedPredicate = builder.and(
+                        builder.equal(root.get("gateEntryTransaction").get("ticketNo"), criteria.getTicketNo()),
+                        builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId()),
+                        builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId())
+                );
+                predicates.add(combinedPredicate);
+            }
+            if (criteria.getTransactionType() != null) {
+                Predicate combinedPredicate = builder.and(
+                        builder.equal(root.get("gateEntryTransaction").get("transactionType"), criteria.getTransactionType()),
+                        builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId()),
+                        builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId())
+                );
+                predicates.add(combinedPredicate);
+            }
+            if (criteria.getTransactionDate() != null) {
+                Predicate combinedPredicate = builder.and(
+                        builder.equal(root.get("gateEntryTransaction").get("transactionDate"), criteria.getTransactionDate()),
+                        builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId()),
+                        builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId())
+                );
+                predicates.add(combinedPredicate);
+            }
+            if (criteria.getVehicleNo() != null) {
                 VehicleMaster byVehicleNo = vehicleMasterRepository.findByVehicleNo(criteria.getVehicleNo());
                 if (byVehicleNo != null) {
-                    predicates.add(builder.equal(root.get("gateEntryTransaction").get("vehicleId"), byVehicleNo.getId()));
+                    Predicate combinedPredicate = builder.and(
+                            builder.equal(root.get("gateEntryTransaction").get("vehicleId"), byVehicleNo.getId()),
+                            builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId()),
+                            builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId())
+                    );
+                    predicates.add(combinedPredicate);
+                } else {
+                    throw new RuntimeException("vehicle not found with vehicleNo " + criteria.getVehicleNo());
                 }
-               else {
-                   throw new RuntimeException("vehicle not found with vehicleNo "+criteria.getVehicleNo());
+            }
+            if (criteria.getTransporterName() != null) {
+                long transporterIdByTransporterName = transporterMasterRepository.findTransporterIdByTransporterName(criteria.getTransporterName());
+                Predicate combinedPredicate = builder.and(
+                        builder.equal(root.get("gateEntryTransaction").get("transporterId"), transporterIdByTransporterName),
+                        builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId()),
+                        builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId())
+                );
+                predicates.add(combinedPredicate);
+            }
+            if (criteria.getMaterialName() != null) {
+                long byMaterialIdByMaterialName = materialMasterRepository.findByMaterialIdByMaterialName(criteria.getMaterialName());
+                Predicate combinedPredicate = builder.and(
+                        builder.equal(root.get("gateEntryTransaction").get("materialId"), byMaterialIdByMaterialName),
+                        builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId()),
+                        builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId())
+                );
+                predicates.add(combinedPredicate);
+            }
+            if (criteria.getProductName() != null) {
+                long productIdByProductName = productMasterRepository.findProductIdByProductName(criteria.getProductName());
+                Predicate combinedPredicate = builder.and(
+                        builder.equal(root.get("gateEntryTransaction").get("productId"), productIdByProductName),
+                        builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId()),
+                        builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId())
+                );
+                predicates.add(combinedPredicate);
+            }
+            if (criteria.getSupplierName() != null) {
+                List<Long> listSupplierIdBySupplierName = supplierMasterRepository.findListSupplierIdBySupplierName(criteria.getSupplierName());
+                if (listSupplierIdBySupplierName.isEmpty()) {
+                    throw new RuntimeException("Supplier Not found with supplierName " + criteria.getSupplierName());
+                } else {
+                    Predicate supplierPredicate = root.get("gateEntryTransaction").get("supplierId").in(listSupplierIdBySupplierName);
+                    Predicate sitePredicate = builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId());
+                    Predicate companyPredicate = builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId());
+                    Predicate combinedPredicate = builder.and(supplierPredicate, sitePredicate, companyPredicate);
+                    predicates.add(combinedPredicate);
                 }
-        }
-        if (criteria.getTransporterName() != null) {
-            long transporterIdByTransporterName = transporterMasterRepository.findTransporterIdByTransporterName(criteria.getTransporterName());
-            predicates.add(builder.equal(root.get("gateEntryTransaction").get("transporterId"), transporterIdByTransporterName));
-        }
-        if (criteria.getMaterialName() != null) {
-            long byMaterialIdByMaterialName = materialMasterRepository.findByMaterialIdByMaterialName(criteria.getMaterialName());
-            predicates.add(builder.equal(root.get("gateEntryTransaction").get("materialId"), byMaterialIdByMaterialName));
-        }
-        if (criteria.getProductName() != null) {
-            long productIdByProductName = productMasterRepository.findProductIdByProductName(criteria.getProductName());
-            predicates.add(builder.equal(root.get("gateEntryTransaction").get("productId"), productIdByProductName));
-        }
-        if(criteria.getSupplierName()!=null){
-            List<Long> listSupplierIdBySupplierName = supplierMasterRepository.findListSupplierIdBySupplierName(criteria.getSupplierName());
-            System.out.println(listSupplierIdBySupplierName);
-            if(listSupplierIdBySupplierName.isEmpty()){
-                throw new RuntimeException("Supplier Not found with supplierName "+criteria.getSupplierName());
             }
-            else {
-                Predicate in = root.get("gateEntryTransaction").get("supplierId").in(listSupplierIdBySupplierName);
-                predicates.add(in);
+            if (criteria.getCustomerName() != null) {
+                List<Long> listCustomerIdByCustomerName = customerMasterRepository.findListCustomerIdbyCustomerName(criteria.getCustomerName());
+                System.out.println(listCustomerIdByCustomerName);
+                if (listCustomerIdByCustomerName.isEmpty()) {
+                    throw new RuntimeException("customer not found with customerName " + criteria.getCustomerName());
+                } else {
+                    Predicate supplierPredicate = root.get("gateEntryTransaction").get("customerId").in(listCustomerIdByCustomerName);
+                    Predicate sitePredicate = builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId());
+                    Predicate companyPredicate = builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId());
+                    Predicate combinedPredicate = builder.and(supplierPredicate, sitePredicate, companyPredicate);
+                    predicates.add(combinedPredicate);
+                }
             }
-        }
-        if(criteria.getCustomerName()!=null){
-            List<Long> listCustomerIdByCustomerName = customerMasterRepository.findListCustomerIdByCustomerName(criteria.getCustomerName());
-            System.out.println(listCustomerIdByCustomerName);
-            if(listCustomerIdByCustomerName.isEmpty()){
-                throw  new RuntimeException("customer not found with customerName "+criteria.getCustomerName());
+            if (Boolean.TRUE.equals(criteria.getToday())) {
+                LocalDate today = LocalDate.now();
+                Predicate combinedPredicate = builder.and(
+                        builder.equal(root.get("gateEntryTransaction").get("transactionDate"), today),
+                        builder.equal(root.get("gateEntryTransaction").get("siteId"), criteria.getSiteId()),
+                        builder.equal(root.get("gateEntryTransaction").get("companyId"), criteria.getCompanyId())
+                );
+                predicates.add(combinedPredicate);
             }
-            else {
-                Predicate in = root.get("gateEntryTransaction").get("supplierId").in(listCustomerIdByCustomerName);
-                predicates.add(in);
-            }
+            return builder.and(predicates.toArray(new Predicate[0]));
         }
-        if (Boolean.TRUE.equals(criteria.getToday())) {
-            LocalDate today = LocalDate.now();
-            predicates.add(builder.equal(root.get("gateEntryTransaction").get("transactionDate"), today));
+        else {
+           throw  new RuntimeException("");
         }
-        return builder.and(predicates.toArray(new Predicate[0]));
     }
 }
