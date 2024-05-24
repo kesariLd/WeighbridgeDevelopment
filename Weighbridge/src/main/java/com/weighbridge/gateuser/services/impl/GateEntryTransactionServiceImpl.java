@@ -237,7 +237,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Transaction Type is not Mentioned");
             }
 
-            List<String> allowedStatusCodes = gateEntryTransaction.getTransactionType().equalsIgnoreCase("Inbound") ? Arrays.asList("TWT", "QCK") : Arrays.asList("GWT", "QCK");
+            List<String> allowedStatusCodes = gateEntryTransaction.getTransactionType().equalsIgnoreCase("Inbound") ? Arrays.asList("TWT", "QCT") : Arrays.asList("GWT", "QCT");
 
             if (!allowedStatusCodes.contains(vehicleTransactionStatus.getStatusCode())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle is not measured yet!");
