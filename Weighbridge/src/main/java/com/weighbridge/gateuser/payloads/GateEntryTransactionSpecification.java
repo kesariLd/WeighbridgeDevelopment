@@ -62,4 +62,11 @@ public class GateEntryTransactionSpecification {
             return predicate;
         };
     }
+    public Specification<GateEntryTransaction> filterBySiteAndCompany(String siteId, String companyId) {
+        return (root, query, criteriaBuilder) -> criteriaBuilder.and(
+                criteriaBuilder.equal(root.get("siteId"), siteId),
+                criteriaBuilder.equal(root.get("companyId"), companyId)
+        );
+    }
+
 }

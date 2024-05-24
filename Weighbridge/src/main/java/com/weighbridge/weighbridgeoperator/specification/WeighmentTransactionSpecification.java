@@ -90,6 +90,7 @@ public class WeighmentTransactionSpecification implements Specification<Weighmen
                 );
                 predicates.add(combinedPredicate);
             }
+
             if (criteria.getMaterialName() != null) {
                 long byMaterialIdByMaterialName = materialMasterRepository.findByMaterialIdByMaterialName(criteria.getMaterialName());
                 Predicate combinedPredicate = builder.and(
@@ -132,7 +133,9 @@ public class WeighmentTransactionSpecification implements Specification<Weighmen
                     Predicate combinedPredicate = builder.and(supplierPredicate, sitePredicate, companyPredicate);
                     predicates.add(combinedPredicate);
                 }
-            }
+
+        }
+    
             if (Boolean.TRUE.equals(criteria.getToday())) {
                 LocalDate today = LocalDate.now();
                 Predicate combinedPredicate = builder.and(
@@ -145,7 +148,7 @@ public class WeighmentTransactionSpecification implements Specification<Weighmen
             return builder.and(predicates.toArray(new Predicate[0]));
         }
         else {
-           throw  new RuntimeException("");
+           throw  new RuntimeException("couldnot site and company.");
         }
     }
 }

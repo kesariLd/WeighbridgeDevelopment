@@ -1,5 +1,7 @@
 package com.weighbridge.qualityuser.controller;
 
+import com.weighbridge.admin.services.MaterialMasterService;
+import com.weighbridge.admin.services.ProductMasterService;
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardPaginationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
@@ -24,14 +26,18 @@ import java.util.Map;
 @RequestMapping("api/v1/qualities")
 public class QualityTransactionController {
     private final QualityTransactionService qualityTransactionService;
+    private final ProductMasterService productMasterService;
+    private final MaterialMasterService materialMasterService;
 
     /**
      * Constructor for QualityTransactionController
      *
      * @param qualityTransactionService the  service to handle quality transaction related operations
      */
-    public QualityTransactionController(QualityTransactionService qualityTransactionService) {
+    public QualityTransactionController(QualityTransactionService qualityTransactionService, ProductMasterService productMasterService, MaterialMasterService materialMasterService) {
         this.qualityTransactionService = qualityTransactionService;
+        this.productMasterService = productMasterService;
+        this.materialMasterService = materialMasterService;
     }
 
     /**
@@ -74,11 +80,8 @@ public class QualityTransactionController {
         if (reportResponse == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-
-
         return ResponseEntity.ok(reportResponse);
     }
-
 
     /**
      * Rerieves a quality details for the given ticket number.
@@ -117,6 +120,7 @@ public class QualityTransactionController {
         return ResponseEntity.ok().body(response);
     }
 
+
     @GetMapping("/search-Date")
     public ResponseEntity<List<QualityDashboardResponse>> searchByDate(
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String date
@@ -129,5 +133,20 @@ public class QualityTransactionController {
             return ResponseEntity.badRequest().body(Collections.emptyList());
         }
     }
+  @GetMapping("fetch-ProductsOrMaterials")
+    public ResponseEntity<List<String>> getProductsOrMaterials(@RequestParam String type){
+        if("product".equalsIgnoreCase(type)){
+            List<String> products=productMasterService.getAllProductNames();
+            return ResponseEntity.ok(products);
+        } else if ("material".equalsIgnoreCase(type)) {
+            List<String> materials=materialMasterService.getAllMaterialNames();
+            return ResponseEntity.ok(materials);
+        }
+        return ResponseEntity.badRequest().body(List.of("Invalid parameter"));
+  }
+
+
 
 }
+
+
