@@ -422,6 +422,45 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         return responses;
     }
 
+    @Override
+    public void passQualityTransaction(Integer ticketNo) {
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompany;
+        String userSite;
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSite = session.getAttribute("userSite").toString();
+            userCompany = session.getAttribute("userCompany").toString();
+        } else {
+            throw new SessionExpiredException("Session Expired, Login again!");
+        }
+        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo)
+                .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with " + ticketNo));
+        VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(gateEntryTransaction.getTicketNo());
+        if(transactionStatus==null){
+            throw new ResourceNotFoundException("Vehicle transaction status is not found Ticket no:"+ ticketNo);
+        }
+        transactionStatus.setStatusCode("QCT");
+        vehicleTransactionStatusRepository.save(transactionStatus);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime currentTime = now.withSecond(0).withNano(0);
+
+        // set qualityCheck in TransactionLog
+        TransactionLog transactionLog = new TransactionLog();
+        transactionLog.setUserId(userId);
+        transactionLog.setTicketNo(ticketNo);
+        transactionLog.setTimestamp(currentTime);
+        transactionLog.setStatusCode("QCT");
+        transactionLogRepository.save(transactionLog);
+
+        // set qualityCheck in VehicleTransactionStatus
+        VehicleTransactionStatus vehicleTransactionStatus = new VehicleTransactionStatus();
+        vehicleTransactionStatus.setTicketNo(ticketNo);
+        vehicleTransactionStatus.setStatusCode("QCT");
+        vehicleTransactionStatusRepository.save(vehicleTransactionStatus);
+    }
 
 
     /**

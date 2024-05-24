@@ -67,6 +67,13 @@ public class QualityTransactionController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PutMapping("{ticketNo}")
+    public ResponseEntity<Void>passQualityTransaction(@PathVariable Integer ticketNo){
+        qualityTransactionService.passQualityTransaction(ticketNo);
+        return ResponseEntity.noContent().build();
+    }
+
+
     /**
      * Generates a quality report for the given ticket number.
      *
