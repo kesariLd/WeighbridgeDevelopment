@@ -67,6 +67,13 @@ public class QualityTransactionController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PutMapping("{ticketNo}")
+    public ResponseEntity<Void>passQualityTransaction(@PathVariable Integer ticketNo){
+        qualityTransactionService.passQualityTransaction(ticketNo);
+        return ResponseEntity.noContent().build();
+    }
+
+
     /**
      * Generates a quality report for the given ticket number.
      *
@@ -120,7 +127,6 @@ public class QualityTransactionController {
         return ResponseEntity.ok().body(response);
     }
 
-
     @GetMapping("/search-Date")
     public ResponseEntity<List<QualityDashboardResponse>> searchByDate(
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String date
@@ -144,8 +150,6 @@ public class QualityTransactionController {
         }
         return ResponseEntity.badRequest().body(List.of("Invalid parameter"));
   }
-
-
 
 }
 

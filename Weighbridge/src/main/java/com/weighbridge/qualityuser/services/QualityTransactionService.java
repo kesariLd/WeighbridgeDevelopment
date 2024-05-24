@@ -59,4 +59,7 @@ public interface QualityTransactionService {
 
     List<QualityDashboardResponse> searchByDate(String date);
 
+
+    void passQualityTransaction(Integer ticketNo);
+
 }
