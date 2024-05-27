@@ -98,5 +98,4 @@ public class GateEntryTransactionController {
         GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName,transactionType,pageable);
         return transactionsByFiltering;
     }
-
 }

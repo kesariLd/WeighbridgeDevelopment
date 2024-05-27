@@ -1,10 +1,8 @@
 package com.weighbridge.weighbridgeoperator.controllers;
 
 
-import com.weighbridge.weighbridgeoperator.payloads.TicketResponse;
-import com.weighbridge.weighbridgeoperator.payloads.WeighbridgePageResponse;
-import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
-import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
+import com.weighbridge.weighbridgeoperator.payloads.*;
+import com.weighbridge.weighbridgeoperator.services.WeighbridgeOperatorPrintService;
 import com.weighbridge.weighbridgeoperator.services.WeighmentTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +20,9 @@ import java.util.List;
 public class WeighmentTransactionController {
     @Autowired
     private WeighmentTransactionService weighmentTransactionService;
+
+    @Autowired
+    private WeighbridgeOperatorPrintService weighbridgeOperatorPrintService;
 
     @PostMapping("/measure")
     public ResponseEntity<String> measureWeight(@RequestBody WeighmentRequest weighmentRequest){
@@ -53,5 +54,11 @@ public class WeighmentTransactionController {
     public ResponseEntity<TicketResponse> getResponseByTicket(@PathVariable Integer ticketNo){
         TicketResponse responseByTicket = weighmentTransactionService.getResponseByTicket(ticketNo);
         return ResponseEntity.ok(responseByTicket);
+    }
+
+    @GetMapping("/getPrintTicketWise/{ticketNo}")
+    public ResponseEntity<WeighbridgeOperatorPrint> getPrintResponse(@PathVariable Integer ticketNo){
+        WeighbridgeOperatorPrint printResponse = weighbridgeOperatorPrintService.getPrintResponse(ticketNo);
+        return ResponseEntity.ok(printResponse);
     }
 }
