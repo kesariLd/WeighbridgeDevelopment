@@ -1,11 +1,8 @@
 package com.weighbridge.qualityuser.services;
 
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
-import com.weighbridge.qualityuser.payloads.QualityDashboardPaginationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +17,7 @@ public interface QualityTransactionService {
      *
      * @return a list of QualityDashboardResponse objects
      */
-    QualityDashboardPaginationResponse getAllGateDetails(Pageable pageable);
+    List<QualityDashboardResponse> getAllGateDetails();
 
     /**
      * Creates a new quality transaction for a given ticket number.
@@ -55,11 +52,21 @@ public interface QualityTransactionService {
     QualityCreationResponse getDetailsForQualityTransaction(Integer ticketNo);
 
 
+
+   // List<QualityDashboardResponse> searchByTicketNoVehicleNoSupplierAndSupplierAddress(Integer ticketNo, String vehicleNo, String supplierOrCustomerName, String supplierOrCustomerAddress);
+
     List<QualityDashboardResponse> searchByTicketNoVehicleNoSupplierAndSupplierAddress(Integer ticketNo, String vehicleNo, String supplierOrCustomerName, String supplierOrCustomerAddress);
+
 
     List<QualityDashboardResponse> searchByDate(String date);
 
 
     void passQualityTransaction(Integer ticketNo);
+
+    QualityDashboardResponse searchByTicketNo(Integer ticketNo);
+
+    List<QualityDashboardResponse> searchByVehicleNo(String vehicleNo);
+
+    List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress);
 
 }

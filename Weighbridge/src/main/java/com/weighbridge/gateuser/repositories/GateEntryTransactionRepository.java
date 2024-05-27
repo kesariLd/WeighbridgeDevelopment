@@ -42,7 +42,8 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     List<GateEntryTransaction> findBySupplierId(Long supplierId);
 
-    Page<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String userSite, String userCompany, Pageable pageable);
+    List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String userSite, String userCompany);
+
 
     List<GateEntryTransaction> findBySupplierIdAndTicketNoOrderByTicketNoDesc(Long supplierId, Integer ticketNo);
 
@@ -51,6 +52,11 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     List<GateEntryTransaction> findByVehicleIdOrderByTicketNoDesc(long id);
 
     List<GateEntryTransaction> findByTransactionDate(LocalDate searchDate);
+
+
+    @Query("SELECT g FROM GateEntryTransaction g WHERE g.ticketNo = :ticketNo AND g.companyId = :companyId AND g.siteId = :siteId")
+    GateEntryTransaction findByTicketNoAndCompanyIdAndSiteId(Integer ticketNo, String companyId, String siteId);
+
 
 //    List<GateEntryTransaction> findBySupplierId(Object supplierIdBySupplierNameAndAddress);
 

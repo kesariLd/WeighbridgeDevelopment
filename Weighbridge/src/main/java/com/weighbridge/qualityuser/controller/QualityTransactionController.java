@@ -3,13 +3,14 @@ package com.weighbridge.qualityuser.controller;
 import com.weighbridge.admin.services.MaterialMasterService;
 import com.weighbridge.admin.services.ProductMasterService;
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
-import com.weighbridge.qualityuser.payloads.QualityDashboardPaginationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,13 +47,12 @@ public class QualityTransactionController {
      * @return a ResponseEntity containing a list of all gate entry transaction details
      */
     @GetMapping("/getAllTransaction")
-    public ResponseEntity<QualityDashboardPaginationResponse> getAllTickets(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        QualityDashboardPaginationResponse response = qualityTransactionService.getAllGateDetails(pageable);
+    public ResponseEntity<List<QualityDashboardResponse>> getAllTickets() {
+        List<QualityDashboardResponse> response = qualityTransactionService.getAllGateDetails();
         return ResponseEntity.ok(response);
     }
+
+
 
     /**
      * Add quality checks to the transaction.
@@ -102,6 +102,28 @@ public class QualityTransactionController {
         return ResponseEntity.ok(qualityCreationResponse);
     }
 
+
+    @GetMapping("/searchByTicketNo/{ticketNo}")
+    public ResponseEntity<QualityDashboardResponse> searchByTicketNo(@PathVariable Integer ticketNo) {
+        QualityDashboardResponse response = qualityTransactionService.searchByTicketNo(ticketNo);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/searchByVehicleNo/{vehicleNo}")
+    public ResponseEntity<List<QualityDashboardResponse>> searchByVehicleNo(@PathVariable String vehicleNo) {
+        List<QualityDashboardResponse> response = qualityTransactionService.searchByVehicleNo(vehicleNo);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/searchBySupplierOrCustomer")
+    public ResponseEntity<List<QualityDashboardResponse>> searchBySupplierOrCustomerNameAndAddress(
+            @RequestParam(required = false) String supplierOrCustomerName,
+            @RequestParam(required = false) String supplierOrCustomerAddress) {
+        List<QualityDashboardResponse> response = qualityTransactionService.searchBySupplierOrCustomerNameAndAddress(supplierOrCustomerName, supplierOrCustomerAddress);
+        return ResponseEntity.ok().body(response);
+    }
+
+
     /**
      * Handles GET requests to search for quality dashboard entries based on various optional criteria.
      *
@@ -126,6 +148,7 @@ public class QualityTransactionController {
         List<QualityDashboardResponse> response=qualityTransactionService.searchByTicketNoVehicleNoSupplierAndSupplierAddress(ticketNo,vehicleNo,supplierOrCustomerName,supplierOrCustomerAddress);
         return ResponseEntity.ok().body(response);
     }
+
 
     @GetMapping("/search-Date")
     public ResponseEntity<List<QualityDashboardResponse>> searchByDate(
