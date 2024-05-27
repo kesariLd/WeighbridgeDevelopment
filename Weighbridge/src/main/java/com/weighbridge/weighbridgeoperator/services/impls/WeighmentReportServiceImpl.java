@@ -132,26 +132,30 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         if ("Inbound".equals(weighmentTransaction.getGateEntryTransaction().getTransactionType())) {
             String supplierName = supplierMasterRepository.findSupplierNameBySupplierId(weighmentTransaction.getGateEntryTransaction().getSupplierId());
             weighmentPrintResponse.setSupplierOrCustomerName(supplierName);
+            weighmentPrintResponse.setTareWeight(weighmentTransaction.getTareWeight());
+            weighmentPrintResponse.setGrossWeight(weighmentTransaction.getTemporaryWeight());
         }
 
         if ("Outbound".equals(weighmentTransaction.getGateEntryTransaction().getTransactionType())) {
             String customerName = customerMasterRepository.findCustomerNameByCustomerId(weighmentTransaction.getGateEntryTransaction().getCustomerId());
             weighmentPrintResponse.setSupplierOrCustomerName(customerName);
+            weighmentPrintResponse.setTareWeight(weighmentTransaction.getTemporaryWeight());
+            weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
         }
+        System.out.println(weighmentPrintResponse);
 
         weighmentPrintResponse.setChallanNo(weighmentTransaction.getGateEntryTransaction().getChallanNo());
-        weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
+      //  weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
+    //    weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
         TransactionLog gwt = transactionLogRepository.findByTicketNoAndStatusCode(weighmentTransaction.getGateEntryTransaction().getTicketNo(), "GWT");
         if(gwt != null) {
             LocalDateTime gwtTimestamp = gwt.getTimestamp();
             String formattedGwtTimestamp = gwtTimestamp.format(formatter);
             weighmentPrintResponse.setGrossWeightDateTime(formattedGwtTimestamp);
         }
-
-        weighmentPrintResponse.setTareWeight(weighmentTransaction.getTareWeight());
+       // weighmentPrintResponse.setTareWeight(weighmentTransaction.getTareWeight());
         TransactionLog twt = transactionLogRepository.findByTicketNoAndStatusCode(weighmentTransaction.getGateEntryTransaction().getTicketNo(), "TWT");
         if(twt != null) {
             LocalDateTime twtTimestamp = twt.getTimestamp();
@@ -168,6 +172,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         }
         userName.append(userMaster.getUserLastName());
         weighmentPrintResponse.setOperatorName(String.valueOf(userName));
+        System.out.println(weighmentPrintResponse);
         return weighmentPrintResponse;
     }
 
