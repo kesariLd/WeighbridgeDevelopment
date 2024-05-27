@@ -186,7 +186,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             throw new SessionExpiredException("Session Expired, Login again !");
         }
         System.out.println(userSite);
-        Page<Object[]> pageResult = weighmentTransactionRepository.getAllGateEntries(userSite,pageable);
+        Page<Object[]> pageResult = weighmentTransactionRepository.getAllGateEntries(userSite,userCompany,pageable);
         List<Object[]> allUsers = pageResult.getContent();
         System.out.println(allUsers);
         List<WeighmentTransactionResponse> responses = new ArrayList<>();
@@ -270,7 +270,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo).get();
         if (gateEntryTransaction == null) {
             throw new ResourceNotFoundException("ticket", "ticketNo", ticketNo.toString());
-        } else {
+        }
+        else {
             System.out.println("site id" + gateEntryTransaction.getSupplierId());
             TicketResponse ticketResponse = new TicketResponse();
             ticketResponse.setPoNo(gateEntryTransaction.getPoNo());
@@ -300,10 +301,12 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
 
             String transactionType = gateEntryTransaction.getTransactionType();
             WeighmentTransaction byGateEntryTransactionTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(ticketNo);
-            if (byGateEntryTransactionTicketNo != null) {
+
                 if (transactionType.equalsIgnoreCase("Inbound")) {
-                    ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
-                    ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight());
+                    if (byGateEntryTransactionTicketNo != null) {
+                        ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
+                        ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight());
+                    }
                     Object[] supplierInfo = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(gateEntryTransaction.getSupplierId());
                     Object[] supplierData = (Object[]) supplierInfo[0];
                     if (supplierData != null && supplierData.length >= 2) {
@@ -315,24 +318,25 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     }
                 }
                 if (transactionType.equalsIgnoreCase("Outbound")) {
-                    ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
-                    ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight());
+                    if (byGateEntryTransactionTicketNo != null) {
+                        ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
+                        ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight());
+                    }
                     Object[] customerInfo = customerMasterRepository.findCustomerNameAndAddressBycustomerId(gateEntryTransaction.getCustomerId());
                     Object[] customerData = (Object[]) customerInfo[0];
                     if (customerData != null && customerData.length >= 2) {
                         String customerName = (String) customerData[0];
                         String customerAddress = (String) customerData[1];
                         System.out.println(customerName + " " + customerAddress);
-                        ticketResponse.setSupplierName(customerName);
-                        ticketResponse.setSupplierAddress(customerAddress);
+                        ticketResponse.setCustomerName(customerName);
+                        ticketResponse.setCustomerAdress(customerAddress);
                     }
                 }
+            if (byGateEntryTransactionTicketNo != null) {
                 ticketResponse.setNetWeight(byGateEntryTransactionTicketNo.getGrossWeight() - byGateEntryTransactionTicketNo.getTareWeight());
             }
-//            ticketResponse.setSupplierName(supplierName);
             ticketResponse.setDriverDlNo(gateEntryTransaction.getDlNo());
             ticketResponse.setConsignmentWeight(gateEntryTransaction.getSupplyConsignmentWeight());
-//            ticketResponse.setSupplierAddress(supplierAddress);
             return ticketResponse;
         }
     }

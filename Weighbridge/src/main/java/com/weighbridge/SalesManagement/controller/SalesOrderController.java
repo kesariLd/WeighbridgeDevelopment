@@ -42,8 +42,8 @@ public class SalesOrderController {
     }
 
 
-    @GetMapping("/getBySalePassNo/{salePassNo}")
-    public ResponseEntity<VehicleAndTransporterDetail> getVehicleDetailByPassNo(@PathVariable String salePassNo){
+    @GetMapping("/getBySalePassNo")
+    public ResponseEntity<VehicleAndTransporterDetail> getVehicleDetailByPassNo(@RequestParam String salePassNo){
         VehicleAndTransporterDetail vehicleAndTransporterDetail=salesOrderService.getBySalePassNo(salePassNo);
         return ResponseEntity.ok(vehicleAndTransporterDetail);
     }

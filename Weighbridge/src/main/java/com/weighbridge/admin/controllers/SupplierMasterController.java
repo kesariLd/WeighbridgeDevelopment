@@ -112,7 +112,7 @@ public class SupplierMasterController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
-    @GetMapping("/active/{supplierId}")
+    @PutMapping("/active/{supplierId}")
     public ResponseEntity<String> activeSuppleirBySupplierId(@PathVariable long supplierId){
         String response = supplierMasterService.activeSupplier(supplierId);
         return new ResponseEntity<>(response,HttpStatus.OK);

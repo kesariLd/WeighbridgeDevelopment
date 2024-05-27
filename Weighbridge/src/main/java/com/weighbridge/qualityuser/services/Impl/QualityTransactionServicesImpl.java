@@ -75,6 +75,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     }
 
 
+
     /**
      * Retrieves paginated gate entry details for the current user, including filtering by transaction status and type.
      *
@@ -95,11 +96,41 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
         // Retrieve all transactions for the user's site and company, ordered by transaction date in descending order
         List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDateDesc(userSite, userCompany);
+
+
+    /**
+     * Retrieves paginated gate entry details for the current user, including filtering by transaction status and type.
+     *
+     * @param pageable A Pageable object for pagination and sorting information.
+     * @return A QualityDashboardPaginationResponse object containing the list of QualityDashboardResponse objects, total pages, and total elements.
+     * @throws SessionExpiredException if the session is null or expired.
+     * @throws ResourceNotFoundException if the supplier or customer related to a transaction is not found.
+     */
+    public QualityDashboardPaginationResponse getAllGateDetails(Pageable pageable) {
+
+
+        // Get the session and user information
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompany;
+        String userSite;
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSite = session.getAttribute("userSite").toString();
+            userCompany = session.getAttribute("userCompany").toString();
+        } else {
+            throw new SessionExpiredException("Session Expired, Login again!");
+        }
+
+        // Retrieve all transactions for the user's site and company, ordered by transaction date in descending order
+        Page<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDateDesc(userSite, userCompany, pageable);
+
         List<QualityDashboardResponse> qualityDashboardResponses = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
         // Process each transaction
         for (GateEntryTransaction transaction : allTransactions) {
+
             String statusCode = transaction.getTransactionType().equalsIgnoreCase("Inbound") ? "GWT" : "TWT";
             TransactionLog transactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), statusCode);
 
@@ -135,6 +166,40 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                         // Log and continue to the next transaction if supplier/customer or material/product is not found
                         log.error(e.getMessage(), e);
                         continue;
+
+            VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
+            if (transactionStatus != null && (transactionStatus.getStatusCode().equals("GWT") || transactionStatus.getStatusCode().equals("TWT"))) {
+                QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+                qualityDashboardResponse.setTicketNo(transaction.getTicketNo());
+                qualityDashboardResponse.setTpNo(transaction.getTpNo());
+                qualityDashboardResponse.setPoNo(transaction.getPoNo());
+                qualityDashboardResponse.setChallanNo(transaction.getChallanNo());
+                qualityDashboardResponse.setTransactionType(transaction.getTransactionType());
+
+                //process Inbound transaction
+                if (transaction.getTransactionType().equals("Inbound")) {
+                    SupplierMaster supplierMaster = supplierMasterRepository.findById(transaction.getSupplierId()).orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", String.valueOf(transaction.getSupplierId())));
+                    qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
+                    String supplierAddress = supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2();
+                    qualityDashboardResponse.setSupplierOrCustomerAddress(supplierAddress);
+                    String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
+                    if (materialName != null) {
+                        qualityDashboardResponse.setMaterialName(materialName);
+                    }
+                }
+
+                //process Outbound transaction
+                if (transaction.getTransactionType().equals("Outbound")) {
+                    CustomerMaster customerMaster = customerMasterRepository.findById(transaction.getCustomerId()).orElseThrow(() -> new ResourceNotFoundException("Customer", "id", String.valueOf(transaction.getCustomerId())));
+                    qualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
+                    String customerAddress = customerMaster.getCustomerAddressLine1() + "," + customerMaster.getCustomerAddressLine2();
+                    qualityDashboardResponse.setSupplierOrCustomerAddress(customerAddress);
+                    log.info("TicketNo: " + transaction.getTicketNo());
+                    log.info("MaterialId: " + transaction.getMaterialId());
+                    String productNameByProductId = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
+                    if (productNameByProductId != null) {
+                        qualityDashboardResponse.setMaterialName(productNameByProductId);
+
                     }
 
                     qualityDashboardResponse.setMaterialType(transaction.getMaterialType());
@@ -158,7 +223,19 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             }
         }
 
+
         return qualityDashboardResponses;
+    }
+
+
+
+
+        //create and return pagination response
+        QualityDashboardPaginationResponse qualityDashboardPaginationResponse = new QualityDashboardPaginationResponse();
+        qualityDashboardPaginationResponse.setQualityDashboardResponseList(qualityDashboardResponses);
+        qualityDashboardPaginationResponse.setTotalPages(allTransactions.getTotalPages());
+        qualityDashboardPaginationResponse.setTotalElements(allTransactions.getTotalElements());
+        return qualityDashboardPaginationResponse;
     }
 
 
@@ -167,10 +244,17 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
      * Creates a quality transaction for a specified ticket number based on the provided quality parameters and values.
      * The transaction can be either for inbound or outbound gate entries.
      *
+
      * @param ticketNo           The ticket number for which the quality transaction is to be created.
      * @param transactionRequest A map containing the quality parameter names and their corresponding values.
      * @return A string message indicating the success or failure of the quality transaction creation.
      * @throws SessionExpiredException   if the session is null or expired.
+
+     * @param ticketNo The ticket number for which the quality transaction is to be created.
+     * @param transactionRequest A map containing the quality parameter names and their corresponding values.
+     * @return A string message indicating the success or failure of the quality transaction creation.
+     * @throws SessionExpiredException if the session is null or expired.
+
      * @throws ResourceNotFoundException if the gate entry transaction or related resources (like supplier or product) are not found.
      */
     @Transactional
@@ -266,7 +350,11 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
      * @param ticketNo The ticket number for which the quality transaction details are to be retrieved.
      * @return A QualityCreationResponse object containing the necessary details for the quality transaction.
      * @throws ResourceNotFoundException if the supplier or customer related to the transaction is not found.
+
      * @throws ResponseStatusException   if an error occurs while fetching the quality ranges.
+
+     * @throws ResponseStatusException if an error occurs while fetching the quality ranges.
+
      */
 
     @Override
@@ -321,6 +409,18 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
         return qualityCreationResponse;
     }
+
+    /**
+     * Searches for gate entry transactions based on various criteria: ticket number, vehicle number, supplier/customer name, and supplier/customer address.
+     * Returns a list of QualityDashboardResponse objects matching the search criteria.
+     *
+     * @param ticketNo The ticket number to search for.
+     * @param vehicleNo The vehicle number to search for.
+     * @param supplierOrCustomerName The supplier or customer name to search for.
+     * @param supplierOrCustomerAddress The supplier or customer address to search for.
+     * @return A list of QualityDashboardResponse objects that match the search criteria.
+     * @throws ResourceNotFoundException if a supplier is not found with the given criteria or ticket number is not found.
+     */
 
     @Override
     public void passQualityTransaction(Integer ticketNo) {
@@ -415,6 +515,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     }
 
 
+
     @Override
     public List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress) {
         List<QualityDashboardResponse> responses = new ArrayList<>();
@@ -425,6 +526,21 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             for (SupplierMaster supplierMaster : supplierMasters) {
                 List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findBySupplierIdOrderByTicketNoDesc(supplierMaster.getSupplierId());
                 transactions.addAll(gateEntryTransaction);
+
+            // Search by vehicleNo
+            if (vehicleNo != null) {
+               VehicleMaster vehicleMaster = vehicleMasterRepository.findByVehicleNo(vehicleNo);
+                if (vehicleMaster != null) {
+                    List<GateEntryTransaction> transactionsByVehicleId = gateEntryTransactionRepository.findByVehicleIdOrderByTicketNoDesc(vehicleMaster.getId());
+                    Collections.sort(transactionsByVehicleId, Comparator.comparing(GateEntryTransaction::getTicketNo).reversed());
+                    for (GateEntryTransaction gateEntryTransaction : transactionsByVehicleId) {
+                        QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+                        setQualityDashboardResponseDetails(qualityDashboardResponse, gateEntryTransaction);
+                        responses.add(qualityDashboardResponse);
+                    }
+                }
+                return responses;
+
             }
             for (GateEntryTransaction gateEntryTransaction : transactions) {
                 QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
@@ -434,6 +550,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
         return responses;
     }
+
 
 
     @Override
@@ -446,15 +563,84 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
             setQualityDashboardResponseDetails(qualityDashboardResponse, gateEntryTransaction);
             responses.add(qualityDashboardResponse);
+
+        } catch (Exception e) {
+            log.error("Error occurred while searching: ", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while searching");
+
         }
         return responses;
     }
+
+
+
+    @Override
+    public List<QualityDashboardResponse> searchByDate(String date) {
+
+        LocalDate searchDate=LocalDate.parse(date);
+        List<GateEntryTransaction> gateEntryTransactions=gateEntryTransactionRepository.findByTransactionDate(searchDate);
+        List<QualityDashboardResponse> responses=new ArrayList<>();
+        for(GateEntryTransaction gateEntryTransaction:gateEntryTransactions){
+            QualityDashboardResponse qualityDashboardResponse=new QualityDashboardResponse();
+            setQualityDashboardResponseDetails(qualityDashboardResponse,gateEntryTransaction);
+            responses.add(qualityDashboardResponse);
+        }
+        return responses;
+    }
+
+
+    @Override
+    public void passQualityTransaction(Integer ticketNo) {
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompany;
+        String userSite;
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSite = session.getAttribute("userSite").toString();
+            userCompany = session.getAttribute("userCompany").toString();
+        } else {
+            throw new SessionExpiredException("Session Expired, Login again!");
+        }
+        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo)
+                .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with " + ticketNo));
+        VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(gateEntryTransaction.getTicketNo());
+        if(transactionStatus==null){
+            throw new ResourceNotFoundException("Vehicle transaction status is not found Ticket no:"+ ticketNo);
+        }
+        transactionStatus.setStatusCode("QCT");
+        vehicleTransactionStatusRepository.save(transactionStatus);
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime currentTime = now.withSecond(0).withNano(0);
+
+        // set qualityCheck in TransactionLog
+        TransactionLog transactionLog = new TransactionLog();
+        transactionLog.setUserId(userId);
+        transactionLog.setTicketNo(ticketNo);
+        transactionLog.setTimestamp(currentTime);
+        transactionLog.setStatusCode("QCT");
+        transactionLogRepository.save(transactionLog);
+
+        // set qualityCheck in VehicleTransactionStatus
+        VehicleTransactionStatus vehicleTransactionStatus = new VehicleTransactionStatus();
+        vehicleTransactionStatus.setTicketNo(ticketNo);
+        vehicleTransactionStatus.setStatusCode("QCT");
+        vehicleTransactionStatusRepository.save(vehicleTransactionStatus);
+    }
+
+
+
 
     /**
      * Populates a QualityDashboardResponse object with details from a GateEntryTransaction object.
      *
      * @param qualityDashboardResponse The QualityDashboardResponse object to populate.
+
      * @param transaction              The GateEntryTransaction object to retrieve details from.
+
+     * @param transaction The GateEntryTransaction object to retrieve details from.
+
      * @throws ResourceNotFoundException if the supplier or customer associated with the transaction is not found.
      */
     private void setQualityDashboardResponseDetails(QualityDashboardResponse qualityDashboardResponse, GateEntryTransaction transaction) {

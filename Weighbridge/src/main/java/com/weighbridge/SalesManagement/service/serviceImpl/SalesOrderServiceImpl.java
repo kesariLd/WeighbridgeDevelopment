@@ -80,6 +80,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             customerMaster.setCustomerAddressLine2(addressLine2);
             customerMasterRepository.save(customerMaster);
         }*/
+        System.out.println("printCustomer "+salesOrderRequest.getCustomerName()+","+salesOrderRequest.getCustomerAddress());
         Long customerIdByCustomerNameAndAddressLines = customerMasterRepository.findCustomerIdByCustomerNameAndAddressLines(salesOrderRequest.getCustomerName(), addressLine1, addressLine2);
         salesOrder.setCustomerId(customerIdByCustomerNameAndAddressLines);
         salesOrder.setBrokerAddress(salesOrderRequest.getBrokerAddress());

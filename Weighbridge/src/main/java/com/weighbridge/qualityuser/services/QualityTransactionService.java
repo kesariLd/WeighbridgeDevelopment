@@ -52,7 +52,11 @@ public interface QualityTransactionService {
     QualityCreationResponse getDetailsForQualityTransaction(Integer ticketNo);
 
 
+
    // List<QualityDashboardResponse> searchByTicketNoVehicleNoSupplierAndSupplierAddress(Integer ticketNo, String vehicleNo, String supplierOrCustomerName, String supplierOrCustomerAddress);
+
+    List<QualityDashboardResponse> searchByTicketNoVehicleNoSupplierAndSupplierAddress(Integer ticketNo, String vehicleNo, String supplierOrCustomerName, String supplierOrCustomerAddress);
+
 
     List<QualityDashboardResponse> searchByDate(String date);
 
@@ -64,4 +68,5 @@ public interface QualityTransactionService {
     List<QualityDashboardResponse> searchByVehicleNo(String vehicleNo);
 
     List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress);
+
 }

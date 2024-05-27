@@ -53,8 +53,10 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     List<GateEntryTransaction> findByTransactionDate(LocalDate searchDate);
 
+
     @Query("SELECT g FROM GateEntryTransaction g WHERE g.ticketNo = :ticketNo AND g.companyId = :companyId AND g.siteId = :siteId")
     GateEntryTransaction findByTicketNoAndCompanyIdAndSiteId(Integer ticketNo, String companyId, String siteId);
+
 
 //    List<GateEntryTransaction> findBySupplierId(Object supplierIdBySupplierNameAndAddress);
 

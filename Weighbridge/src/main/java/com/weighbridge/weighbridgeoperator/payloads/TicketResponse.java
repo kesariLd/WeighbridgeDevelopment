@@ -12,6 +12,8 @@ public class TicketResponse {
     private String vehicleNo;
     private String supplierName;
     private String supplierAddress;
+    private String customerName;
+    private String customerAdress;
     private String transporter;
     private String driverDlNo;
     private String driverName;

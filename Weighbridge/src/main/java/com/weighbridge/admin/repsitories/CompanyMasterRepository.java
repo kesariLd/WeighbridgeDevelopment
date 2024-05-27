@@ -32,5 +32,8 @@ public interface CompanyMasterRepository extends JpaRepository<CompanyMaster, St
 
     @Query("SELECT cm FROM CompanyMaster cm WHERE cm.companyId <> 'all'")
     List<CompanyMaster> findByCompanyIdNot(@Param("all") String all);
+
+    @Query("SELECT c.companyAddress FROM CompanyMaster c WHERE c.companyId=:companyId")
+    String findCompanyAddressByCompanyId(String companyId);
 }
     

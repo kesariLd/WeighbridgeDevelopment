@@ -8,7 +8,6 @@ import java.util.Date;
 
 @Data
 public class WeighmentTransactionResponse {
-
         private String ticketNo;
         private String weighmentNo;
         private String transactionType;
