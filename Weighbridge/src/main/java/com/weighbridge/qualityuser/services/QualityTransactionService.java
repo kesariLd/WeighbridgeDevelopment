@@ -35,29 +35,6 @@ public interface QualityTransactionService {
      */
     ReportResponse getReportResponse(Integer ticketNo);
 
-    /**
-     * Generates a quality report based on the provided report response.
-     *
-     * @param reportResponse the ReportResponse object containing the report details
-     * @return a byte array representing the generated quality report
-     */
-//    byte[] generateQualityReport(ReportResponse reportResponse);
-
-    /**
-     * Retrieves details for a quality transaction based on the given ticket number.
-     *
-     * @param ticketNo the ticket number for which the quality transaction details are being retrieved
-     * @return a QualityCreationResponse object containing the quality transaction details
-     */
-    QualityCreationResponse getDetailsForQualityTransaction(Integer ticketNo);
-
-
-
-   // List<QualityDashboardResponse> searchByTicketNoVehicleNoSupplierAndSupplierAddress(Integer ticketNo, String vehicleNo, String supplierOrCustomerName, String supplierOrCustomerAddress);
-
-    List<QualityDashboardResponse> searchByTicketNoVehicleNoSupplierAndSupplierAddress(Integer ticketNo, String vehicleNo, String supplierOrCustomerName, String supplierOrCustomerAddress);
-
-
     List<QualityDashboardResponse> searchByDate(String date);
 
 
