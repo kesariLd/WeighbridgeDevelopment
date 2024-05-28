@@ -1,6 +1,6 @@
 package com.weighbridge.admin.controllers;
 
-import com.weighbridge.admin.dtos.MaterialMasterDto;
+import com.weighbridge.admin.payloads.MaterialMasterResponse;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
 import com.weighbridge.admin.services.MaterialMasterService;
 import org.springframework.http.HttpStatus;
@@ -51,8 +51,8 @@ public class MaterialMasterController {
      * @throws Exception - If any unexpected error occurs during material retrieval.
      */
     @GetMapping
-    public ResponseEntity<List<MaterialMasterDto>> getAllMaterials() throws Exception {
-        List<MaterialMasterDto> allMaterials = materialMasterService.getAllMaterials();
+    public ResponseEntity<List<MaterialMasterResponse>> getAllMaterials() {
+        List<MaterialMasterResponse> allMaterials = materialMasterService.getAllMaterials();
         return ResponseEntity.ok(allMaterials);
     }
 
@@ -63,7 +63,7 @@ public class MaterialMasterController {
      * @throws Exception - If any unexpected error occurs during material name retrieval.
      */
     @GetMapping("/names")
-    public ResponseEntity<List<String>> getAllMaterialNames() throws Exception {
+    public ResponseEntity<List<String>> getAllMaterialNames() {
         List<String> allMaterialNames = materialMasterService.getAllMaterialNames();
         return ResponseEntity.ok(allMaterialNames);
     }
@@ -79,7 +79,7 @@ public class MaterialMasterController {
      * @throws Exception - If any unexpected error occurs during material type retrieval.
      */
     @GetMapping("/{materialName}/types")
-    public ResponseEntity<List<String>> getTypeWithMaterial(@PathVariable String materialName) throws Exception {
+    public ResponseEntity<List<String>> getTypeWithMaterial(@PathVariable String materialName) {
         List<String> allMaterialTypeNames = materialMasterService.getTypeWithMaterial(materialName);
         return ResponseEntity.ok(allMaterialTypeNames);
     }

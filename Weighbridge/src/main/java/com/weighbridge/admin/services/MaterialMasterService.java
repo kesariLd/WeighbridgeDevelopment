@@ -1,12 +1,12 @@
 package com.weighbridge.admin.services;
 
-import com.weighbridge.admin.dtos.MaterialMasterDto;
+import com.weighbridge.admin.payloads.MaterialMasterResponse;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
 
 import java.util.List;
 
 public interface MaterialMasterService {
-    List<MaterialMasterDto> getAllMaterials();
+    List<MaterialMasterResponse> getAllMaterials();
 
     List<String> getAllMaterialNames();
 

@@ -1,10 +1,12 @@
 package com.weighbridge.admin.services.impls;
 
-import com.weighbridge.admin.dtos.ProductMasterDto;
-import com.weighbridge.admin.entities.*;
+import com.weighbridge.admin.entities.MaterialMaster;
+import com.weighbridge.admin.payloads.MaterialMasterResponse;
+import com.weighbridge.admin.payloads.ProductMasterResponse;
+import com.weighbridge.admin.entities.ProductMaster;
+import com.weighbridge.admin.entities.QualityRangeMaster;
 import com.weighbridge.admin.payloads.ProductWithParameters;
 import com.weighbridge.admin.repsitories.ProductMasterRepository;
-import com.weighbridge.admin.repsitories.ProductTypeMasterRepository;
 import com.weighbridge.admin.repsitories.QualityRangeMasterRepository;
 import com.weighbridge.admin.services.ProductMasterService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,14 +27,12 @@ import java.util.stream.Collectors;
 public class ProductMasterServiceImpl implements ProductMasterService {
     private final HttpServletRequest httpServletRequest;
     private final ProductMasterRepository productMasterRepository;
-    private final ProductTypeMasterRepository productTypeMasterRepository;
     private final QualityRangeMasterRepository qualityRangeMasterRepository;
     private final ModelMapper modelMapper;
 
-    public ProductMasterServiceImpl(HttpServletRequest httpServletRequest, ProductMasterRepository productMasterRepository, ProductTypeMasterRepository productTypeMasterRepository, QualityRangeMasterRepository qualityRangeMasterRepository, ModelMapper modelMapper) {
+    public ProductMasterServiceImpl(HttpServletRequest httpServletRequest, ProductMasterRepository productMasterRepository, QualityRangeMasterRepository qualityRangeMasterRepository, ModelMapper modelMapper) {
         this.httpServletRequest = httpServletRequest;
         this.productMasterRepository = productMasterRepository;
-        this.productTypeMasterRepository = productTypeMasterRepository;
         this.qualityRangeMasterRepository = qualityRangeMasterRepository;
         this.modelMapper = modelMapper;
     }
@@ -47,19 +47,14 @@ public class ProductMasterServiceImpl implements ProductMasterService {
         if (productMaster == null) {
             productMaster = new ProductMaster();
             productMaster.setProductName(request.getProductName());
+            if (request.getProductTypeName() != null) {
+                productMaster.setProductTypeName(request.getProductTypeName());
+            }
             productMaster.setProductCreatedBy(user);
             productMaster.setProductCreatedDate(currentDateTime);
             productMaster.setProductModifiedBy(user);
             productMaster.setProductModifiedDate(currentDateTime);
             productMaster = productMasterRepository.save(productMaster);
-        }
-
-        ProductTypeMaster productTypeMaster = productTypeMasterRepository.findByProductTypeName(request.getProductTypeName());
-        if (request.getProductTypeName() != null && productTypeMaster == null) {
-            productTypeMaster = new ProductTypeMaster();
-            productTypeMaster.setProductTypeName(request.getProductTypeName());
-            productTypeMaster.setProductMaster(productMaster);
-            productTypeMasterRepository.save(productTypeMaster);
         }
 
         List<QualityRangeMaster> qualityRangeMasters = createQualityRanges(request.getParameters(), productMaster);
@@ -68,13 +63,27 @@ public class ProductMasterServiceImpl implements ProductMasterService {
     }
 
     @Override
-    public List<ProductMasterDto> getAllProducts() {
-        // Fetch all products
-        List<ProductMaster> listOfProducts = productMasterRepository.findAll();
+    public List<ProductMasterResponse> getAllProducts() {
+        List<ProductMaster> productMasters = productMasterRepository.findAllByProductStatus("ACTIVE");
+        List<ProductMasterResponse> productMasterResponses = new ArrayList<>();
 
-        return listOfProducts.stream()
-                .map(productMaster -> modelMapper.map(productMaster, ProductMasterDto.class))
-                .collect(Collectors.toList());
+        for (ProductMaster productMaster : productMasters) {
+            List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByProductId(productMaster.getProductId());
+
+            for (QualityRangeMaster qualityRangeMaster : qualityRangeMasters) {
+                ProductMasterResponse productMasterResponse = new ProductMasterResponse();
+                productMasterResponse.setId(qualityRangeMaster.getQualityRangeId());
+                productMasterResponse.setProductName(productMaster.getProductName());
+                productMasterResponse.setProductTypeName(productMaster.getProductTypeName());
+                productMasterResponse.setParameterName(qualityRangeMaster.getParameterName());
+                productMasterResponse.setRangeFrom(qualityRangeMaster.getRangeFrom());
+                productMasterResponse.setRangeTo(qualityRangeMaster.getRangeTo());
+
+                productMasterResponses.add(productMasterResponse);
+
+            }
+        }
+        return productMasterResponses;
     }
 
     @Override
@@ -85,7 +94,7 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 
     @Override
     public List<String> getTypeWithProduct(String productName) {
-        List<String> allProductTypeNames = productTypeMasterRepository.findByProductMasterProductName(productName);
+        List<String> allProductTypeNames = productMasterRepository.findProductTypeNamesByProductName(productName);
         return allProductTypeNames;
     }
 

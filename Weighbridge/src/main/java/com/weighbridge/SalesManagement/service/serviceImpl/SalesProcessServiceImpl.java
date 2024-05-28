@@ -3,29 +3,18 @@ package com.weighbridge.SalesManagement.service.serviceImpl;
 import com.weighbridge.SalesManagement.entities.SalesOrder;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
 import com.weighbridge.SalesManagement.payloads.SalesDetailBySalePassNo;
-import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
 import com.weighbridge.SalesManagement.payloads.SalesProcessRequest;
-import com.weighbridge.SalesManagement.payloads.VehicleAndTransporterDetail;
 import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.SalesManagement.service.SalesProcessService;
-import com.weighbridge.admin.entities.MaterialMaster;
-import com.weighbridge.admin.entities.MaterialTypeMaster;
-import com.weighbridge.admin.entities.TransporterMaster;
-import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
-import com.weighbridge.admin.repsitories.MaterialTypeMasterRepository;
 import com.weighbridge.admin.repsitories.TransporterMasterRepository;
 import com.weighbridge.admin.repsitories.VehicleMasterRepository;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 
 
 @Service
@@ -45,9 +34,6 @@ public class SalesProcessServiceImpl implements SalesProcessService {
 
     @Autowired
     MaterialMasterRepository productMasterRepository;
-
-    @Autowired
-    MaterialTypeMasterRepository materialTypeMasterRepository;
 
     /**
      * To process sale of the material with vehicle and transporter details

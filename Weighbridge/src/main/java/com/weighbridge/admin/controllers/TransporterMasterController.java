@@ -4,6 +4,10 @@ import com.weighbridge.admin.dtos.TransporterDto;
 import com.weighbridge.admin.payloads.TransporterRequest;
 import com.weighbridge.admin.services.TransporterService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +48,26 @@ public class TransporterMasterController {
      *
      * @return ResponseEntity containing  alist of transporters dtos and HTTP status OK.
      */
+//    @GetMapping("/details")
+//    public ResponseEntity<Page<TransporterDto>> getAllTransporter(
+//            @RequestParam(defaultValue = "0", required = false) int page,
+//            @RequestParam(defaultValue = "10", required = false) int size,
+//            @RequestParam(required = false, defaultValue = "transporterModifiedDate") String sortField,
+//            @RequestParam(defaultValue = "desc", required = false) String sortOrder) {
+//
+//        Pageable pageable;
+//
+//        if (sortField != null && !sortField.isEmpty()) {
+//            Sort.Direction direction = sortOrder.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+//            Sort sort = Sort.by(direction, sortField);
+//            pageable = PageRequest.of(page, size, sort);
+//        } else {
+//            pageable = PageRequest.of(page, size);
+//        }
+//
+//        Page<TransporterDto> transporterPage = transporterService.getAllTransporter(pageable);
+//        return ResponseEntity.ok(transporterPage);
+//    }
     @GetMapping("/details")
     public ResponseEntity<List<TransporterDto>> getAllTransporter() {
         List<TransporterDto> transporterDtos = transporterService.getAllTransporter();

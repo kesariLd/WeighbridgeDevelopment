@@ -30,6 +30,9 @@ public class MaterialMaster {
     @Column(name = "material_name",nullable = false)
     private String materialName;
 
+    @Column(name = "material_type_name")
+    private String materialTypeName;
+
     @Column(name = "material_status")
     private String materialStatus = "ACTIVE";
 
@@ -44,7 +47,4 @@ public class MaterialMaster {
 
     @Column(name = "material_modified_date")
     private LocalDateTime materialModifiedDate;
-
-    @OneToMany(mappedBy = "materialMaster")
-    private List<MaterialTypeMaster> materialTypes;
 }

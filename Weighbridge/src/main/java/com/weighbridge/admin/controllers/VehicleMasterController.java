@@ -1,8 +1,6 @@
 package com.weighbridge.admin.controllers;
 
-import com.weighbridge.admin.dtos.TransporterDto;
 import com.weighbridge.admin.dtos.VehicleMasterDto;
-import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.payloads.VehicleGateEntryResponse;
 import com.weighbridge.admin.payloads.VehicleRequest;
 import com.weighbridge.admin.payloads.VehicleResponse;
@@ -26,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/vehicles")
@@ -140,7 +137,7 @@ public class VehicleMasterController {
     }
 
     @DeleteMapping("/{vehicleId}/deactivate")
-    public ResponseEntity<Void> deleteTransporterById(@PathVariable Long vehicleId) {
+    public ResponseEntity<Void> deactivateVehicleById(@PathVariable Long vehicleId) {
         boolean deactivated = vehicleMasterService.deactivateVehicleById(vehicleId);
         if (deactivated) {
             return ResponseEntity.noContent().build();
@@ -150,7 +147,7 @@ public class VehicleMasterController {
     }
 
     @PutMapping("/{vehicleId}/activate")
-    public ResponseEntity<Void> activateTransporterById(@PathVariable Long vehicleId) {
+    public ResponseEntity<Void> activateVehicleById(@PathVariable Long vehicleId) {
         boolean activated = vehicleMasterService.activateVehicleById(vehicleId);
         if (activated) {
             return ResponseEntity.ok().build();
