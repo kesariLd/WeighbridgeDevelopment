@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Controller for handling quality transaction related operations.
@@ -129,17 +130,10 @@ public class QualityTransactionController {
             return ResponseEntity.badRequest().body(Collections.emptyList());
         }
     }
-  @GetMapping("fetch-ProductsOrMaterials")
-    public ResponseEntity<List<String>> getProductsOrMaterials(@RequestParam String type){
-        if("product".equalsIgnoreCase(type)){
-            List<String> products=productMasterService.getAllProductNames();
-            return ResponseEntity.ok(products);
-        } else if ("material".equalsIgnoreCase(type)) {
-            List<String> materials=materialMasterService.getAllMaterialNames();
-            return ResponseEntity.ok(materials);
-        }
-        return ResponseEntity.badRequest().body(List.of("Invalid parameter"));
-  }
+
+
+
+
 
 }
 

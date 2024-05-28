@@ -47,4 +47,7 @@ public interface QualityTransactionService {
 
     List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress);
 
+    List<QualityDashboardResponse> getInboundTransaction();
+
+    List<QualityDashboardResponse> getOutboundTransaction();
 }

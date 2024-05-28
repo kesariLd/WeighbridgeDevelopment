@@ -43,7 +43,8 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     List<GateEntryTransaction> findBySupplierId(Long supplierId);
 
     List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDate(String userSite, String userCompany);
-
+  
+    List<GateEntryTransaction>findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate(String transactionType,String userSite,String userCompany);
 
     List<GateEntryTransaction> findBySupplierIdAndTicketNoOrderByTicketNoDesc(Long supplierId, Integer ticketNo);
 
