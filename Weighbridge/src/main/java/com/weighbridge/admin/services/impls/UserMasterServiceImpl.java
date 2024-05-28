@@ -119,7 +119,6 @@ public class UserMasterServiceImpl implements UserMasterService {
         String hashedPassword = BCrypt.hashpw(defaultPassword, BCrypt.gensalt());
         userAuthentication.setDefaultPassword(hashedPassword);
 
-
         // Convert Set<String> to comma-separated String
         String rolesString = String.join(",", getRoleNames(roles));
 

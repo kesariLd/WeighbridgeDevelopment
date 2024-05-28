@@ -145,8 +145,8 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
             if (!savedOtp.equals(resetRequest.getOtp())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token is incorrect");
             }
-
-            user.setUserPassword(resetRequest.getNewPassword());
+            String hashedPassword = BCrypt.hashpw(resetRequest.getNewPassword(), BCrypt.gensalt());
+            user.setUserPassword(hashedPassword);
             user.setOtp(null);
 
             userAuthenticationRepository.save(user);
@@ -167,13 +167,12 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
         if (userMasterOptional.isPresent()) {
             UserAuthentication user = userAuthenticationRepository.findByUserId(userMasterOptional.get().getUserId());
             if (user == null) {
-                throw new UserNotFoundException("User is not found");
+                throw new ResourceNotFoundException("user not found");
             }
             user.setOtp(resetToken);
             userAuthenticationRepository.save(user);
         } else {
-            throw new UserNotFoundException("User with EmailId " + emailId + " not found");
+            throw new ResourceNotFoundException("User with EmailId " + emailId + " not found");
         }
     }
-
 }
