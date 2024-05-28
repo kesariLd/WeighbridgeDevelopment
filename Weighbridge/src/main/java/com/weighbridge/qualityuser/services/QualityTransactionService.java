@@ -1,5 +1,6 @@
 package com.weighbridge.qualityuser.services;
 
+import com.weighbridge.qualityuser.exception.ResourceNotFoundException;
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
@@ -40,7 +41,7 @@ public interface QualityTransactionService {
 
     void passQualityTransaction(Integer ticketNo);
 
-    QualityDashboardResponse searchByTicketNo(Integer ticketNo);
+    QualityDashboardResponse searchByTicketNo(Integer ticketNo) throws ResourceNotFoundException;
 
     List<QualityDashboardResponse> searchByVehicleNo(String vehicleNo);
 
