@@ -39,4 +39,6 @@ public interface WeighmentTransactionService {
      */
     TicketResponse getResponseByTicket(Integer ticketNo);
 
+    WeighbridgePageResponse getAllCompletedTickets(Pageable pageable);
+
 }

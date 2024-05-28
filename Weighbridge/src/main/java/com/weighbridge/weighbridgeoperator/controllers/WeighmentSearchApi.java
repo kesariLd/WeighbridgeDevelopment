@@ -22,23 +22,23 @@ public class WeighmentSearchApi {
 
 
     @GetMapping("/searchApi/{ticketNo}")
-    public ResponseEntity<WeighmentTransactionResponse> searchByTicketNo(@PathVariable Integer ticketNo){
+    public ResponseEntity<WeighmentTransactionResponse> searchByTicketNo(@PathVariable Integer ticketNo) {
         WeighmentTransactionResponse byTicketNo = weighmentSearchApiService.getByTicketNo(ticketNo);
         return ResponseEntity.ok(byTicketNo);
     }
 
     @GetMapping("/serachApi")
-    public ResponseEntity<WeighbridgePageResponse> searchByVariable(@RequestParam(required = false)Integer ticketNo,
-                                                                            @RequestParam(required = false) String transactionType,
-                                                                         @RequestParam(required = false) LocalDate transactionDate,
-                                                                         @RequestParam(required = false) String vehicleNo,
-                                                                         @RequestParam(required = false) String supplierName,
-                                                                         @RequestParam(required = false) String customerName,
-                                                                         @RequestParam(required = false) String transporterName,
-                                                                         @RequestParam(required = false) String materialName,
-                                                                         @RequestParam(required = false) Boolean today,
+    public ResponseEntity<WeighbridgePageResponse> searchByVariable(@RequestParam(required = false) Integer ticketNo,
+                                                                    @RequestParam(required = false) String transactionType,
+                                                                    @RequestParam(required = false) LocalDate transactionDate,
+                                                                    @RequestParam(required = false) String vehicleNo,
+                                                                    @RequestParam(required = false) String supplierName,
+                                                                    @RequestParam(required = false) String customerName,
+                                                                    @RequestParam(required = false) String transporterName,
+                                                                    @RequestParam(required = false) String materialName,
+                                                                    @RequestParam(required = false) Boolean today,
                                                                     @RequestParam(defaultValue = "0") int page,
-                                                                    @RequestParam(defaultValue = "5") int size){
+                                                                    @RequestParam(defaultValue = "5") int size) {
 
         WeighbridgeOperatorSearchCriteria criteria = new WeighbridgeOperatorSearchCriteria();
         criteria.setTicketNo(ticketNo);
@@ -51,7 +51,7 @@ public class WeighmentSearchApi {
         criteria.setMaterialName(materialName);
         criteria.setToday(today);
         Pageable pageable = PageRequest.of(page, size);
-        WeighbridgePageResponse allBySearchFields = weighmentSearchApiService.getAllBySearchFields(criteria,pageable);
+        WeighbridgePageResponse allBySearchFields = weighmentSearchApiService.getAllBySearchFields(criteria, pageable);
         return ResponseEntity.ok(allBySearchFields);
     }
 }

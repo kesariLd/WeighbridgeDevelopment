@@ -36,4 +36,10 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
             "WHERE g.siteId = :siteId AND g.companyId=:companyId AND (w.netWeight IS NULL OR w.netWeight = 0.0) " +
             "ORDER BY g.ticketNo DESC")
     Page<Object[]> getAllGateEntries(@Param("siteId") String siteId,@Param("companyId") String companyId, Pageable pageable);
+
+    @Query("FROM WeighmentTransaction wt WHERE wt.gateEntryTransaction.siteId=:userSite AND wt.gateEntryTransaction.companyId=:userCompany")
+    Page<WeighmentTransaction> findAllByUserSiteAndUserCompany(String userSite, String userCompany, Pageable pageable);
+
+    @Query("SELECT COUNT(wt.netWeight) FROM WeighmentTransaction wt WHERE wt.netWeight!=0.0")
+    long countCompletedTransactions();
 }

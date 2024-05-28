@@ -78,6 +78,9 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
     @Autowired
     private SalesOrderRespository salesOrderRespository;
 
+    @Autowired
+    private ProductMasterRepository productMasterRepository;
+
 
     @Override
     public String saveWeight(WeighmentRequest weighmentRequest) {
@@ -258,7 +261,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             System.out.println(responses);
             WeighbridgePageResponse weighbridgePageResponse=new WeighbridgePageResponse();
             weighbridgePageResponse.setWeighmentTransactionResponses(responses);
-            weighbridgePageResponse.setTotalPages(pageResult.getTotalPages());
+            weighbridgePageResponse.setTotalPages((long) pageResult.getTotalPages());
             weighbridgePageResponse.setTotalElements(pageResult.getTotalElements());
             return weighbridgePageResponse;
         }
@@ -339,5 +342,65 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             ticketResponse.setConsignmentWeight(gateEntryTransaction.getSupplyConsignmentWeight());
             return ticketResponse;
         }
+    }
+
+    /**
+     * @param pageable
+     * @return
+     */
+    @Override
+    public WeighbridgePageResponse getAllCompletedTickets(Pageable pageable) {
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompany;
+        String userSite;
+
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSite = session.getAttribute("userSite").toString();
+            userCompany = session.getAttribute("userCompany").toString();
+        } else {
+            throw new SessionExpiredException("Session Expired, Login again !");
+        }
+        Page<WeighmentTransaction> all = weighmentTransactionRepository.findAllByUserSiteAndUserCompany(userSite,userCompany,pageable);
+        List<WeighmentTransaction> allUsers = all.getContent();
+        if(allUsers==null){
+            throw new ResourceNotFoundException("No response found.");
+        }
+        List<WeighmentTransactionResponse> weighmentTransactionResponses=new ArrayList<>();
+        for(WeighmentTransaction weighmentTransaction:allUsers){
+            if(weighmentTransaction.getNetWeight()!=0.0) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                WeighmentTransactionResponse weighmentTransactionResponse = new WeighmentTransactionResponse();
+                weighmentTransactionResponse.setTransactionDate(weighmentTransaction.getGateEntryTransaction().getTransactionDate());
+                weighmentTransactionResponse.setTransactionType(weighmentTransaction.getGateEntryTransaction().getTransactionType());
+                weighmentTransactionResponse.setWeighmentNo(String.valueOf(weighmentTransaction.getWeighmentNo()));
+                weighmentTransactionResponse.setTicketNo(String.valueOf(weighmentTransaction.getGateEntryTransaction().getTicketNo()));
+                weighmentTransactionResponse.setVehicleIn(weighmentTransaction.getGateEntryTransaction().getVehicleIn().format(formatter));
+                weighmentTransactionResponse.setNetWeight(String.valueOf(weighmentTransaction.getNetWeight()));
+                weighmentTransactionResponse.setGrossWeight(String.valueOf(weighmentTransaction.getGrossWeight()));
+                weighmentTransactionResponse.setTareWeight(String.valueOf(weighmentTransaction.getTareWeight()));
+                weighmentTransactionResponse.setVehicleNo(vehicleMasterRepository.findVehicleNoById(weighmentTransaction.getGateEntryTransaction().getVehicleId()));
+                weighmentTransactionResponse.setVehicleFitnessUpTo(vehicleMasterRepository.findVehicleFitnessById(weighmentTransaction.getGateEntryTransaction().getVehicleId()));
+                if(weighmentTransaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")){
+                    weighmentTransactionResponse.setMaterialName(materialMasterRepository.findMaterialNameByMaterialId(weighmentTransaction.getGateEntryTransaction().getMaterialId()));
+                    weighmentTransactionResponse.setSupplierName(supplierMasterRepository.findSupplierNameBySupplierId(weighmentTransaction.getGateEntryTransaction().getSupplierId()));
+                }
+                else{
+                    weighmentTransactionResponse.setMaterialName(productMasterRepository.findProductNameByProductId(weighmentTransaction.getGateEntryTransaction().getMaterialId()));
+                    weighmentTransactionResponse.setCustomerName(customerMasterRepository.findCustomerNameByCustomerId(weighmentTransaction.getGateEntryTransaction().getCustomerId()));
+                }
+
+                weighmentTransactionResponse.setTransporterName(transporterMasterRepository.findTransporterNameByTransporterId(weighmentTransaction.getGateEntryTransaction().getTransporterId()));
+                weighmentTransactionResponses.add(weighmentTransactionResponse);
+
+            }
+        }
+        long count = weighmentTransactionRepository.countCompletedTransactions();
+        WeighbridgePageResponse weighbridgePageResponse=new WeighbridgePageResponse();
+        weighbridgePageResponse.setWeighmentTransactionResponses(weighmentTransactionResponses);
+        weighbridgePageResponse.setTotalPages(count/ all.getSize());
+        weighbridgePageResponse.setTotalElements(count);
+        return weighbridgePageResponse;
     }
 }

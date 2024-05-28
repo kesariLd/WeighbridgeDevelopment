@@ -191,7 +191,7 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
                 .collect(Collectors.toList());
         WeighbridgePageResponse response = new WeighbridgePageResponse();
         response.setWeighmentTransactionResponses(responses);
-        response.setTotalPages(pageResult.getTotalPages());
+        response.setTotalPages((long) pageResult.getTotalPages());
         response.setTotalElements(pageResult.getTotalElements());
         return response;
     }

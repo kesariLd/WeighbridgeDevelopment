@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -41,5 +42,6 @@ public interface VehicleMasterRepository extends JpaRepository<VehicleMaster,Lon
     @Query("SELECT vm.vehicleNo FROM VehicleMaster vm WHERE vm.id IN (SELECT DISTINCT ge.vehicleId FROM GateEntryTransaction ge)")
     List<String> findVehicleNosInGateEntryTransactions();
 
-
+    @Query("SELECT vm.vehicleFitnessUpTo FROM VehicleMaster vm WHERE vm.id = :vehicleId")
+    LocalDate findVehicleFitnessById(@Param("vehicleId") long vehicleId);
 }
