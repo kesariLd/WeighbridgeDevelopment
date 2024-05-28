@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 public class ResetRequest {
     private String emailId;
-    private String otp;
+    private String otp;gi
     private String newPassword;
 }
