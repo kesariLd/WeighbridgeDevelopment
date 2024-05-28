@@ -49,7 +49,7 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     List<GateEntryTransaction> findBySupplierIdOrderByTicketNoDesc(Long supplierId);
 
-    List<GateEntryTransaction> findByVehicleIdOrderByTicketNoDesc(long id);
+    List<GateEntryTransaction> findByVehicleIdOrderByTicketNo(long id);
 
     List<GateEntryTransaction> findByTransactionDate(LocalDate searchDate);
 
