@@ -8,6 +8,6 @@ import java.util.List;
 public class WeighbridgePageResponse {
 
     private List<WeighmentTransactionResponse> weighmentTransactionResponses;
-    private Integer totalPages;
+    private Long totalPages;
     private Long totalElements;
 }
