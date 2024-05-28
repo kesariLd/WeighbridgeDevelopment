@@ -61,4 +61,23 @@ public class WeighmentTransactionController {
         WeighbridgeOperatorPrint printResponse = weighbridgeOperatorPrintService.getPrintResponse(ticketNo);
         return ResponseEntity.ok(printResponse);
     }
+
+    @GetMapping("/getCompletedTransaction")
+    public ResponseEntity<WeighbridgePageResponse> getCompletedTransactions(@RequestParam(defaultValue = "0", required = false) int page,
+                                                                            @RequestParam(defaultValue = "10", required = false) int size,
+                                                                            @RequestParam(required = false, defaultValue = "gateEntryTransaction") String sortField,
+                                                                            @RequestParam(defaultValue = "desc", required = false) String sortOrder){
+        Pageable pageable;
+        if(sortField!=null && !sortField.isEmpty()){
+            Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;
+            Sort sort = Sort.by(direction,sortField);
+            pageable = PageRequest.of(page,size,sort);
+        }
+        else{
+            pageable = PageRequest.of(page,size);
+        }
+        WeighbridgePageResponse allCompletedTickets = weighmentTransactionService.getAllCompletedTickets(pageable);
+        return ResponseEntity.ok(allCompletedTickets);
+    }
+
 }
