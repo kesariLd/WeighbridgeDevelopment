@@ -16,6 +16,5 @@ public class VehicleResponse {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fitnessUpto;
-    private Double vehicleLoadCapacity;
     private String vehicleStatus;
 }

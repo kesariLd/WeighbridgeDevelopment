@@ -256,7 +256,6 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
         vehicleResponse.setVehicleType(vehicleMaster.getVehicleType());
         vehicleResponse.setVehicleManufacturer(vehicleMaster.getVehicleManufacturer());
         vehicleResponse.setVehicleStatus(vehicleMaster.getVehicleStatus());
-        vehicleResponse.setVehicleLoadCapacity(vehicleMaster.getVehicleLoadCapacity());
 
         Set<TransporterMaster> transporter = vehicleMaster.getTransporter();
         Set<String> strOfTransporter = new HashSet<>();

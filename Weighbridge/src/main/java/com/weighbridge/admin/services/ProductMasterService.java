@@ -1,6 +1,6 @@
 package com.weighbridge.admin.services;
 
-import com.weighbridge.admin.payloads.ProductMasterResponse;
+import com.weighbridge.admin.dtos.ProductMasterDto;
 import com.weighbridge.admin.payloads.ProductWithParameters;
 
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.List;
 public interface ProductMasterService {
     String createProductWithParameterAndRange(ProductWithParameters productWithParameters);
 
-    List<ProductMasterResponse> getAllProducts();
+    List<ProductMasterDto> getAllProducts();
 
     List<String> getAllProductNames();
 

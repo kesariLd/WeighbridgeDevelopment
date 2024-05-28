@@ -31,10 +31,4 @@ public interface MaterialMasterRepository extends JpaRepository<MaterialMaster, 
     List<String> findAllMaterialNameByMaterialStatus(@Param("status")String status);
 
 	MaterialMaster findByMaterialId(long materialId);
-
-    @Query("SELECT DISTINCT mm.materialTypeName FROM MaterialMaster mm WHERE mm.materialName = :materialName")
-    List<String> findMaterialTypeNamesByMaterialName(@Param("materialName") String materialName);
-
-    @Query("SELECT mm FROM MaterialMaster mm WHERE mm.materialStatus = :status")
-    List<MaterialMaster> findAllByMaterialStatus(@Param("status") String status);
 }
