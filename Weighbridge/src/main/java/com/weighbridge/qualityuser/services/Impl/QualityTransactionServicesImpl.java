@@ -10,6 +10,7 @@ import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
+import com.weighbridge.qualityuser.exception.ResourceAlreadyExistsException;
 import com.weighbridge.qualityuser.exception.ResourceNotFoundException;
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
@@ -97,7 +98,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         String userCompany = session.getAttribute("userCompany").toString();
 
         // Retrieve all transactions for the user's site and company, ordered by transaction date in descending order
-        List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDateDesc(userSite, userCompany);
+        List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDate(userSite, userCompany);
         List<QualityDashboardResponse> qualityDashboardResponses = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
@@ -240,9 +241,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
     }
 
-
-
-
     private void setQualityDashboardResponseDetails(QualityDashboardResponse qualityDashboardResponse, GateEntryTransaction transaction) {
 
         qualityDashboardResponse.setTicketNo(transaction.getTicketNo());
@@ -293,7 +291,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
         qualityDashboardResponse.setDate(transaction.getTransactionDate());
     }
-
 
     //Generate report for quality check
     @Override
@@ -352,8 +349,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         throw new ResourceNotFoundException("Quality transaction not found for ticketNo: " + ticketNo);
     }
 
-
-
     @Override
     public void passQualityTransaction(Integer ticketNo) {
         HttpSession session = httpServletRequest.getSession();
@@ -370,8 +365,8 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo)
                 .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with " + ticketNo));
         VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(gateEntryTransaction.getTicketNo());
-        if(transactionStatus==null){
-            throw new ResourceNotFoundException("Vehicle transaction status is not found Ticket no:"+ ticketNo);
+        if (transactionStatus == null) {
+            throw new ResourceNotFoundException("Vehicle transaction status is not found Ticket no:" + ticketNo);
         }
         transactionStatus.setStatusCode("QCT");
         vehicleTransactionStatusRepository.save(transactionStatus);
@@ -394,41 +389,41 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         vehicleTransactionStatusRepository.save(vehicleTransactionStatus);
     }
 
-
+    //search by ticketNo
     @Override
     public QualityDashboardResponse searchByTicketNo(Integer ticketNo) {
         HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompanyId;
         String userSiteId;
+
         if (session != null && session.getAttribute("userId") != null) {
             userId = session.getAttribute("userId").toString();
             userSiteId = session.getAttribute("userSite").toString();
             userCompanyId = session.getAttribute("userCompany").toString();
         } else {
-            throw new SessionExpiredException("Session Expired, Login again !");
+            throw new SessionExpiredException("Session Expired, Login again!");
         }
 
         QualityDashboardResponse qualityDashboardResponse = null;
+
         if (ticketNo != null) {
             GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userCompanyId, userSiteId);
             if (transactionByTicketNo != null) {
-                if (transactionByTicketNo.getTransactionType().equalsIgnoreCase("Inbound")) {
-                    VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(ticketNo);
-                    if (transactionStatus.getStatusCode().equalsIgnoreCase("GXT") ||
-                            transactionStatus.getStatusCode().equalsIgnoreCase("TWT") ||
-                            transactionStatus.getStatusCode().equalsIgnoreCase("GWT")) {
-                        qualityDashboardResponse = new QualityDashboardResponse();
-                        setQualityDashboardResponseDetails(qualityDashboardResponse, transactionByTicketNo);
-                    }
+                TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(ticketNo, "QCT");
+                if (qctTransactionLog != null) {
+                    throw new ResponseStatusException(HttpStatus.FOUND,"Quality is exist for the ticket no : "+ ticketNo);
                 }
-
-            } else throw new ResourceNotFoundException("Ticket", "ticket no", String.valueOf(ticketNo));
+                qualityDashboardResponse = new QualityDashboardResponse();
+                setQualityDashboardResponseDetails(qualityDashboardResponse, transactionByTicketNo);
+            } else {
+                // Throw an exception if transactionByTicketNo is null
+                throw new ResourceNotFoundException("Ticket", "ticket no", String.valueOf(ticketNo));
+            }
         }
+
         return qualityDashboardResponse;
     }
-
-
 
     @Override
     public List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress) {
@@ -443,8 +438,8 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             }
         }
 
-            return responses;
-        }
+        return responses;
+    }
 
 
     @Override
@@ -470,7 +465,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
         return responses;
     }
-
 
 
     @Override
