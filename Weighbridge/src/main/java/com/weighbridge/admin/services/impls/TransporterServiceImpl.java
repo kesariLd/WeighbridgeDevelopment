@@ -1,7 +1,6 @@
 package com.weighbridge.admin.services.impls;
 
 import com.weighbridge.admin.dtos.TransporterDto;
-import com.weighbridge.admin.entities.UserMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.payloads.TransporterRequest;
 import com.weighbridge.admin.repsitories.TransporterMasterRepository;
@@ -70,7 +69,7 @@ public class TransporterServiceImpl implements TransporterService {
 
     @Override
     public List<String> getAllTransporterNames() {
-        List<TransporterMaster> all = transporterMasterRepository.findAll();
+        List<TransporterMaster> all = transporterMasterRepository.findAllByTransporterStatus();
         List<String> str=new ArrayList<>();
         for(TransporterMaster transporterMaster:all){
             str.add(transporterMaster.getTransporterName());
