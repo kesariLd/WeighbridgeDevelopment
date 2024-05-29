@@ -98,42 +98,6 @@ public class QualityTransactionController {
      * @return a ResponseEntity containing the quality details
      */
 
-    @GetMapping("/searchByTicketNo/{ticketNo}")
-    public ResponseEntity<QualityDashboardResponse> searchByTicketNo(@PathVariable Integer ticketNo) {
-        QualityDashboardResponse response = qualityTransactionService.searchByTicketNo(ticketNo);
-        return ResponseEntity.ok().body(response);
-    }
-
-    @GetMapping("/searchByVehicleNo/{vehicleNo}")
-    public ResponseEntity<List<QualityDashboardResponse>> searchByVehicleNo(@PathVariable String vehicleNo) {
-        List<QualityDashboardResponse> response = qualityTransactionService.searchByVehicleNo(vehicleNo);
-        return ResponseEntity.ok().body(response);
-    }
-
-    @GetMapping("/searchBySupplierOrCustomer")
-    public ResponseEntity<List<QualityDashboardResponse>> searchBySupplierOrCustomerNameAndAddress(
-            @RequestParam(required = false) String supplierOrCustomerName,
-            @RequestParam(required = false) String supplierOrCustomerAddress) {
-        List<QualityDashboardResponse> response = qualityTransactionService.searchBySupplierOrCustomerNameAndAddress(supplierOrCustomerName, supplierOrCustomerAddress);
-        return ResponseEntity.ok().body(response);
-    }
-
-    @GetMapping("/search-Date")
-    public ResponseEntity<List<QualityDashboardResponse>> searchByDate(
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") String date
-    ) {
-        if (date != null) {
-            List<QualityDashboardResponse> response = qualityTransactionService.searchByDate(date);
-            return ResponseEntity.ok().body(response);
-        } else {
-
-            return ResponseEntity.badRequest().body(Collections.emptyList());
-        }
-    }
-
-
-
-
 
 }
 

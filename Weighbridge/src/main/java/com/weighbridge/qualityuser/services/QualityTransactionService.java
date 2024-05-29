@@ -36,16 +36,7 @@ public interface QualityTransactionService {
      */
     ReportResponse getReportResponse(Integer ticketNo);
 
-    List<QualityDashboardResponse> searchByDate(String date);
-
-
     void passQualityTransaction(Integer ticketNo);
-
-    QualityDashboardResponse searchByTicketNo(Integer ticketNo) throws ResourceNotFoundException;
-
-    List<QualityDashboardResponse> searchByVehicleNo(String vehicleNo);
-
-    List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress);
 
     List<QualityDashboardResponse> getInboundTransaction();
 
