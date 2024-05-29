@@ -71,5 +71,6 @@ public class VehicleTransactionStatusImpl implements VehicleTransactionStatusSer
         Long pendingTare = vehicleTransactionStatusRepository.countOutboundPendingTareWeight();
         return pendingTare;
     }
-}
 
+
+}
