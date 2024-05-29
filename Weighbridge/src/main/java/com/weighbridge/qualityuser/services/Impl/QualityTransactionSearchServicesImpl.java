@@ -161,26 +161,46 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
     @Override
     public List<QualityDashboardResponse> searchByDate(String date) {
         List<QualityDashboardResponse> responses = new ArrayList<>();
-
         try {
-            LocalDate searchDate = LocalDate.parse(date);
-            List<GateEntryTransaction> gateEntryTransactions = gateEntryTransactionRepository.findByTransactionDate(searchDate);
+            HttpSession session = httpServletRequest.getSession(false);
+            if (session == null || session.getAttribute("userId") == null) {
+                throw new SessionExpiredException("Session Expired, Login again!");
+            }
+            String userId = session.getAttribute("userId").toString();
+            String userSite = session.getAttribute("userSite").toString();
+            String userCompany = session.getAttribute("userCompany").toString();
 
-            for (GateEntryTransaction gateEntryTransaction : gateEntryTransactions) {
-                QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
-                setQualityDashboardResponseDetails(qualityDashboardResponse, gateEntryTransaction);
-                responses.add(qualityDashboardResponse);
+            LocalDate searchDate = LocalDate.parse(date);
+
+            // Retrieve transactions for the user's site and company, ordered by transaction date
+            List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDate(userSite, userCompany);
+            for (GateEntryTransaction transaction : allTransactions) {
+                if (transaction.getTransactionDate().isEqual(searchDate)) {
+                    String statusCode = transaction.getTransactionType().equalsIgnoreCase("Inbound") ? "GWT" : "TWT";
+                    TransactionLog transactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), statusCode);
+                    if (transactionLog != null) {
+                        TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), "QCT");
+                        if (qctTransactionLog == null) {
+                            QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+                            setQualityDashboardResponseDetails(qualityDashboardResponse, transaction);
+                            responses.add(qualityDashboardResponse);
+                        }
+                    }
+                }
             }
         } catch (DateTimeParseException e) {
             log.error("Invalid date format: ", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date format");
+        } catch (SessionExpiredException e) {
+            log.error("Session expired: ", e);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session expired, login again");
         } catch (Exception e) {
             log.error("Error occurred while searching: ", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while searching");
         }
-
         return responses;
     }
+
     @Override
     public List<QualityDashboardResponse> searchByVehicleNo(String vehicleNo) {
         List<QualityDashboardResponse> responses = new ArrayList<>();
