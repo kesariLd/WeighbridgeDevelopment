@@ -1,5 +1,6 @@
 package com.weighbridge.admin.services.impls;
 
+import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.dtos.ProductMasterDto;
 import com.weighbridge.admin.entities.*;
 import com.weighbridge.admin.payloads.ProductWithParameters;
@@ -69,12 +70,18 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 
     @Override
     public List<ProductMasterDto> getAllProducts() {
-        // Fetch all products
         List<ProductMaster> listOfProducts = productMasterRepository.findAll();
 
-        return listOfProducts.stream()
-                .map(productMaster -> modelMapper.map(productMaster, ProductMasterDto.class))
-                .collect(Collectors.toList());
+        List<ProductMasterDto> productMasterDtoList = listOfProducts.stream().map(
+                productMaster -> {
+                    ProductMasterDto productMasterDto = modelMapper.map(productMaster, ProductMasterDto.class);
+                    List<String> productTypeNames = productTypeMasterRepository.findByProductMasterProductName(productMaster.getProductName());
+                    String joinedProductTypeNames = String.join(", ", productTypeNames);
+                    productMasterDto.setProductTypeName(joinedProductTypeNames);
+                    return productMasterDto;
+                }
+        ).collect(Collectors.toList());
+        return productMasterDtoList;
     }
 
     @Override

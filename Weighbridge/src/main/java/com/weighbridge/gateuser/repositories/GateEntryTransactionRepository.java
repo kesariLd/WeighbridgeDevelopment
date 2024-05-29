@@ -27,7 +27,10 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     //Pagination get All user
     Page<GateEntryTransaction> findBySiteIdAndCompanyIdAndVehicleOutIsNull(Pageable pageable,String siteId, String companyId);
 
-//    List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String siteId, String companyId);
+
+    Page<GateEntryTransaction> findBySiteIdAndCompanyIdAndVehicleOutIsNotNull(Pageable pageable,String siteId, String companyId);
+
+    //    List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String siteId, String companyId);
 
     // Modified method to find by siteId, companyId, and transactionDate within the specified range
     List<GateEntryTransaction> findBySiteIdAndCompanyIdAndTransactionDateBetweenOrderByTransactionDateDesc(String siteId, String companyId, LocalDate startDate, LocalDate endDate);

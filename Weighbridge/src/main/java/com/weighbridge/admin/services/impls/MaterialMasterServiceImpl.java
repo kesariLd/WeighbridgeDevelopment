@@ -54,7 +54,16 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
         // Fetch all materials
         List<MaterialMaster> listOfMaterials = materialMasterRepository.findAll();
 
-        return listOfMaterials.stream().map(materialMaster -> modelMapper.map(materialMaster, MaterialMasterDto.class)).collect(Collectors.toList());
+        List<MaterialMasterDto> materialMasterDtoList = listOfMaterials.stream().map(
+                materialMaster -> {
+                    MaterialMasterDto materialMasterDto = modelMapper.map(materialMaster, MaterialMasterDto.class);
+                    List<String> materialTypeNames = materialTypeMasterRepository.findByMaterialMasterMaterialName(materialMaster.getMaterialName());
+                    String joinedMateriTypeName = String.join(", ", materialTypeNames);
+                    materialMasterDto.setMaterialTypeName(joinedMateriTypeName);
+                    return materialMasterDto;
+                }
+        ).collect(Collectors.toList());
+        return materialMasterDtoList;
     }
 
     @Override
