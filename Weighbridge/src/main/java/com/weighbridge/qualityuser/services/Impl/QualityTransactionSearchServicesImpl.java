@@ -115,21 +115,33 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
 
         // Search for supplierName and supplierAddress
         if (supplierOrCustomerName != null || supplierOrCustomerAddress != null) {
-            System.out.println("supplierOrCustomer Name:"+supplierOrCustomerName);
-            System.out.println("supplierOrCustomer address :"+supplierOrCustomerAddress);
+            System.out.println("supplierOrCustomer Name:" + supplierOrCustomerName);
+            System.out.println("supplierOrCustomer address :" + supplierOrCustomerAddress);
+
             List<SupplierMaster> supplierMasters = supplierMasterRepository.findBySupplierNameContainingOrSupplierAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
-            System.out.println("number of supplier :"+supplierMasters.size());
+            List<CustomerMaster> customerMasters = new ArrayList<>();
 
             if (supplierMasters.isEmpty()) {
-                System.out.println("No suppliers found for the given name or address.");
+              List<CustomerMaster> customerMaster = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
+                System.out.println("number of customers :" + customerMasters.size());
             }
 
             List<GateEntryTransaction> transactions = new ArrayList<>();
 
-            for (SupplierMaster supplierMaster : supplierMasters) {
-                List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findBySupplierIdOrderByTicketNoDesc(supplierMaster.getSupplierId());
-                transactions.addAll(gateEntryTransaction);
-                System.out.println("Number of transactions for supplier " + supplierMaster.getSupplierId() + ": " + gateEntryTransaction.size());
+            if (!supplierMasters.isEmpty()) {
+                for (SupplierMaster supplierMaster : supplierMasters) {
+                    List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findBySupplierIdOrderByTicketNoDesc(supplierMaster.getSupplierId());
+                    transactions.addAll(gateEntryTransaction);
+                    System.out.println("Number of transactions for supplier " + supplierMaster.getSupplierId() + ": " + gateEntryTransaction.size());
+                }
+            }
+
+            if (!customerMasters.isEmpty()) {
+                for (CustomerMaster customerMaster : customerMasters) {
+                    List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findByCustomerIdOrderByTicketNoDesc(customerMaster.getCustomerId());
+                    transactions.addAll(gateEntryTransaction);
+                    System.out.println("Number of transactions for customer " + customerMaster.getCustomerId() + ": " + gateEntryTransaction.size());
+                }
             }
 
             for (GateEntryTransaction transaction : transactions) {
@@ -158,6 +170,7 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
         }
         return responses;
     }
+
     @Override
     public List<QualityDashboardResponse> searchByDate(String date) {
         List<QualityDashboardResponse> responses = new ArrayList<>();
@@ -173,7 +186,7 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
             LocalDate searchDate = LocalDate.parse(date);
 
             // Retrieve transactions for the user's site and company, ordered by transaction date
-            List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDate(userSite, userCompany);
+            List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDateDesc(userSite, userCompany);
             for (GateEntryTransaction transaction : allTransactions) {
                 if (transaction.getTransactionDate().isEqual(searchDate)) {
                     String statusCode = transaction.getTransactionType().equalsIgnoreCase("Inbound") ? "GWT" : "TWT";

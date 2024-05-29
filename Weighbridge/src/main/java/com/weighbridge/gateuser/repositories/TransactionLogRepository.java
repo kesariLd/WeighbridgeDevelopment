@@ -29,6 +29,7 @@ public interface TransactionLogRepository extends JpaRepository<TransactionLog, 
      * @param statusCode The status code to search for.
      * @return The transaction log entry corresponding to the provided ticket number and status code, if found.
      */
+
     TransactionLog findByTicketNoAndStatusCode(Integer ticketNo, String statusCode);
 
     boolean existsByTicketNoAndStatusCode(Integer ticketNo, String statusCode);

@@ -41,4 +41,6 @@ public interface QualityTransactionService {
     List<QualityDashboardResponse> getInboundTransaction();
 
     List<QualityDashboardResponse> getOutboundTransaction();
+
+    List<QualityDashboardResponse> getQCTCompleted();
 }
