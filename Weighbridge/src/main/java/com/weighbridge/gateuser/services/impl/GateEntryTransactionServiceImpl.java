@@ -1,5 +1,4 @@
 package com.weighbridge.gateuser.services.impl;
-import com.weighbridge.SalesManagement.entities.SalesOrder;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
@@ -15,16 +14,11 @@ import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.gateuser.services.GateEntryTransactionService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -347,6 +341,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                                 response.setCustomer(customerName);
                                 response.setCustomerAddress(customerAddress);
                             }
+                            System.out.println(response);
                             String materialName = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
                             response.setMaterial(materialName);
                         }
@@ -527,6 +522,124 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     }
 
     @Override
+    public GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable){
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompany;
+        String userSite;
+        try {
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSite = session.getAttribute("userSite").toString();
+            userCompany = session.getAttribute("userCompany").toString();
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        Page<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdAndVehicleOutIsNotNull(pageable, userSite, userCompany);
+        Integer totalPage = allTransactions.getTotalPages();
+        Long totalElements = allTransactions.getTotalElements();
+
+        List<GateEntryTransactionResponse> responseList = allTransactions.stream()
+                .map(transaction -> {
+                    // Fetch status code for the current transaction ticket number
+                    String statusCode = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo()).getStatusCode();
+                    // Skip processing and printing the transaction if its status code is "GXT"
+                   /* if ("GXT".equals(statusCode)) {
+                        return null;
+                    }*/
+                    GateEntryTransactionResponse response = new GateEntryTransactionResponse();
+                    // Fetching associated entity names
+                    Object[] vehicleNoAndVehicleTypeAndVehicleWheelsNoByVehicleId = vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId());
+                    String transporterName = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getTransporterId());
+
+                    // Setting values to response object
+                    response.setTicketNo(transaction.getTicketNo());
+                    response.setTransactionType(transaction.getTransactionType());
+                    response.setMaterialType(transaction.getMaterialType());
+
+                    // Check the transaction type and set the appropriate entity
+                    if ("Inbound".equals(transaction.getTransactionType())) {
+                        Object[] supplierNameBySupplierId = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(transaction.getSupplierId());
+                        // Inbound transaction
+                        Object[] supplierInfo = (Object[]) supplierNameBySupplierId[0];
+                        if (supplierInfo != null && supplierInfo.length >= 2) {
+                            String supplierName = (String) supplierInfo[0];
+                            String supplierAddress = (String) supplierInfo[1];
+                            response.setSupplier(supplierName);
+                            response.setSupplierAddress(supplierAddress);
+                        }
+                        String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
+                        response.setMaterial(materialName);
+                    }
+                    else if ("Outbound".equals(transaction.getTransactionType())) {
+                        Object[] customerNameByCustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(transaction.getCustomerId());
+                        System.out.println(customerNameByCustomerId);
+                        // Outbound transaction
+                        Object[] customerInfo = (Object[]) customerNameByCustomerId[0];
+                        if (customerInfo != null && customerInfo.length >= 2) {
+                            String customerName = (String) customerInfo[0];
+                            String customerAddress = (String) customerInfo[1];
+                            response.setCustomer(customerName);
+                            response.setCustomerAddress(customerAddress);
+                        }
+                        String materialName = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
+                        response.setMaterial(materialName);
+                    }
+                    Object[] vehicleInfo = (Object[]) vehicleNoAndVehicleTypeAndVehicleWheelsNoByVehicleId[0];
+                    if (vehicleInfo != null && vehicleInfo.length >= 3) {
+                        String vehicleNo = (String) vehicleInfo[0];
+                        String vehicleType = (String) vehicleInfo[1];
+                        Integer vehicleWheelsNo = (Integer) vehicleInfo[2];
+                        response.setVehicleNo(vehicleNo);
+                        response.setVehicleType(vehicleType);
+                        response.setVehicleWheelsNo(vehicleWheelsNo);
+                    } else {
+                        // Handle case where vehicle info is not available
+                        response.setVehicleNo(null);
+                        response.setVehicleType(null);
+                        response.setVehicleWheelsNo(null);
+                    }
+                    // Check if vehicle out transaction log exists
+                    if (transaction.getVehicleIn() != null) {
+                        // Vehicle out transaction log exists
+                        // Process the vehicle out data
+                        response.setVehicleIn(transaction.getVehicleIn().format(formatter));
+                    }
+                    // Check if vehicle out transaction log exists
+                    if (transaction.getVehicleOut() != null) {
+                        // Vehicle out transaction log exists
+                        // Process the vehicle out data
+                        response.setVehicleOut(transaction.getVehicleOut().format(formatter));
+                    }
+                    response.setPoNo(transaction.getPoNo());
+                    response.setChallanNo(transaction.getChallanNo());
+                    response.setTpNo(transaction.getTpNo());
+                    response.setTpNetWeight(transaction.getSupplyConsignmentWeight());
+                    response.setTransporter(transporterName);
+                    response.setChallanDate(transaction.getChallanDate());
+                    response.setTransactionDate(transaction.getTransactionDate());
+                    System.out.println("response " + response);
+                    return response;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        GateEntryTransactionPageResponse gateEntryTransactionPageResponse = new GateEntryTransactionPageResponse();
+        gateEntryTransactionPageResponse.setTransactions(responseList);
+        gateEntryTransactionPageResponse.setTotalPages(totalPage);
+        gateEntryTransactionPageResponse.setTotalElements(totalElements);
+        return gateEntryTransactionPageResponse;
+    } catch (ResponseStatusException ex) {
+          throw ex;
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while retrieving gate entry transactions. Please try again later.");
+    }
+
+    }
+
+
+    @Override
     public GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date,String supplierNameC,String transactionType,Pageable pageable) {
         try {
             // Set user session details
@@ -636,5 +749,16 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while retrieving gate entry transactions. Please try again later.");
         }
     }
+
+    /**
+     * @param ticketNo
+     * @return
+     */
+    @Override
+    public GateEntryTransaction getPrintTicketWise(Integer ticketNo) {
+
+        return null;
+    }
+
 
 }

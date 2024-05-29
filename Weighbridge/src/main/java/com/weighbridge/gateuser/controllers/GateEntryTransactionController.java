@@ -98,4 +98,26 @@ public class GateEntryTransactionController {
         GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName,transactionType,pageable);
         return transactionsByFiltering;
     }
+
+    @GetMapping("/completedDashboard")
+    public ResponseEntity<GateEntryTransactionPageResponse> getAllCompletedTransactions(@RequestParam(defaultValue = "0", required = false) int page,
+                                                                                        @RequestParam(defaultValue = "5", required = false) int size,
+                                                                                        @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
+                                                                                        @RequestParam(defaultValue = "desc", required = false) String sortOrder){
+
+        Pageable pageable;
+        if(sortField!=null && !sortField.isEmpty()){
+            Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;
+            Sort sort = Sort.by(direction,sortField);
+            pageable = PageRequest.of(page,size,sort);
+        }
+        else{
+            pageable = PageRequest.of(page,size);
+        }
+        GateEntryTransactionPageResponse allGateEntryTransaction = gateEntryTransactionService.getAllCompletedGateEntry(pageable);
+        return new ResponseEntity<>(allGateEntryTransaction, HttpStatus.OK);
+    }
+
+
+
 }
