@@ -3,6 +3,7 @@ import com.weighbridge.SalesManagement.entities.SalesProcess;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.repsitories.*;
+import com.weighbridge.gateuser.dtos.GateEntryPrint;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
@@ -14,6 +15,8 @@ import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.gateuser.services.GateEntryTransactionService;
+import com.weighbridge.qualityuser.entites.QualityTransaction;
+import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.modelmapper.ModelMapper;
@@ -65,6 +68,9 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
     @Autowired
     private GateEntryTransactionSpecification gateEntryTransactionSpecification;
+
+    @Autowired
+    private QualityTransactionRepository qualityTransactionRepository;
 
 
     /**
@@ -300,9 +306,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             List<GateEntryTransactionResponse> responseList = allTransactions.stream()
                     .map(transaction -> {
                         // Fetch status code for the current transaction ticket number
-                        String statusCode = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo()).getStatusCode();
+                        VehicleTransactionStatus statusCode = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
                         // Skip processing and printing the transaction if its status code is "GXT"
-                        if ("GXT".equals(statusCode)) {
+                        String code = statusCode != null ? statusCode.getStatusCode() : "";
+                        if ("GXT".equals(code)) {
                             return null;
                         }
 
@@ -378,6 +385,14 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                         response.setTransporter(transporterName);
                         response.setChallanDate(transaction.getChallanDate());
                         response.setTransactionDate(transaction.getTransactionDate());
+                        QualityTransaction byTicketNo = qualityTransactionRepository.findByTicketNo(transaction.getTicketNo());
+                        if(byTicketNo!=null)
+                        {
+                            response.setQuality(true);
+                        }
+                        else {
+                            response.setQuality(false);
+                        }
                         System.out.println("response " + response);
                         return response;
                     })
@@ -755,10 +770,48 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
      * @return
      */
     @Override
-    public GateEntryTransaction getPrintTicketWise(Integer ticketNo) {
-
-        return null;
+    public GateEntryPrint getPrintTicketWise(Integer ticketNo) {
+        GateEntryTransaction gateEntryTransaction=gateEntryTransactionRepository.findByTicketNo(ticketNo);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        GateEntryPrint gateEntryPrint = new GateEntryPrint();
+        if(gateEntryTransaction!=null) {
+            gateEntryPrint.setTicketNo(ticketNo);
+            gateEntryPrint.setTransactionType(gateEntryTransaction.getTransactionType());
+            gateEntryPrint.setChallanDate(gateEntryTransaction.getChallanDate()!=null? String.valueOf(gateEntryTransaction.getChallanDate()) :"");
+            gateEntryPrint.setChallanNo(gateEntryTransaction.getChallanNo());
+            gateEntryPrint.setPoNo(gateEntryTransaction.getPoNo());
+            gateEntryPrint.setTpNetWeight(gateEntryTransaction.getSupplyConsignmentWeight());
+            gateEntryPrint.setTpNo(gateEntryTransaction.getTpNo());
+            gateEntryPrint.setTransactionDate(gateEntryTransaction.getTransactionDate()!=null? String.valueOf(gateEntryTransaction.getTransactionDate()) :"");
+            gateEntryPrint.setVehicleNo(vehicleMasterRepository.findVehicleNoById(gateEntryTransaction.getVehicleId()));
+            gateEntryPrint.setVehicleIn(gateEntryTransaction.getVehicleIn()!=null?gateEntryTransaction.getVehicleIn().format(formatter):"");
+            gateEntryPrint.setVehicleOut(gateEntryTransaction.getVehicleOut()!=null?gateEntryTransaction.getVehicleOut().format(formatter):"");
+            gateEntryPrint.setTransporter(transporterMasterRepository.findTransporterNameByTransporterId(gateEntryTransaction.getTransporterId()));
+            if(gateEntryTransaction.getTransactionType().equalsIgnoreCase("Inbound")){
+               gateEntryPrint.setMaterial(materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId()));
+                Object[] supplierNameAndAddressBySupplierId = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(gateEntryTransaction.getSupplierId());
+                Object[] supplierInfo = (Object[]) supplierNameAndAddressBySupplierId[0];
+                if (supplierInfo != null && supplierInfo.length >= 2) {
+                    String supplierName = (String) supplierInfo[0];
+                    String supplierAddress = (String) supplierInfo[1];
+                    gateEntryPrint.setSupplier(supplierName);
+                    gateEntryPrint.setSupplierAddress(supplierAddress);
+                }
+                gateEntryPrint.setMaterialType(gateEntryTransaction.getMaterialType());
+            }
+            else {
+                gateEntryPrint.setProductName(productMasterRepository.findProductNameByProductId(gateEntryTransaction.getMaterialId()));
+                gateEntryPrint.setProductType(gateEntryPrint.getMaterialType());
+                Object[] customerNameAndAddressBycustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(gateEntryTransaction.getCustomerId());
+                Object[] customerInfo = (Object[]) customerNameAndAddressBycustomerId[0];
+                if (customerInfo != null && customerInfo.length >= 2) {
+                    String customerName = (String) customerInfo[0];
+                    String customerAddress = (String) customerInfo[1];
+                    gateEntryPrint.setCustomer(customerName);
+                   gateEntryPrint.setCustomerAddress(customerAddress);
+                }
+            }
+        }
+        return gateEntryPrint;
     }
-
-
 }

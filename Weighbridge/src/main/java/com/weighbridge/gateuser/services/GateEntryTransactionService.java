@@ -1,5 +1,6 @@
 package com.weighbridge.gateuser.services;
 
+import com.weighbridge.gateuser.dtos.GateEntryPrint;
 import com.weighbridge.gateuser.dtos.GateEntryTransactionDto;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
@@ -49,6 +50,6 @@ public interface GateEntryTransactionService {
     GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable);
 //    List<Object[]> getDemoData(List<String> selectedFields);
 
-    GateEntryTransaction getPrintTicketWise(Integer ticketNo);
+   GateEntryPrint getPrintTicketWise(Integer ticketNo);
 }
 
