@@ -41,6 +41,6 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
 
     @Query("SELECT c.customerId FROM CustomerMaster c WHERE c.customerName= :customerName")
     List<Long> findListCustomerIdbyCustomerName(@Param("customerName") String customerName);
-    @Query("SELECT c FROM CustomerMaster c WHERE c.customerName LIKE %:customerName% OR c.customerAddressLine1 LIKE %:customerAddressLine1%")
+    @Query("SELECT c FROM CustomerMaster c WHERE c.customerName LIKE %:customerName% OR c.customerAddressLine1 LIKE %:customerAddressLine1% OR c.customerAddressLine2 LIKE %:customerAddressLine1%")
     List<CustomerMaster> findByCustomerNameContainingOrCustomerAddressLine1Containing(@Param("customerName") String supplierOrCustomerName, @Param("customerAddressLine1") String supplierOrCustomerAddress);
 }
