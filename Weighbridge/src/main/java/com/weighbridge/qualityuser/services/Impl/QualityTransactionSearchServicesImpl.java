@@ -120,9 +120,9 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
 
             List<SupplierMaster> supplierMasters = supplierMasterRepository.findBySupplierNameContainingOrSupplierAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
             List<CustomerMaster> customerMasters = new ArrayList<>();
-
+            log.info("Supplier master is null",  supplierMasters.isEmpty());
             if (supplierMasters.isEmpty()) {
-              List<CustomerMaster> customerMaster = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
+              customerMasters = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
                 System.out.println("number of customers :" + customerMasters.size());
             }
 

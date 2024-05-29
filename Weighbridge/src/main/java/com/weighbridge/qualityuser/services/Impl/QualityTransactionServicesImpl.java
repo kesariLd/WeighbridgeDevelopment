@@ -357,7 +357,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             reportResponse.setCompanyAddress(companyMaster.getCompanyAddress());
             String materialType = gateEntryTransaction.getMaterialType() != null ? gateEntryTransaction.getMaterialType() : "";
             reportResponse.setMaterialTypeOrProductType(materialType);
-
             QualityTransaction qualityTransaction = qualityTransactionRepository.findByTicketNo(ticketNo);
             if (qualityTransaction != null) {
                 String[] qualityRangeIds = qualityTransaction.getQualityRangeId().split(",");
