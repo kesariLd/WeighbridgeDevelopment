@@ -1,22 +1,15 @@
-package com.weighbridge.gateuser.payloads;
+package com.weighbridge.gateuser.dtos;
 
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
-/**
- * GateEntryTransactionResponse class for to return necessary details to frontend
- */
 @Data
-public class GateEntryTransactionResponse {
-
+public class GateEntryPrint {
     private Integer ticketNo;
     private String vehicleNo;
     private String vehicleIn;
     private String vehicleOut;
-    private String vehicleType;
-    private Integer vehicleWheelsNo;
     private String transporter;
     private String supplier;
     private String supplierAddress;
@@ -28,10 +21,9 @@ public class GateEntryTransactionResponse {
     private String poNo;
     private String tpNo;
     private String challanNo;
-    private LocalDate transactionDate;
-    private LocalDate challanDate;
+    private String transactionDate;
+    private String challanDate;
     private String transactionType;
-
-    //Required to enable and disable quality report button
-    private Boolean quality;
+    private String productName;
+    private String productType;
 }

@@ -1,5 +1,6 @@
 package com.weighbridge.gateuser.controllers;
 
+import com.weighbridge.gateuser.dtos.GateEntryPrint;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
@@ -118,6 +119,9 @@ public class GateEntryTransactionController {
         return new ResponseEntity<>(allGateEntryTransaction, HttpStatus.OK);
     }
 
-
-
+    @GetMapping("/print/{ticketNo}")
+    public ResponseEntity<GateEntryPrint> getPrintByTicket(@PathVariable Integer ticketNo){
+        GateEntryPrint printTicketWise = gateEntryTransactionService.getPrintTicketWise(ticketNo);
+        return ResponseEntity.ok(printTicketWise);
+    }
 }
