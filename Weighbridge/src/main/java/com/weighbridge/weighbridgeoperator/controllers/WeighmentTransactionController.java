@@ -80,4 +80,6 @@ public class WeighmentTransactionController {
         return ResponseEntity.ok(allCompletedTickets);
     }
 
+
+
 }

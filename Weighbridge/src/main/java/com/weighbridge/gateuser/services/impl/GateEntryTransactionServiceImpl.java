@@ -237,12 +237,17 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Transaction Type is not Mentioned");
             }
 
-            List<String> allowedStatusCodes = gateEntryTransaction.getTransactionType().equalsIgnoreCase("Inbound") ? Arrays.asList("TWT", "QCT") : Arrays.asList("GWT", "QCT");
+            List<String> allowedStatusCodes = gateEntryTransaction.getTransactionType().equalsIgnoreCase("Inbound") ? Arrays.asList("GWT", "TWT") : Arrays.asList("GWT", "QCT");
+            System.out.println(allowedStatusCodes);
+            List<String> statusCodesByTicket = transactionLogRepository.findStatusCodesByTicket(ticketNo);
+            System.out.println(statusCodesByTicket);
+          //  System.out.println(statusCodesByTicket.contains(allowedStatusCodes));
+            boolean allAllowedStatusCodesPresent = statusCodesByTicket.containsAll(allowedStatusCodes);
+            System.out.println("All Allowed Status Codes Present: " + allAllowedStatusCodesPresent);
 
-            if (!allowedStatusCodes.contains(vehicleTransactionStatus.getStatusCode())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle is not measured yet!");
+            if (!allAllowedStatusCodesPresent) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle is not allowed to exit!");
             }
-
             // Retrieve user ID from session
             HttpSession session = httpServletRequest.getSession();
             String userId;
@@ -251,7 +256,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
             }
-
             // Save transaction log with vehicle out time
             TransactionLog transactionLog = new TransactionLog();
             transactionLog.setUserId(userId);
@@ -331,9 +335,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                             }
                             String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
                             response.setMaterial(materialName);
-                        } else if ("Outbound".equals(transaction.getTransactionType())) {
+                        }
+                        else if ("Outbound".equals(transaction.getTransactionType())) {
                             Object[] customerNameByCustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(transaction.getCustomerId());
-
+                            System.out.println(customerNameByCustomerId);
                             // Outbound transaction
                             Object[] customerInfo = (Object[]) customerNameByCustomerId[0];
                             if (customerInfo != null && customerInfo.length >= 2) {

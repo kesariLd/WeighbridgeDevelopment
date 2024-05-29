@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -186,14 +187,25 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
         criteria.setUserId(userId);
         WeighmentTransactionSpecification specification = new WeighmentTransactionSpecification(criteria,vehicleMasterRepository,materialMasterRepository,transporterMasterRepository,productMasterRepository,supplierMasterRepository,customerMasterRepository);
         Page<WeighmentTransaction> pageResult = weighmentTransactionRepository.findAll(specification,pageable);
+
         List<WeighmentTransactionResponse> responses = pageResult.stream()
                 .map(this::mapToResponse)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        WeighbridgePageResponse response = new WeighbridgePageResponse();
-        response.setWeighmentTransactionResponses(responses);
-        response.setTotalPages((long) pageResult.getTotalPages());
-        response.setTotalElements(pageResult.getTotalElements());
-        return response;
+        if(responses!=null) {
+            WeighbridgePageResponse response = new WeighbridgePageResponse();
+            response.setWeighmentTransactionResponses(responses);
+            response.setTotalPages((long)responses.size()/pageResult.getSize());
+            response.setTotalElements((long) responses.size());
+            return response;
+        }
+        else {
+            WeighbridgePageResponse response = new WeighbridgePageResponse();
+            response.setWeighmentTransactionResponses(null);
+            response.setTotalPages((long) pageResult.getTotalPages());
+            response.setTotalElements(pageResult.getTotalElements());
+            return response;
+        }
     }
 
     private WeighmentTransactionResponse mapToResponse(WeighmentTransaction transaction){
@@ -201,44 +213,48 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
         String customerNameByCustomerId = customerMasterRepository.findCustomerNameByCustomerId(transaction.getGateEntryTransaction().getCustomerId());
         String supplierNameBySupplierIdsearchField = supplierMasterRepository.findSupplierNameBySupplierId(transaction.getGateEntryTransaction().getSupplierId());
         String transporterNameByTransporterId = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getGateEntryTransaction().getTransporterId());
-        WeighmentTransactionResponse weighmentTransactionResponse=new WeighmentTransactionResponse();
-        weighmentTransactionResponse.setTicketNo(String.valueOf(transaction.getGateEntryTransaction().getTicketNo()));
-        weighmentTransactionResponse.setWeighmentNo(String.valueOf(transaction.getWeighmentNo()));
-        weighmentTransactionResponse.setVehicleFitnessUpTo(byId.getVehicleFitnessUpTo());
-        weighmentTransactionResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
-        weighmentTransactionResponse.setCustomerName(customerNameByCustomerId!=null?customerNameByCustomerId:"");
-        weighmentTransactionResponse.setSupplierName(supplierNameBySupplierIdsearchField!=null?supplierNameBySupplierIdsearchField:"");
-        weighmentTransactionResponse.setVehicleNo(byId.getVehicleNo());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        weighmentTransactionResponse.setVehicleIn(transaction.getGateEntryTransaction().getVehicleIn().format(formatter));
-        weighmentTransactionResponse.setTransactionDate(transaction.getGateEntryTransaction().getTransactionDate());
-        TransactionLog byTicketNo = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getGateEntryTransaction().getTicketNo(), "GWT");
-        TransactionLog byTicketNo2 = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getGateEntryTransaction().getTicketNo(), "TWT");
-        LocalDateTime timestamp = null, timestamp1 = null;
-        String restTimeStamp=null,restTimeStamp1=null;
-        if (byTicketNo != null) {
-            timestamp = byTicketNo.getTimestamp();
-            restTimeStamp = timestamp != null ? timestamp.format(formatter) : "";
-        }
-        if (byTicketNo2 != null) {
-            timestamp1 = byTicketNo2.getTimestamp();
-            restTimeStamp1 = timestamp1 != null ? timestamp1.format(formatter) : "";
-        }
-        if(transaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")) {
-            String materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId(transaction.getGateEntryTransaction().getMaterialId());
-            weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getTemporaryWeight())!=null? String.valueOf(transaction.getTemporaryWeight())+"/"+restTimeStamp :"");
-            weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTareWeight())!=null? String.valueOf(transaction.getTareWeight())+"/"+restTimeStamp1 :"");
-            weighmentTransactionResponse.setMaterialName(materialNameByMaterialId!=null?materialNameByMaterialId:"");
+        if(transaction.getNetWeight()!=0.0) {
+            WeighmentTransactionResponse weighmentTransactionResponse = new WeighmentTransactionResponse();
+            weighmentTransactionResponse.setTicketNo(String.valueOf(transaction.getGateEntryTransaction().getTicketNo()));
+            weighmentTransactionResponse.setWeighmentNo(String.valueOf(transaction.getWeighmentNo()));
+            weighmentTransactionResponse.setVehicleFitnessUpTo(byId.getVehicleFitnessUpTo());
+            weighmentTransactionResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
+            weighmentTransactionResponse.setCustomerName(customerNameByCustomerId != null ? customerNameByCustomerId : "");
+            weighmentTransactionResponse.setSupplierName(supplierNameBySupplierIdsearchField != null ? supplierNameBySupplierIdsearchField : "");
+            weighmentTransactionResponse.setVehicleNo(byId.getVehicleNo());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+            weighmentTransactionResponse.setVehicleIn(transaction.getGateEntryTransaction().getVehicleIn().format(formatter));
+            weighmentTransactionResponse.setTransactionDate(transaction.getGateEntryTransaction().getTransactionDate());
+            TransactionLog byTicketNo = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getGateEntryTransaction().getTicketNo(), "GWT");
+            TransactionLog byTicketNo2 = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getGateEntryTransaction().getTicketNo(), "TWT");
+            LocalDateTime timestamp = null, timestamp1 = null;
+            String restTimeStamp = null, restTimeStamp1 = null;
+            if (byTicketNo != null) {
+                timestamp = byTicketNo.getTimestamp();
+                restTimeStamp = timestamp != null ? timestamp.format(formatter) : "";
+            }
+            if (byTicketNo2 != null) {
+                timestamp1 = byTicketNo2.getTimestamp();
+                restTimeStamp1 = timestamp1 != null ? timestamp1.format(formatter) : "";
+            }
+            if (transaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")) {
+                String materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId(transaction.getGateEntryTransaction().getMaterialId());
+                weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getTemporaryWeight()) != null ? String.valueOf(transaction.getTemporaryWeight()) + "/" + restTimeStamp : "");
+                weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTareWeight()) != null ? String.valueOf(transaction.getTareWeight()) + "/" + restTimeStamp1 : "");
+                weighmentTransactionResponse.setMaterialName(materialNameByMaterialId != null ? materialNameByMaterialId : "");
+            } else {
+                String productNameByProductId = productMasterRepository.findProductNameByProductId(transaction.getGateEntryTransaction().getMaterialId());
+                weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTemporaryWeight()) != null ? String.valueOf(transaction.getTemporaryWeight()) + "/" + restTimeStamp1 : "");
+                weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getGrossWeight()) != null ? String.valueOf(transaction.getGrossWeight()) + "/" + restTimeStamp : "");
+                weighmentTransactionResponse.setMaterialName(productNameByProductId != null ? productNameByProductId : "");
+            }
+            weighmentTransactionResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
+            weighmentTransactionResponse.setNetWeight(String.valueOf(transaction.getNetWeight()) != null ? String.valueOf(transaction.getNetWeight()) : "");
+            weighmentTransactionResponse.setTransporterName(transporterNameByTransporterId != null ? transporterNameByTransporterId : "");
+            return weighmentTransactionResponse;
         }
         else {
-            String productNameByProductId = productMasterRepository.findProductNameByProductId(transaction.getGateEntryTransaction().getMaterialId());
-            weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTemporaryWeight())!=null? String.valueOf(transaction.getTemporaryWeight())+"/"+restTimeStamp1 :"");
-            weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getGrossWeight())!=null? String.valueOf(transaction.getGrossWeight())+"/"+restTimeStamp :"");
-            weighmentTransactionResponse.setMaterialName(productNameByProductId!=null?productNameByProductId:"");
+            return null;
         }
-        weighmentTransactionResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
-        weighmentTransactionResponse.setNetWeight(String.valueOf(transaction.getNetWeight())!=null?String.valueOf(transaction.getNetWeight()):"");
-        weighmentTransactionResponse.setTransporterName(transporterNameByTransporterId!=null?transporterNameByTransporterId:"");
-        return weighmentTransactionResponse;
     }
 }
