@@ -79,7 +79,4 @@ public class WeighmentTransactionController {
         WeighbridgePageResponse allCompletedTickets = weighmentTransactionService.getAllCompletedTickets(pageable);
         return ResponseEntity.ok(allCompletedTickets);
     }
-
-
-
 }
