@@ -64,7 +64,7 @@ public class WeighmentTransactionController {
 
     @GetMapping("/getCompletedTransaction")
     public ResponseEntity<WeighbridgePageResponse> getCompletedTransactions(@RequestParam(defaultValue = "0", required = false) int page,
-                                                                            @RequestParam(defaultValue = "10", required = false) int size,
+                                                                            @RequestParam(defaultValue = "5", required = false) int size,
                                                                             @RequestParam(required = false, defaultValue = "gateEntryTransaction") String sortField,
                                                                             @RequestParam(defaultValue = "desc", required = false) String sortOrder){
         Pageable pageable;

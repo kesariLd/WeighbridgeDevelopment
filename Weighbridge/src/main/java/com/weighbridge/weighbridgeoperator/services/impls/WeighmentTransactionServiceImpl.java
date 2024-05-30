@@ -369,7 +369,6 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
         }
         List<WeighmentTransactionResponse> weighmentTransactionResponses=new ArrayList<>();
         for(WeighmentTransaction weighmentTransaction:allUsers){
-            if(weighmentTransaction.getNetWeight()!=0.0) {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
                 WeighmentTransactionResponse weighmentTransactionResponse = new WeighmentTransactionResponse();
                 weighmentTransactionResponse.setTransactionDate(weighmentTransaction.getGateEntryTransaction().getTransactionDate());
@@ -394,7 +393,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                 weighmentTransactionResponse.setTransporterName(transporterMasterRepository.findTransporterNameByTransporterId(weighmentTransaction.getGateEntryTransaction().getTransporterId()));
                 weighmentTransactionResponses.add(weighmentTransactionResponse);
 
-            }
+
         }
         long count = weighmentTransactionRepository.countCompletedTransactions();
         WeighbridgePageResponse weighbridgePageResponse=new WeighbridgePageResponse();

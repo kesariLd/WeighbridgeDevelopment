@@ -151,4 +151,9 @@ public class WeighmentTransactionSpecification implements Specification<Weighmen
            throw  new RuntimeException("couldnot site and company.");
         }
     }
+
+    public static Specification<WeighmentTransaction> netWeightNotZero() {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.notEqual(root.get("netWeight"), 0.0);
+    }
 }
