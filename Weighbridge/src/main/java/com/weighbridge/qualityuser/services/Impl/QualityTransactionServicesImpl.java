@@ -245,6 +245,15 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         return qualityDashboardResponses;
     }
 
+    @Override
+    public List<String> getAllMaterialAndProductNames() {
+        List<String> materialNames = materialMasterRepository.findAllMaterialNameByMaterialStatus("ACTIVE");
+        List<String> productNames = productMasterRepository.findAllProductNameByProductStatus("ACTIVE");
+        List<String> allMaterialAndProductNames = new ArrayList<>();
+        allMaterialAndProductNames.addAll(materialNames);
+        allMaterialAndProductNames.addAll(productNames);
+        return allMaterialAndProductNames;
+    }
 
 
     @Transactional
@@ -401,13 +410,20 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime currentTime = now.withSecond(0).withNano(0);
 
-        // set qualityCheck in TransactionLog
-        TransactionLog transactionLog = new TransactionLog();
-        transactionLog.setUserId(userId);
-        transactionLog.setTicketNo(ticketNo);
-        transactionLog.setTimestamp(currentTime);
-        transactionLog.setStatusCode("QCT");
-        transactionLogRepository.save(transactionLog);
+        try {
+            // set qualityCheck in TransactionLog
+            Optional<TransactionLog> isExist = Optional.ofNullable(transactionLogRepository.findByTicketNoAndStatusCode(gateEntryTransaction.getTicketNo(), "QCT"));
+            if (isExist == null) {
+                TransactionLog transactionLog = new TransactionLog();
+                transactionLog.setUserId(userId);
+                transactionLog.setTicketNo(ticketNo);
+                transactionLog.setTimestamp(currentTime);
+                transactionLog.setStatusCode("QCT");
+                transactionLogRepository.save(transactionLog);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // set qualityCheck in VehicleTransactionStatus
         VehicleTransactionStatus vehicleTransactionStatus = new VehicleTransactionStatus();
@@ -430,7 +446,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
         // Retrieve all transactions for the user's site and company
 
-        List<GateEntryTransaction> inboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Inbound",userSite, userCompany);
+        List<GateEntryTransaction> inboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Inbound", userSite, userCompany);
         return processTransaction(inboundTransaction);
     }
 
@@ -446,15 +462,14 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         String userCompany = session.getAttribute("userCompany").toString();
 
         // Retrieve all transactions for the user's site and company, ordered by transaction date in descending order
-        List<GateEntryTransaction> outboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Outbound",userSite, userCompany);
+        List<GateEntryTransaction> outboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Outbound", userSite, userCompany);
         return processTransaction(outboundTransaction);
     }
 
 
-
     private List<QualityDashboardResponse> processTransaction(List<GateEntryTransaction> transactions) {
-        List<QualityDashboardResponse> qualityDashboardResponses=new ArrayList<>();
-        DateTimeFormatter formatter=DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        List<QualityDashboardResponse> qualityDashboardResponses = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
         for (GateEntryTransaction transaction : transactions) {
             String statusCode = transaction.getTransactionType().equalsIgnoreCase("Inbound") ? "GWT" : "TWT";
             TransactionLog transactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), statusCode);

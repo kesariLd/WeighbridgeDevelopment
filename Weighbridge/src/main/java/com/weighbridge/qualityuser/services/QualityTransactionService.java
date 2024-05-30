@@ -43,4 +43,6 @@ public interface QualityTransactionService {
     List<QualityDashboardResponse> getOutboundTransaction();
 
     List<QualityDashboardResponse> getQCTCompleted();
+
+    List<String> getAllMaterialAndProductNames();
 }

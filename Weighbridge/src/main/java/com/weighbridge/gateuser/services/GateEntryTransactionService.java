@@ -45,11 +45,12 @@ public interface GateEntryTransactionService {
 
     List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate , LocalDate endDate);
 
+    List<String> getAllMaterialAndProductNames();
+
     GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable);
 
     GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable);
-//    List<Object[]> getDemoData(List<String> selectedFields);
 
-   GateEntryPrint getPrintTicketWise(Integer ticketNo);
+    GateEntryPrint getPrintTicketWise(Integer ticketNo);
 }
 
