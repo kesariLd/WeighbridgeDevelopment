@@ -59,6 +59,15 @@ public class QualityTransactionController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/inbound-qct-completed")
+    public List<QualityDashboardResponse> getInboundQCTCompleted() {
+        return qualityTransactionService.getQCTCompletedInbound();
+    }
+
+    @GetMapping("/outbound-qct-completed")
+    public List<QualityDashboardResponse> getOutboundQCTCompleted() {
+        return qualityTransactionService.getQCTCompletedOutbound();
+    }
 
     /**
      * Add quality checks to the transaction.

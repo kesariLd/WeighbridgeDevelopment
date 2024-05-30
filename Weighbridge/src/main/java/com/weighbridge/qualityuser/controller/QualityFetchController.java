@@ -77,4 +77,22 @@ public class QualityFetchController {
         int size = qualityTransactionService.getTotalTransactionSize();
         return ResponseEntity.ok(size);
     }
+
+    @GetMapping("/inbound-qct-completed-size")
+    public ResponseEntity<Integer> getInboundQCTCompletedSize() {
+        int size = qualityTransactionService.getInboundQCTCompletedSize();
+        return ResponseEntity.ok(size);
+    }
+
+    @GetMapping("/outbound-qct-completed-size")
+    public ResponseEntity<Integer> getOutboundQCTCompletedSize() {
+        int size = qualityTransactionService.getOutboundQCTCompletedSize();
+        return ResponseEntity.ok(size);
+    }
+
+    @GetMapping("/total-qct-completed-size")
+    public ResponseEntity<Integer> getTotalQCTCompletedSize() {
+       int totalSize=qualityTransactionService.getTotalQCTCompletedSize();
+        return ResponseEntity.ok(totalSize);
+    }
 }
