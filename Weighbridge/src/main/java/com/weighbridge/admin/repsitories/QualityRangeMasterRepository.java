@@ -45,5 +45,7 @@ public interface QualityRangeMasterRepository extends JpaRepository<QualityRange
     @Query("SELECT q.qualityRangeId FROM QualityRangeMaster q WHERE q.parameterName = :key AND q.productMaster.productName = :productName")
     Long findQualityRangeIdByParameterNameAndProductMasterProductName(@Param("key") String key, @Param("productName") String productName);
 
+    @Query("SELECT q FROM QualityRangeMaster q WHERE q.materialMaster IS NOT NULL")
+    List<QualityRangeMaster> findByMaterialMasterIsNotNull();
 }
 

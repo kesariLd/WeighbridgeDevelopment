@@ -39,6 +39,9 @@ public class ProductMaster {
     @Column(name = "product_modified_date")
     private LocalDateTime productModifiedDate;
 
-    @OneToMany(mappedBy = "productMaster")
+    @OneToMany(mappedBy = "productMaster", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductTypeMaster> productTypes;
+
+    @OneToMany(mappedBy = "productMaster", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QualityRangeMaster> qualityRanges;
 }
