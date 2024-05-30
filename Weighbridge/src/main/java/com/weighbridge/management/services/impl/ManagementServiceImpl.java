@@ -1,6 +1,6 @@
-package com.weighbridge.management.service.impl;
+package com.weighbridge.management.services.impl;
 
-import com.weighbridge.management.service.ManagementService;
+import com.weighbridge.management.services.ManagementService;
 import org.springframework.stereotype.Service;
 
 @Service
