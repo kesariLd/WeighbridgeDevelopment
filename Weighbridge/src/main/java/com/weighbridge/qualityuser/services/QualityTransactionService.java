@@ -5,6 +5,7 @@ import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -42,8 +43,6 @@ public interface QualityTransactionService {
 
     List<QualityDashboardResponse> getOutboundTransaction();
 
-    List<QualityDashboardResponse> getQCTCompleted();
-
     List<String> getAllMaterialAndProductNames();
 
     List<String> getAllProductNames();
@@ -55,4 +54,16 @@ public interface QualityTransactionService {
     int getOutboundTransactionSize();
 
     int getTotalTransactionSize();
+
+    List<QualityDashboardResponse> getQCTCompletedInbound();
+
+    List<QualityDashboardResponse> getQCTCompletedOutbound();
+
+    List<QualityDashboardResponse> getQCTCompleted();
+
+    int getInboundQCTCompletedSize();
+
+    int getOutboundQCTCompletedSize();
+
+    int getTotalQCTCompletedSize();
 }
