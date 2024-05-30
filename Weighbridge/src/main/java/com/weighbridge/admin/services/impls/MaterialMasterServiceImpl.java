@@ -4,13 +4,12 @@ import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.entities.MaterialMaster;
 import com.weighbridge.admin.entities.MaterialTypeMaster;
 import com.weighbridge.admin.entities.QualityRangeMaster;
-import com.weighbridge.admin.entities.SupplierMaster;
+import com.weighbridge.admin.payloads.MaterialAndTypeRequest;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
 import com.weighbridge.admin.payloads.MaterialWithParameters.Parameter;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
 import com.weighbridge.admin.repsitories.MaterialTypeMasterRepository;
 import com.weighbridge.admin.repsitories.QualityRangeMasterRepository;
-import com.weighbridge.admin.repsitories.SupplierMasterRepository;
 import com.weighbridge.admin.services.MaterialMasterService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -38,15 +37,13 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     private final HttpServletRequest httpServletRequest;
     private final MaterialTypeMasterRepository materialTypeMasterRepository;
     private final QualityRangeMasterRepository qualityRangeMasterRepository;
-    private final SupplierMasterRepository supplierMasterRepository;
 
-    public MaterialMasterServiceImpl(MaterialMasterRepository materialMasterRepository, ModelMapper modelMapper, HttpServletRequest httpServletRequest, MaterialTypeMasterRepository materialTypeMasterRepository, QualityRangeMasterRepository qualityRangeMasterRepository, SupplierMasterRepository supplierMasterRepository) {
+    public MaterialMasterServiceImpl(MaterialMasterRepository materialMasterRepository, ModelMapper modelMapper, HttpServletRequest httpServletRequest, MaterialTypeMasterRepository materialTypeMasterRepository, QualityRangeMasterRepository qualityRangeMasterRepository) {
         this.materialMasterRepository = materialMasterRepository;
         this.modelMapper = modelMapper;
         this.httpServletRequest = httpServletRequest;
         this.materialTypeMasterRepository = materialTypeMasterRepository;
         this.qualityRangeMasterRepository = qualityRangeMasterRepository;
-        this.supplierMasterRepository = supplierMasterRepository;
     }
 
     @Override
@@ -54,7 +51,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
         // Fetch all materials
         List<MaterialMaster> listOfMaterials = materialMasterRepository.findAll();
 
-        List<MaterialMasterDto> materialMasterDtoList = listOfMaterials.stream().map(
+        return listOfMaterials.stream().map(
                 materialMaster -> {
                     MaterialMasterDto materialMasterDto = modelMapper.map(materialMaster, MaterialMasterDto.class);
                     List<String> materialTypeNames = materialTypeMasterRepository.findByMaterialMasterMaterialName(materialMaster.getMaterialName());
@@ -63,13 +60,11 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
                     return materialMasterDto;
                 }
         ).collect(Collectors.toList());
-        return materialMasterDtoList;
     }
 
     @Override
     public List<String> getAllMaterialNames() {
-        List<String> listOfMaterialNames = materialMasterRepository.findAllMaterialNameByMaterialStatus("ACTIVE");
-        return listOfMaterialNames;
+        return materialMasterRepository.findAllMaterialNameByMaterialStatus("ACTIVE");
     }
 
     @Override
@@ -83,6 +78,47 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
     @Override
     public String createMaterialWithParameterAndRange(MaterialWithParameters request) {
+//        HttpSession session = httpServletRequest.getSession();
+//        String user = session.getAttribute("userId").toString();
+//        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        MaterialMaster materialMaster = materialMasterRepository.findByMaterialName(request.getMaterialName());
+//        if (materialMaster == null) {
+//            materialMaster = new MaterialMaster();
+//            materialMaster.setMaterialName(request.getMaterialName());
+//            materialMaster.setMaterialCreatedBy(user);
+//            materialMaster.setMaterialCreatedDate(currentDateTime);
+//            materialMaster.setMaterialModifiedBy(user);
+//            materialMaster.setMaterialModifiedDate(currentDateTime);
+//            materialMaster = materialMasterRepository.save(materialMaster);
+//        }
+
+//        MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
+//        if (request.getMaterialTypeName() != null) {
+//            MaterialTypeMaster materialTypeMaster = new MaterialTypeMaster();
+//            materialTypeMaster.setMaterialTypeName(request.getMaterialTypeName());
+//            materialTypeMaster.setMaterialMaster(materialMaster);
+//            materialTypeMasterRepository.save(materialTypeMaster);
+//        }
+
+        List<QualityRangeMaster> qualityRangeMasters = createQualityRanges(request.getParameters(), materialMaster,request.getSupplierName(), request.getSupplierAddress());
+        qualityRangeMasterRepository.saveAll(qualityRangeMasters);
+        return "Material saved successfully";
+    }
+
+    @Override
+    public List<String> getTypeWithMaterial(String materialName) {
+        return materialTypeMasterRepository.findByMaterialMasterMaterialName(materialName);
+    }
+
+    @Override
+    public List<MaterialWithParameters> getQualityRangesByMaterialNameAndSupplierNameAndAddress(String materialName, String supplierName, String supplierAddress) {
+        List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(materialName, supplierName, supplierAddress);
+        return mapQualityRangesToMaterialWithParameters(qualityRangeMasters, supplierName, supplierAddress);
+    }
+
+    @Override
+    public String saveMaterialAndMaterialType(MaterialAndTypeRequest request) {
         HttpSession session = httpServletRequest.getSession();
         String user = session.getAttribute("userId").toString();
         LocalDateTime currentDateTime = LocalDateTime.now();
@@ -98,29 +134,14 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
             materialMaster = materialMasterRepository.save(materialMaster);
         }
 
-        MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
-        if (request.getMaterialTypeName() != null && materialTypeMaster == null) {
-            materialTypeMaster = new MaterialTypeMaster();
+//        MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
+        if (request.getMaterialTypeName() != null) {
+            MaterialTypeMaster materialTypeMaster = new MaterialTypeMaster();
             materialTypeMaster.setMaterialTypeName(request.getMaterialTypeName());
             materialTypeMaster.setMaterialMaster(materialMaster);
             materialTypeMasterRepository.save(materialTypeMaster);
         }
-
-        List<QualityRangeMaster> qualityRangeMasters = createQualityRanges(request.getParameters(), materialMaster,request.getSupplierName(), request.getSupplierAddress());
-        qualityRangeMasterRepository.saveAll(qualityRangeMasters);
-        return "Material saved successfully";
-    }
-
-    @Override
-    public List<String> getTypeWithMaterial(String materialName) {
-        List<String> allMaterialTypeNames = materialTypeMasterRepository.findByMaterialMasterMaterialName(materialName);
-        return allMaterialTypeNames;
-    }
-
-    @Override
-    public List<MaterialWithParameters> getQualityRangesByMaterialNameAndSupplierNameAndAddress(String materialName, String supplierName, String supplierAddress) {
-        List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(materialName, supplierName, supplierAddress);
-        return mapQualityRangesToMaterialWithParameters(qualityRangeMasters, supplierName, supplierAddress);
+        return "Material is added Successfully";
     }
 
     private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRangeMaster> qualityRangeMasters, String supplierName, String supplierAddress) {
@@ -131,7 +152,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
             if (materialWithParameters == null) {
                 materialWithParameters = new MaterialWithParameters();
                 materialWithParameters.setMaterialName(qualityRangeMaster.getMaterialMaster().getMaterialName());
-                materialWithParameters.setMaterialTypeName(null);
+//                materialWithParameters.setMaterialTypeName(null);
                 materialWithParameters.setSupplierName(supplierName);
                 materialWithParameters.setSupplierAddress(supplierAddress);
                 materialWithParameters.setParameters(new ArrayList<>());
