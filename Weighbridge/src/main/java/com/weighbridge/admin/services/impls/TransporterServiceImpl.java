@@ -69,12 +69,7 @@ public class TransporterServiceImpl implements TransporterService {
 
     @Override
     public List<String> getAllTransporterNames() {
-        List<TransporterMaster> all = transporterMasterRepository.findAllByTransporterStatus();
-        List<String> str=new ArrayList<>();
-        for(TransporterMaster transporterMaster:all){
-            str.add(transporterMaster.getTransporterName());
-        }
-        return str;
+        return transporterMasterRepository.findAllByTransporterStatus();
     }
 
     @Override

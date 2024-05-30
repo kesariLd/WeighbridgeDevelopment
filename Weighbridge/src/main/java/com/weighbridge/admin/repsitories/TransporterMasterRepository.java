@@ -20,5 +20,5 @@ public interface TransporterMasterRepository extends JpaRepository<TransporterMa
     String findTransporterNameByTransporterId(@Param("id") long id);
 
     @Query("SELECT t.transporterName FROM TransporterMaster t WHERE t.status = 'ACTIVE' ")
-    List<TransporterMaster> findAllByTransporterStatus();
+    List<String> findAllByTransporterStatus();
 }
