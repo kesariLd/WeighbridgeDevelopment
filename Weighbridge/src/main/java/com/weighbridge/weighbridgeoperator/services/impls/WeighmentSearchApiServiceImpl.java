@@ -186,26 +186,18 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
         criteria.setCompanyId(userCompany);
         criteria.setUserId(userId);
         WeighmentTransactionSpecification specification = new WeighmentTransactionSpecification(criteria,vehicleMasterRepository,materialMasterRepository,transporterMasterRepository,productMasterRepository,supplierMasterRepository,customerMasterRepository);
-        Page<WeighmentTransaction> pageResult = weighmentTransactionRepository.findAll(specification,pageable);
-
+        Specification<WeighmentTransaction> netWeightNotNullSpec = WeighmentTransactionSpecification.netWeightNotZero();
+        Specification<WeighmentTransaction> combinedSpec = Specification.where(specification).and(netWeightNotNullSpec);
+        Page<WeighmentTransaction> pageResult = weighmentTransactionRepository.findAll(combinedSpec,pageable);
         List<WeighmentTransactionResponse> responses = pageResult.stream()
                 .map(this::mapToResponse)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        if(responses!=null) {
             WeighbridgePageResponse response = new WeighbridgePageResponse();
             response.setWeighmentTransactionResponses(responses);
             response.setTotalPages((long)responses.size()/pageResult.getSize());
             response.setTotalElements((long) responses.size());
             return response;
-        }
-        else {
-            WeighbridgePageResponse response = new WeighbridgePageResponse();
-            response.setWeighmentTransactionResponses(null);
-            response.setTotalPages((long) pageResult.getTotalPages());
-            response.setTotalElements(pageResult.getTotalElements());
-            return response;
-        }
     }
 
     private WeighmentTransactionResponse mapToResponse(WeighmentTransaction transaction){
@@ -213,7 +205,6 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
         String customerNameByCustomerId = customerMasterRepository.findCustomerNameByCustomerId(transaction.getGateEntryTransaction().getCustomerId());
         String supplierNameBySupplierIdsearchField = supplierMasterRepository.findSupplierNameBySupplierId(transaction.getGateEntryTransaction().getSupplierId());
         String transporterNameByTransporterId = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getGateEntryTransaction().getTransporterId());
-        if(transaction.getNetWeight()!=0.0) {
             WeighmentTransactionResponse weighmentTransactionResponse = new WeighmentTransactionResponse();
             weighmentTransactionResponse.setTicketNo(String.valueOf(transaction.getGateEntryTransaction().getTicketNo()));
             weighmentTransactionResponse.setWeighmentNo(String.valueOf(transaction.getWeighmentNo()));
@@ -252,9 +243,5 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
             weighmentTransactionResponse.setNetWeight(String.valueOf(transaction.getNetWeight()) != null ? String.valueOf(transaction.getNetWeight()) : "");
             weighmentTransactionResponse.setTransporterName(transporterNameByTransporterId != null ? transporterNameByTransporterId : "");
             return weighmentTransactionResponse;
-        }
-        else {
-            return null;
-        }
     }
 }

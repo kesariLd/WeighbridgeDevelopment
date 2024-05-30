@@ -131,6 +131,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         SalesDetailResponse salesDetailResponse=new SalesDetailResponse();
         salesDetailResponse.setProductName(byPurchaseOrderNo.getProductName());
         salesDetailResponse.setSaleOrderNo(byPurchaseOrderNo.getSaleOrderNo());
+        salesDetailResponse.setBalanceWeight(byPurchaseOrderNo.getBalanceQuantity());
         return salesDetailResponse;
     }
 
