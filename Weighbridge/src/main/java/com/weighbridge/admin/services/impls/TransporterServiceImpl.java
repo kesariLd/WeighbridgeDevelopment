@@ -67,6 +67,7 @@ public class TransporterServiceImpl implements TransporterService {
 
     }
 
+
     @Override
     public List<String> getAllTransporterNames() {
         return transporterMasterRepository.findAllByTransporterStatus();

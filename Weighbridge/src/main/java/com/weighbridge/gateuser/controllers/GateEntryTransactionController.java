@@ -105,7 +105,6 @@ public class GateEntryTransactionController {
                                                                                         @RequestParam(defaultValue = "5", required = false) int size,
                                                                                         @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
                                                                                         @RequestParam(defaultValue = "desc", required = false) String sortOrder){
-
         Pageable pageable;
         if(sortField!=null && !sortField.isEmpty()){
             Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;

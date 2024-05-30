@@ -40,11 +40,12 @@ public class GateEntryTransaction {
     private String driverName;
     private Double supplyConsignmentWeight;
     private String poNo;
+    @Column(unique = true)
     private String tpNo;
+    @Column(unique = true)
     private String challanNo;
     private String ewaybillNo;
     private String transactionType;
     private LocalDate challanDate;
-
 
 }
