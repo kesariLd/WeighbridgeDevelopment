@@ -43,6 +43,8 @@ public interface GateEntryTransactionService {
 
     List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate , LocalDate endDate);
     GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date,String supplierName,String transactionType,Pageable pageable);
+
+    List<String> getAllMaterialAndProductNames();
 //    List<Object[]> getDemoData(List<String> selectedFields);
 }
 

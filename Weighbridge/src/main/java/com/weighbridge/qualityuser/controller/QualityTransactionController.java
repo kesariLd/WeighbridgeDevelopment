@@ -53,7 +53,7 @@ public class QualityTransactionController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("qct-completed")
+    @GetMapping("/qct-completed")
     public ResponseEntity<List<QualityDashboardResponse>>getQCTCompleted(){
         List<QualityDashboardResponse> responses=qualityTransactionService.getQCTCompleted();
         return ResponseEntity.ok(responses);

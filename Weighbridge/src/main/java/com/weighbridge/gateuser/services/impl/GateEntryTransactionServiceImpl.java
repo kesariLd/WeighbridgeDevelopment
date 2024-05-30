@@ -637,4 +637,14 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         }
     }
 
+    @Override
+    public List<String> getAllMaterialAndProductNames() {
+        List<String> materialNames = materialMasterRepository.findAllMaterialNameByMaterialStatus("ACTIVE");
+        List<String> productNames = productMasterRepository.findAllProductNameByProductStatus("ACTIVE");
+        List<String> allMaterialAndProductNames = new ArrayList<>();
+        allMaterialAndProductNames.addAll(materialNames);
+        allMaterialAndProductNames.addAll(productNames);
+        return allMaterialAndProductNames;
+    }
+
 }

@@ -4,6 +4,7 @@ import com.weighbridge.admin.services.MaterialMasterService;
 import com.weighbridge.admin.services.ProductMasterService;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +18,10 @@ import java.util.List;
 public class QualityFetchController {
 
     private final QualityTransactionService qualityTransactionService;
+    @Autowired
     private final ProductMasterService productMasterService;
-    private final MaterialMasterService materialMasterService;
+   @Autowired
+   private final MaterialMasterService materialMasterService;
 
 
     public QualityFetchController(QualityTransactionService qualityTransactionService, ProductMasterService productMasterService, MaterialMasterService materialMasterService) {
@@ -29,15 +32,9 @@ public class QualityFetchController {
 
 
     @GetMapping("fetch-ProductsOrMaterials")
-    public ResponseEntity<List<String>> getProductsOrMaterials(@RequestParam String type){
-        if("product".equalsIgnoreCase(type)){
-            List<String> products=productMasterService.getAllProductNames();
-            return ResponseEntity.ok(products);
-        } else if ("material".equalsIgnoreCase(type)) {
-            List<String> materials=materialMasterService.getAllMaterialNames();
-            return ResponseEntity.ok(materials);
-        }
-        return ResponseEntity.badRequest().body(List.of("Invalid parameter"));
+    public ResponseEntity<List<String>> getProductsOrMaterials(){
+        List<String> allMaterialAndProductNames = qualityTransactionService.getAllMaterialAndProductNames();
+        return ResponseEntity.ok(allMaterialAndProductNames);
     }
 
     @GetMapping("fetch-InboundTransaction")

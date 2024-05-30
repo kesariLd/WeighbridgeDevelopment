@@ -3,6 +3,7 @@ package com.weighbridge.gateuser.repositories;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -30,7 +31,8 @@ public interface TransactionLogRepository extends JpaRepository<TransactionLog, 
      * @return The transaction log entry corresponding to the provided ticket number and status code, if found.
      */
 
-    TransactionLog findByTicketNoAndStatusCode(Integer ticketNo, String statusCode);
+    @Query("select t from TransactionLog t where t.ticketNo=:ticketNo and t.statusCode=:statusCode")
+    <Optional>TransactionLog findByTicketNoAndStatusCode(@Param("ticketNo") Integer ticketNo,@Param("statusCode") String statusCode);
 
     boolean existsByTicketNoAndStatusCode(Integer ticketNo, String statusCode);
 }
