@@ -774,7 +774,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         allMaterialAndProductNames.addAll(productNames);
         return allMaterialAndProductNames;
     }
-
     /**
      * @param ticketNo
      * @return
