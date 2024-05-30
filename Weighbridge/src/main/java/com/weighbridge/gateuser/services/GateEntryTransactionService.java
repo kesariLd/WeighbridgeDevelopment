@@ -1,16 +1,12 @@
 package com.weighbridge.gateuser.services;
 
 import com.weighbridge.gateuser.dtos.GateEntryPrint;
-import com.weighbridge.gateuser.dtos.GateEntryTransactionDto;
-import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -52,5 +48,7 @@ public interface GateEntryTransactionService {
     GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable);
 
     GateEntryPrint getPrintTicketWise(Integer ticketNo);
+
+    GateEntryTransactionPageResponse getInboundTransaction(Pageable pageable);
 }
 

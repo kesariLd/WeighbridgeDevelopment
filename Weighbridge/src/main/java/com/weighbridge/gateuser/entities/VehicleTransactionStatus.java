@@ -17,6 +17,6 @@ import lombok.NoArgsConstructor;
 public class VehicleTransactionStatus {
     @Id
     private Integer ticketNo;
-
     private String statusCode;
+
 }
