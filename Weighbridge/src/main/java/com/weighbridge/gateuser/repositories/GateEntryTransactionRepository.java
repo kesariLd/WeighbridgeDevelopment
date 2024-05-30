@@ -66,6 +66,7 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     @Query("SELECT g FROM GateEntryTransaction g WHERE g.customerId = :customerId ORDER BY g.ticketNo DESC")
     List<GateEntryTransaction> findByCustomerIdOrderByTicketNoDesc(Long customerId);
 
+    Page<GateEntryTransaction> findBySiteIdAndCompanyIdAndVehicleOutIsNullAndTransactionType(String siteId, String companyId, String transactionType, Pageable pageable);
 
 //    List<GateEntryTransaction> findBySupplierId(Object supplierIdBySupplierNameAndAddress);
 

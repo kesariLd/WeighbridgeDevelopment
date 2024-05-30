@@ -255,6 +255,16 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         return allMaterialAndProductNames;
     }
 
+    @Override
+    public List<String> getAllProductNames() {
+        return productMasterRepository.findAllProductNameByProductStatus("ACTIVE");
+    }
+
+    @Override
+    public List<String> getAllMaterialNames() {
+        return materialMasterRepository.findAllMaterialNameByMaterialStatus("ACTIVE");
+    }
+
 
     @Transactional
     @Override
@@ -336,12 +346,14 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     public ReportResponse getReportResponse(Integer ticketNo) {
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
         if (gateEntryTransaction != null) {
+            VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(gateEntryTransaction.getTicketNo());
+
             ReportResponse reportResponse = new ReportResponse();
             reportResponse.setTicketNo(gateEntryTransaction.getTicketNo());
             reportResponse.setDate(String.valueOf(gateEntryTransaction.getTransactionDate()));
             reportResponse.setTransactionType(gateEntryTransaction.getTransactionType());
-            VehicleMaster vehicleMaster = vehicleMasterRepository.findById(gateEntryTransaction.getVehicleId()).
-                    orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
+            VehicleMaster vehicleMaster = vehicleMasterRepository.findById(gateEntryTransaction.getVehicleId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Vehicle is not found"));
             reportResponse.setVehicleNo(vehicleMaster.getVehicleNo());
             if (gateEntryTransaction.getTransactionType().equalsIgnoreCase("Inbound")) {
                 MaterialMaster materialMaster = materialMasterRepository.findById(gateEntryTransaction.getMaterialId())
@@ -424,14 +436,12 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         // set qualityCheck in VehicleTransactionStatus
         VehicleTransactionStatus vehicleTransactionStatus = new VehicleTransactionStatus();
         vehicleTransactionStatus.setTicketNo(ticketNo);
         vehicleTransactionStatus.setStatusCode("QCT");
         vehicleTransactionStatusRepository.save(vehicleTransactionStatus);
     }
-
 
     @Override
     public List<QualityDashboardResponse> getInboundTransaction() {
@@ -465,6 +475,44 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         List<GateEntryTransaction> outboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Outbound", userSite, userCompany);
         return processTransaction(outboundTransaction);
     }
+
+    @Override
+    public int getInboundTransactionSize() {
+        HttpSession session = httpServletRequest.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            throw new SessionExpiredException("Session Expired, Login again!");
+        }
+
+        String userSite = session.getAttribute("userSite").toString();
+        String userCompany = session.getAttribute("userCompany").toString();
+
+        // Retrieve all inbound transactions for the user's site and company
+        List<GateEntryTransaction> inboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Inbound", userSite, userCompany);
+        return processTransaction(inboundTransaction).size();
+    }
+
+    @Override
+    public int getOutboundTransactionSize() {
+        HttpSession session = httpServletRequest.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            throw new SessionExpiredException("Session Expired, Login again!");
+        }
+
+        String userSite = session.getAttribute("userSite").toString();
+        String userCompany = session.getAttribute("userCompany").toString();
+
+        // Retrieve all outbound transactions for the user's site and company
+        List<GateEntryTransaction> outboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Outbound", userSite, userCompany);
+        return processTransaction(outboundTransaction).size();
+    }
+
+    @Override
+    public int getTotalTransactionSize() {
+        int inboundSize = getInboundTransactionSize();
+        int outboundSize = getOutboundTransactionSize();
+        return inboundSize + outboundSize;
+    }
+
 
 
     private List<QualityDashboardResponse> processTransaction(List<GateEntryTransaction> transactions) {

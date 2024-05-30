@@ -37,6 +37,19 @@ public class QualityFetchController {
         return ResponseEntity.ok(allMaterialAndProductNames);
     }
 
+    @GetMapping("/products")
+    public ResponseEntity<List<String>> getProducts() {
+        List<String> productNames = qualityTransactionService.getAllProductNames();
+        return ResponseEntity.ok(productNames);
+    }
+
+    @GetMapping("/materials")
+    public ResponseEntity<List<String>> getMaterials() {
+        List<String> materialNames = qualityTransactionService.getAllMaterialNames();
+        return ResponseEntity.ok(materialNames);
+    }
+
+
     @GetMapping("fetch-InboundTransaction")
     public ResponseEntity<List<QualityDashboardResponse>> getInboundTransaction(){
         List<QualityDashboardResponse> responses=qualityTransactionService.getInboundTransaction();
@@ -47,5 +60,21 @@ public class QualityFetchController {
     public  ResponseEntity<List<QualityDashboardResponse>>getOutboundTransaction(){
         List<QualityDashboardResponse> responses=qualityTransactionService.getOutboundTransaction();
         return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/inbound/pending")
+    public ResponseEntity<Integer> getInboundTransactionSize() {
+        int size = qualityTransactionService.getInboundTransactionSize();
+        return ResponseEntity.ok(size);
+    }
+    @GetMapping("/outbound/pending")
+    public ResponseEntity<Integer> getOutboundTransactionSize() {
+        int size = qualityTransactionService.getOutboundTransactionSize();
+        return ResponseEntity.ok(size);
+    }
+    @GetMapping("/total/pending")
+    public ResponseEntity<Integer> getTotalTransactionSize() {
+        int size = qualityTransactionService.getTotalTransactionSize();
+        return ResponseEntity.ok(size);
     }
 }
