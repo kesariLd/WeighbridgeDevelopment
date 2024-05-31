@@ -10,10 +10,9 @@ import com.weighbridge.admin.exceptions.SessionExpiredException;
 import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
-import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
+import com.weighbridge.weighbridgeoperator.entities.VehicleTransactionStatus;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
-import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
 
 
@@ -21,14 +20,13 @@ import com.weighbridge.weighbridgeoperator.payloads.TicketResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighbridgePageResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
+import com.weighbridge.weighbridgeoperator.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.services.WeighmentTransactionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
