@@ -42,4 +42,8 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
 
     @Query("SELECT COUNT(wt.netWeight) FROM WeighmentTransaction wt WHERE wt.netWeight!=0.0")
     long countCompletedTransactions();
+
+    @Query("SELECT COUNT(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.netWeight = 0.0 AND wt.gateEntryTransaction.transactionType = 'Inbound'")
+    Long countInboundTransactionsWithZeroNetWeight();
+
 }
