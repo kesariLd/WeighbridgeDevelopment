@@ -81,7 +81,7 @@ public class VehicleTransactionStatusImpl implements VehicleTransactionStatusSer
      * @return A ResponseEntity object with status code OK (200) containing the count of pending inbound tare weight transactions.
      */
     public Long countInboundPendingTare() {
-        Long pendingTare = weighmentTransactionRepository.countInboundPendingTare();
+        Long pendingTare = weighmentTransactionRepository.countInboundTransactionsWithZeroNetWeight();
         return pendingTare;
     }
 }
