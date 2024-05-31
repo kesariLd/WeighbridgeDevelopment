@@ -62,6 +62,13 @@ public class VehicleTransactionStatusController {
     }
 
 
+    /**
+     * Retrieves the number of pending inbound transactions with tare weight.
+     *
+     * Tare weight refers to the weight of the vehicle without cargo.
+     *
+     * @return A ResponseEntity object with status code OK (200) containing the count of pending inbound tare weight transactions.
+     */
     @GetMapping("/pendingTare/Inbound")
     public ResponseEntity<Long> noOfInboundTareWeight() {
         Long pending =vehicleTransactionStatusService.countInboundPendingTare();

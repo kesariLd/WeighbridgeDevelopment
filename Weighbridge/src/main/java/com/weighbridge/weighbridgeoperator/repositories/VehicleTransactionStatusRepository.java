@@ -1,6 +1,6 @@
 package com.weighbridge.weighbridgeoperator.repositories;
 
-import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
+import com.weighbridge.weighbridgeoperator.entities.VehicleTransactionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
