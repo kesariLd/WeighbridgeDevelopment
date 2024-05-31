@@ -1,6 +1,7 @@
 package com.weighbridge.admin.services;
 
 import com.weighbridge.admin.dtos.ProductMasterDto;
+import com.weighbridge.admin.payloads.ProductAndTypeRequest;
 import com.weighbridge.admin.payloads.ProductWithParameters;
 
 import java.util.List;
@@ -17,4 +18,6 @@ public interface ProductMasterService {
     void deleteProduct(String productName);
 
     List<ProductWithParameters> getQualityRangesByProductName(String productName);
+
+    String saveProductAndProductType(ProductAndTypeRequest productAndTypeRequest);
 }

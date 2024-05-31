@@ -103,7 +103,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
         List<QualityRangeMaster> qualityRangeMasters = createQualityRanges(request.getParameters(), materialMaster,request.getSupplierName(), request.getSupplierAddress());
         qualityRangeMasterRepository.saveAll(qualityRangeMasters);
-        return "Material saved successfully";
+        return "Parameter for " + request.getMaterialName() + " saved successfully";
     }
 
     @Override
@@ -141,7 +141,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
             materialTypeMaster.setMaterialMaster(materialMaster);
             materialTypeMasterRepository.save(materialTypeMaster);
         }
-        return "Material is added Successfully";
+        return "Material is saved Successfully";
     }
 
     private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRangeMaster> qualityRangeMasters, String supplierName, String supplierAddress) {

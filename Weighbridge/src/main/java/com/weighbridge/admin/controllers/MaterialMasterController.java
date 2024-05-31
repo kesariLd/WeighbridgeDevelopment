@@ -104,7 +104,7 @@ public class MaterialMasterController {
         return ResponseEntity.ok(acceptableQualityRanges);
     }
 
-    @PostMapping("/material-types")
+    @PostMapping("/withType")
     public ResponseEntity<String> saveMaterialAndMaterialType(@RequestBody MaterialAndTypeRequest materialAndTypeRequest) {
         String response = materialMasterService.saveMaterialAndMaterialType(materialAndTypeRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

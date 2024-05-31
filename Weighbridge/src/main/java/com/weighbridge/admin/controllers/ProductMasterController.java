@@ -2,7 +2,9 @@ package com.weighbridge.admin.controllers;
 
 import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.dtos.ProductMasterDto;
+import com.weighbridge.admin.payloads.MaterialAndTypeRequest;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
+import com.weighbridge.admin.payloads.ProductAndTypeRequest;
 import com.weighbridge.admin.payloads.ProductWithParameters;
 import com.weighbridge.admin.services.ProductMasterService;
 import org.springframework.http.HttpStatus;
@@ -55,5 +57,11 @@ public class ProductMasterController {
     public ResponseEntity<List<ProductWithParameters>> getQualityRangesByProductName(@RequestParam String productName) {
         List<ProductWithParameters> acceptableQualityRanges = productMasterService.getQualityRangesByProductName(productName);
         return ResponseEntity.ok(acceptableQualityRanges);
+    }
+
+    @PostMapping("/withType")
+    public ResponseEntity<String> saveProductAndProductType(@RequestBody ProductAndTypeRequest productAndTypeRequest) {
+        String response = productMasterService.saveProductAndProductType(productAndTypeRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

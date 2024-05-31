@@ -3,6 +3,7 @@ package com.weighbridge.admin.services.impls;
 import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.dtos.ProductMasterDto;
 import com.weighbridge.admin.entities.*;
+import com.weighbridge.admin.payloads.ProductAndTypeRequest;
 import com.weighbridge.admin.payloads.ProductWithParameters;
 import com.weighbridge.admin.repsitories.ProductMasterRepository;
 import com.weighbridge.admin.repsitories.ProductTypeMasterRepository;
@@ -40,32 +41,32 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 
     @Override
     public String createProductWithParameterAndRange(ProductWithParameters request) {
-        HttpSession session = httpServletRequest.getSession();
-        String user = session.getAttribute("userId").toString();
-        LocalDateTime currentDateTime = LocalDateTime.now();
+//        HttpSession session = httpServletRequest.getSession();
+//        String user = session.getAttribute("userId").toString();
+//        LocalDateTime currentDateTime = LocalDateTime.now();
 
         ProductMaster productMaster = productMasterRepository.findByProductName(request.getProductName());
-        if (productMaster == null) {
-            productMaster = new ProductMaster();
-            productMaster.setProductName(request.getProductName());
-            productMaster.setProductCreatedBy(user);
-            productMaster.setProductCreatedDate(currentDateTime);
-            productMaster.setProductModifiedBy(user);
-            productMaster.setProductModifiedDate(currentDateTime);
-            productMaster = productMasterRepository.save(productMaster);
-        }
+//        if (productMaster == null) {
+//            productMaster = new ProductMaster();
+//            productMaster.setProductName(request.getProductName());
+//            productMaster.setProductCreatedBy(user);
+//            productMaster.setProductCreatedDate(currentDateTime);
+//            productMaster.setProductModifiedBy(user);
+//            productMaster.setProductModifiedDate(currentDateTime);
+//            productMaster = productMasterRepository.save(productMaster);
+//        }
 
-        ProductTypeMaster productTypeMaster = productTypeMasterRepository.findByProductTypeName(request.getProductTypeName());
-        if (request.getProductTypeName() != null && productTypeMaster == null) {
-            productTypeMaster = new ProductTypeMaster();
-            productTypeMaster.setProductTypeName(request.getProductTypeName());
-            productTypeMaster.setProductMaster(productMaster);
-            productTypeMasterRepository.save(productTypeMaster);
-        }
+//        ProductTypeMaster productTypeMaster = productTypeMasterRepository.findByProductTypeName(request.getProductTypeName());
+//        if (request.getProductTypeName() != null && productTypeMaster == null) {
+//            productTypeMaster = new ProductTypeMaster();
+//            productTypeMaster.setProductTypeName(request.getProductTypeName());
+//            productTypeMaster.setProductMaster(productMaster);
+//            productTypeMasterRepository.save(productTypeMaster);
+//        }
 
         List<QualityRangeMaster> qualityRangeMasters = createQualityRanges(request.getParameters(), productMaster);
         qualityRangeMasterRepository.saveAll(qualityRangeMasters);
-        return "Product saved successfully";
+        return "Parameters for " + request.getProductName() + " saved successfully";
     }
 
     @Override
@@ -106,6 +107,33 @@ public class ProductMasterServiceImpl implements ProductMasterService {
     public List<ProductWithParameters> getQualityRangesByProductName(String productName) {
         List<QualityRangeMaster> qualityRangeMasters = qualityRangeMasterRepository.findByProductMasterProductName(productName);
         return mapQualityRangesToProductWithParameters(qualityRangeMasters);
+    }
+
+    @Override
+    public String saveProductAndProductType(ProductAndTypeRequest request) {
+        HttpSession session = httpServletRequest.getSession();
+        String user = session.getAttribute("userId").toString();
+        LocalDateTime currentDateTime = LocalDateTime.now();
+
+        ProductMaster productMaster = productMasterRepository.findByProductName(request.getProductName());
+        if (productMaster == null) {
+            productMaster = new ProductMaster();
+            productMaster.setProductName(request.getProductName());
+            productMaster.setProductCreatedBy(user);
+            productMaster.setProductCreatedDate(currentDateTime);
+            productMaster.setProductModifiedBy(user);
+            productMaster.setProductModifiedDate(currentDateTime);
+            productMaster = productMasterRepository.save(productMaster);
+        }
+
+//        MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
+        if (request.getProductTypeName() != null) {
+            ProductTypeMaster productTypeMaster = new ProductTypeMaster();
+            productTypeMaster.setProductTypeName(request.getProductTypeName());
+            productTypeMaster.setProductMaster(productMaster);
+            productTypeMasterRepository.save(productTypeMaster);
+        }
+        return "Product is saved Successfully";
     }
 
     private List<ProductWithParameters> mapQualityRangesToProductWithParameters(List<QualityRangeMaster> qualityRangeMasters) {
