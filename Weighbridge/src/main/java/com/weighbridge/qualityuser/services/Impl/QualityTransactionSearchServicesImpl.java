@@ -61,38 +61,38 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
         this.productMasterRepository = productMasterRepository;
     }
 
-    //search by ticketNo
     @Override
-    public QualityDashboardResponse searchByTicketNo(Integer ticketNo) {
+    public QualityDashboardResponse searchByTicketNo(Integer ticketNo, boolean checkQualityCompleted) {
         HttpSession session = httpServletRequest.getSession();
-        String userId;
-        String userCompanyId;
-        String userSiteId;
-
-        if (session != null && session.getAttribute("userId") != null) {
-            userId = session.getAttribute("userId").toString();
-            userSiteId = session.getAttribute("userSite").toString();
-            userCompanyId = session.getAttribute("userCompany").toString();
-        } else {
+        if (session == null || session.getAttribute("userId") == null) {
             throw new SessionExpiredException("Session Expired, Login again!");
         }
-        QualityDashboardResponse qualityDashboardResponse = null;
 
-        if (ticketNo != null) {
-            GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userCompanyId, userSiteId);
-            if (transactionByTicketNo != null) {
-                TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(ticketNo, "QCT");
-                if (qctTransactionLog != null) {
-                    throw new ResponseStatusException(HttpStatus.FOUND, "Quality is exist for the ticket no : " + ticketNo);
-                }
-                qualityDashboardResponse = new QualityDashboardResponse();
-                setQualityDashboardResponseDetails(qualityDashboardResponse, transactionByTicketNo);
-            } else {
-                // Throw an exception if transactionByTicketNo is null
-                throw new ResourceNotFoundException("Ticket", "ticket no", String.valueOf(ticketNo));
-            }
+        String userId = session.getAttribute("userId").toString();
+        String userSiteId = session.getAttribute("userSite").toString();
+        String userCompanyId = session.getAttribute("userCompany").toString();
+
+        if (ticketNo == null) {
+            throw new IllegalArgumentException("Ticket number cannot be null");
         }
 
+        GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userCompanyId, userSiteId);
+        if (transactionByTicketNo == null) {
+            throw new ResourceNotFoundException("Ticket", "ticket no", String.valueOf(ticketNo));
+        }
+
+        TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(ticketNo, "QCT");
+        if (checkQualityCompleted && qctTransactionLog == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Quality is not completed for the ticket no: " + ticketNo);
+        } else if (!checkQualityCompleted && qctTransactionLog != null) {
+            throw new ResponseStatusException(HttpStatus.FOUND, "Quality is completed for the ticket no: " + ticketNo);
+        }
+//        if (qctTransactionLog == null) {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Quality is not completed for the ticket no: " + ticketNo);
+//        }
+
+        QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+        setQualityDashboardResponseDetails(qualityDashboardResponse, transactionByTicketNo);
         return qualityDashboardResponse;
     }
 
@@ -120,9 +120,9 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
 
             List<SupplierMaster> supplierMasters = supplierMasterRepository.findBySupplierNameContainingOrSupplierAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
             List<CustomerMaster> customerMasters = new ArrayList<>();
-            log.info("Supplier master is null",  supplierMasters.isEmpty());
+            log.info("Supplier master is null", supplierMasters.isEmpty());
             if (supplierMasters.isEmpty()) {
-              customerMasters = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
+                customerMasters = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
                 System.out.println("number of customers :" + customerMasters.size());
             }
 
@@ -170,6 +170,7 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
         }
         return responses;
     }
+
 
     @Override
     public List<QualityDashboardResponse> searchByDate(String date) {
@@ -302,7 +303,6 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
         }
         qualityDashboardResponse.setDate(transaction.getTransactionDate());
     }
-
 
 
 }

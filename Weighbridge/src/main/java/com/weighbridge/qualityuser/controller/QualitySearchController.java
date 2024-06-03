@@ -25,8 +25,9 @@ public class QualitySearchController {
     }
 
     @GetMapping("/searchByTicketNo/{ticketNo}")
-    public ResponseEntity<QualityDashboardResponse> searchByTicketNo(@PathVariable Integer ticketNo) {
-        QualityDashboardResponse response = qualityTransactionSearchService.searchByTicketNo(ticketNo);
+    public ResponseEntity<QualityDashboardResponse> searchByTicketNo(@PathVariable Integer ticketNo,
+                                                                     @RequestParam(defaultValue = "true") boolean checkQualityCompleted) {
+        QualityDashboardResponse response = qualityTransactionSearchService.searchByTicketNo(ticketNo ,checkQualityCompleted);
         return ResponseEntity.ok().body(response);
     }
 
