@@ -1,6 +1,7 @@
 package com.weighbridge.gateuser.services;
 
 import com.weighbridge.gateuser.dtos.GateEntryPrint;
+import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
@@ -22,7 +23,9 @@ public interface GateEntryTransactionService {
      */
     Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest);
 
-    GateEntryTransactionResponse editGateEntryByTicketNo(Integer ticketNo);
+    GateEntryTransactionRequest editGateEntryByTicketNo(Integer ticketNo);
+
+    Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest,Integer ticketNo);
 
     /**
      * Sets the out time for a vehicle associated with the specified ticket number.

@@ -30,6 +30,5 @@ public class GateEntryTransactionRequest {
     private String tpNo;
     private String challanNo;
     private String ewayBillNo;
-    private String tranasactionType;
     private LocalDate challanDate;
 }
