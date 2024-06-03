@@ -22,6 +22,8 @@ public interface GateEntryTransactionService {
      */
     Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest);
 
+    GateEntryTransactionResponse editGateEntryByTicketNo(Integer ticketNo);
+
     /**
      * Sets the out time for a vehicle associated with the specified ticket number.
      *
@@ -45,11 +47,10 @@ public interface GateEntryTransactionService {
 
     GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable);
 
-    GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable);
+    GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable,String vehicleStatus);
 
     GateEntryPrint getPrintTicketWise(Integer ticketNo);
 
-    GateEntryTransactionPageResponse getInboundTransaction(Pageable pageable);
     Long countPendingGateTransactionsInbound();
     Long countPendingGateTransactionsOutbound();
     Long countCompleteTransactions();

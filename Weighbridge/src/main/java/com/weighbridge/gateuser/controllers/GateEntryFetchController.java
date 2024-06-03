@@ -33,12 +33,6 @@ public class GateEntryFetchController {
         return ResponseEntity.ok(allMaterialAndProductNames);
     }
 
-    @GetMapping("/fetch-InboundTransaction")
-    public ResponseEntity<List<GateEntryTransactionResponse>> getInboundTransaction(Pageable pageable) {
-        pageable = PageRequest.of(pageable.getPageNumber(), 5, Sort.by("transactionDate").descending());
-        GateEntryTransactionPageResponse responses = gateEntryTransactionService.getInboundTransaction(pageable);
-        return ResponseEntity.ok(responses.getTransactions());
-    }
     @GetMapping("/count/Inbound")
     public ResponseEntity<Long> getInboundPendingCount(){
         Long countPending = gateEntryTransactionService.countPendingGateTransactionsInbound();
