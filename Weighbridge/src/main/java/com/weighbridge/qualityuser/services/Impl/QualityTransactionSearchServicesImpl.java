@@ -9,6 +9,7 @@ import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
+import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.qualityuser.exception.ResourceNotFoundException;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
@@ -302,6 +303,14 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
             qualityDashboardResponse.setOut(transaction.getVehicleOut().format(formatter));
         }
         qualityDashboardResponse.setDate(transaction.getTransactionDate());
+        QualityTransaction qualityTransaction = qualityTransactionRepository.findByTicketNo(transaction.getTicketNo());
+        if (qualityTransaction == null) {
+            qualityDashboardResponse.setQualityParametersPresent(false);
+        } else {
+            qualityDashboardResponse.setQualityParametersPresent(true);
+        }
+
+
     }
 
 
