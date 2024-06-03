@@ -9,12 +9,10 @@ public interface QualityTransactionSearchService {
 
     List<QualityDashboardResponse> searchByDate(String date);
 
-    QualityDashboardResponse searchByTicketNo(Integer ticketNo) throws ResourceNotFoundException;
+    QualityDashboardResponse searchByTicketNo(Integer ticketNo ,boolean checkQualityCompleted) throws ResourceNotFoundException;
 
     List<QualityDashboardResponse> searchByVehicleNo(String vehicleNo);
 
     List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress);
-
-
 
 }
