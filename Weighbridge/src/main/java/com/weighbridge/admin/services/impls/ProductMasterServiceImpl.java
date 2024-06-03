@@ -130,12 +130,17 @@ public class ProductMasterServiceImpl implements ProductMasterService {
 
 //        MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
         if (request.getProductTypeName() != null) {
+            boolean isExists = productTypeMasterRepository
+                    .existsByProductTypeNameAndProductMasterProductId(request.getProductTypeName(), productMaster.getProductId());
+            if (isExists) {
+                throw new ResponseStatusException(HttpStatus.FOUND, "Material type \"" + request.getProductTypeName() + "\" already exists !");
+            }
             ProductTypeMaster productTypeMaster = new ProductTypeMaster();
             productTypeMaster.setProductTypeName(request.getProductTypeName());
             productTypeMaster.setProductMaster(productMaster);
             productTypeMasterRepository.save(productTypeMaster);
         }
-        return "Product is saved Successfully";
+        return request.getProductName() + " is saved Successfully";
     }
 
     @Override

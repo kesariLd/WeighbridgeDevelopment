@@ -137,12 +137,17 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 //        MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
         if (request.getMaterialTypeName() != null) {
+            Boolean isExists = materialTypeMasterRepository
+                    .existsByMaterialTypeNameAndMaterialMasterMaterialId(request.getMaterialTypeName(), materialMaster.getMaterialId());
+            if (isExists) {
+                throw new ResponseStatusException(HttpStatus.FOUND, "Material type \"" + request.getMaterialTypeName() + "\" already exists !");
+            }
             MaterialTypeMaster materialTypeMaster = new MaterialTypeMaster();
             materialTypeMaster.setMaterialTypeName(request.getMaterialTypeName());
             materialTypeMaster.setMaterialMaster(materialMaster);
             materialTypeMasterRepository.save(materialTypeMaster);
         }
-        return "Material is saved Successfully";
+        return request.getMaterialName() + " is saved Successfully";
     }
 
     @Override
