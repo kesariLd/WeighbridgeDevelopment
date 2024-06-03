@@ -67,11 +67,7 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Inbound' AND g.vehicleOut IS NULL")
     Long countPendingGateTransactionsInbound();
 
-
-    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g join WeighmentTransaction wt ON g.ticketNo=wt.gateEntryTransaction.ticketNo where g.transactionType='Outbound' and wt.netWeight!=0.0 and g.vehicleOut IS NULL")
-
     @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Outbound' AND g.vehicleOut IS NULL")
-
     Long countPendingGateTransactionsOutbound();
 
     @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g where g.vehicleOut IS Not null ")
