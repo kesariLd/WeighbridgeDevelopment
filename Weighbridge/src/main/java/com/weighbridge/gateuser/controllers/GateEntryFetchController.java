@@ -39,4 +39,3 @@ public class GateEntryFetchController {
         return ResponseEntity.ok(responses.getTransactions());
     }
 }
-
