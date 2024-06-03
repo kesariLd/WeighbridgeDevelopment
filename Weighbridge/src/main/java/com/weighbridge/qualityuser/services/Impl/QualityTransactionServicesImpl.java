@@ -494,6 +494,12 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                     dynamicQualityParameters.put(parameterName, Double.valueOf(value));
                 }
                 reportResponse.setQualityParameters(dynamicQualityParameters);
+
+                //set the quality parameters present
+                reportResponse.setQualityParametersPresent(!dynamicQualityParameters.isEmpty());
+            }
+            else {
+                reportResponse.setQualityParametersPresent(false);
             }
             return reportResponse;
         }
