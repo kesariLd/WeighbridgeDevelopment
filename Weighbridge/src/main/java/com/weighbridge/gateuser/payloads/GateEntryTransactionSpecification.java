@@ -22,7 +22,7 @@ public class GateEntryTransactionSpecification {
     private CustomerMasterRepository customerMasterRepository;
     @Autowired
     private SupplierMasterRepository supplierMasterRepository;
-    public Specification<GateEntryTransaction> getTransactions(Integer ticketNo, String vehicleNo, LocalDate date,String supplierName,String transactionType) {
+    public Specification<GateEntryTransaction> getTransactions(Integer ticketNo, String vehicleNo, LocalDate date,String supplierName,String transactionType,String vehicleStatus) {
         return (root, query, criteriaBuilder) -> {
             Predicate predicate = criteriaBuilder.conjunction();
 
@@ -44,6 +44,12 @@ public class GateEntryTransactionSpecification {
 
             if (date != null) {
                 predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("transactionDate"), date));
+            }
+            if (vehicleStatus.equalsIgnoreCase("completed")) {// for complete dashboard
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.isNotNull(root.get("vehicleOut")));
+            }
+            if (vehicleStatus.equalsIgnoreCase("ongoing")) { //for ongoing or queue dashboard
+                predicate = criteriaBuilder.and(predicate, criteriaBuilder.isNull(root.get("vehicleOut")));
             }
 
             if (StringUtils.hasText(supplierName)) {

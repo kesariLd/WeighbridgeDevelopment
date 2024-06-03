@@ -36,22 +36,14 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     GateEntryTransaction findByTicketNo(Integer ticketNo);
 
-    Integer countBySiteIdAndCompanyIdAndVehicleOutIsNull(String siteId, String companyId);
-
-    List<GateEntryTransaction> findByVehicleId(long id);
-
-    List<GateEntryTransaction> findBySupplierId(Long supplierId);
 
     List<GateEntryTransaction>findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate(String transactionType,String userSite,String userCompany);
 
-    List<GateEntryTransaction> findBySupplierIdAndTicketNoOrderByTicketNoDesc(Long supplierId, Integer ticketNo);
 
     @Query("SELECT g FROM GateEntryTransaction g WHERE g.supplierId = :supplierId ORDER BY g.ticketNo DESC")
     List<GateEntryTransaction> findBySupplierIdOrderByTicketNoDesc(Long supplierId);
 
     List<GateEntryTransaction> findByVehicleIdOrderByTicketNo(long id);
-
-    List<GateEntryTransaction> findByTransactionDate(LocalDate searchDate);
 
 
     @Query("SELECT g FROM GateEntryTransaction g WHERE g.ticketNo = :ticketNo AND g.companyId = :companyId AND g.siteId = :siteId")
@@ -62,7 +54,6 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     @Query("SELECT g FROM GateEntryTransaction g WHERE g.customerId = :customerId ORDER BY g.ticketNo DESC")
     List<GateEntryTransaction> findByCustomerIdOrderByTicketNoDesc(Long customerId);
 
-    Page<GateEntryTransaction> findBySiteIdAndCompanyIdAndVehicleOutIsNullAndTransactionType(String siteId, String companyId, String transactionType, Pageable pageable);
 
     @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Inbound' AND g.vehicleOut IS NULL")
     Long countPendingGateTransactionsInbound();

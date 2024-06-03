@@ -64,6 +64,11 @@ public class GateEntryTransactionController {
         return new ResponseEntity<>(allGateEntryTransaction, HttpStatus.OK);
     }
 
+    @GetMapping("/edit/{ticketNo}")
+    public ResponseEntity<GateEntryTransactionResponse> editGateEntryDetail(@PathVariable("ticketNo") Integer ticketNo){
+        GateEntryTransactionResponse gateEntryTransactionResponse = gateEntryTransactionService.editGateEntryByTicketNo(ticketNo);
+        return new ResponseEntity<>(gateEntryTransactionResponse,HttpStatus.OK);
+    }
     /**
      * Save the out time for a gate entry transaction.
      *
@@ -76,12 +81,13 @@ public class GateEntryTransactionController {
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
 
-    @GetMapping("/transactions")
-    public GateEntryTransactionPageResponse getTransactions(
+    @GetMapping("/transactions/completed")
+    public GateEntryTransactionPageResponse getTransactionsCompleted(
             @RequestParam(defaultValue = "0", required = false) int page,
             @RequestParam(defaultValue = "5", required = false) int size,
             @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
             @RequestParam(defaultValue = "desc", required = false) String sortOrder,
+            @RequestParam(required = false , defaultValue = "completed") String vehicleStatus,
             @RequestParam(required = false) Integer ticketNo,
             @RequestParam(required = false) String vehicleNo,
             @RequestParam(required = false) String transactionType,
@@ -96,7 +102,31 @@ public class GateEntryTransactionController {
         else{
             pageable = PageRequest.of(page,size);
         }
-        GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName,transactionType,pageable);
+        GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName,transactionType,pageable,vehicleStatus);
+        return transactionsByFiltering;
+    }
+    @GetMapping("/transactions/ongoing")
+    public GateEntryTransactionPageResponse getTransactionsOngoing(
+            @RequestParam(defaultValue = "0", required = false) int page,
+            @RequestParam(defaultValue = "5", required = false) int size,
+            @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
+            @RequestParam(defaultValue = "desc", required = false) String sortOrder,
+            @RequestParam(required = false , defaultValue = "ongoing") String vehicleStatus,
+            @RequestParam(required = false) Integer ticketNo,
+            @RequestParam(required = false) String vehicleNo,
+            @RequestParam(required = false) String transactionType,
+            @RequestParam(required = false) String supplierName,
+            @RequestParam(required = false) LocalDate date) {
+        Pageable pageable;
+        if(sortField!=null && !sortField.isEmpty()){
+            Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;
+            Sort sort = Sort.by(direction,sortField);
+            pageable = PageRequest.of(page,size,sort);
+        }
+        else{
+            pageable = PageRequest.of(page,size);
+        }
+        GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName,transactionType,pageable,vehicleStatus);
         return transactionsByFiltering;
     }
 
