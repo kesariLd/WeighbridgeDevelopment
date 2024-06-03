@@ -23,7 +23,7 @@ import java.util.List;
  * Controller class for GateEntryTransactionController
  */
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api/v1/gate")
 public class GateEntryTransactionController {
 
     @Autowired
