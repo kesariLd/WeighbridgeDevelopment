@@ -30,12 +30,9 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     Page<GateEntryTransaction> findBySiteIdAndCompanyIdAndVehicleOutIsNotNull(Pageable pageable,String siteId, String companyId);
 
-    //    List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDateDesc(String siteId, String companyId);
 
     // Modified method to find by siteId, companyId, and transactionDate within the specified range
     List<GateEntryTransaction> findBySiteIdAndCompanyIdAndTransactionDateBetweenOrderByTransactionDateDesc(String siteId, String companyId, LocalDate startDate, LocalDate endDate);
-
-//    List<Object[]> findGateEntryTransactions(Long siteId, Long companyId, List<String> selectedFields);
 
     GateEntryTransaction findByTicketNo(Integer ticketNo);
 
@@ -45,7 +42,6 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     List<GateEntryTransaction> findBySupplierId(Long supplierId);
 
-  //  List<GateEntryTransaction> findBySiteIdAndCompanyIdOrderByTransactionDate(String userSite, String userCompany);
     List<GateEntryTransaction>findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate(String transactionType,String userSite,String userCompany);
 
     List<GateEntryTransaction> findBySupplierIdAndTicketNoOrderByTicketNoDesc(Long supplierId, Integer ticketNo);
@@ -68,13 +64,16 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     Page<GateEntryTransaction> findBySiteIdAndCompanyIdAndVehicleOutIsNullAndTransactionType(String siteId, String companyId, String transactionType, Pageable pageable);
 
-//    List<GateEntryTransaction> findBySupplierId(Object supplierIdBySupplierNameAndAddress);
-
-//    List<GateEntryTransaction> findBySiteIdAndCompanyId(String userSite, String userCompany);
-
-    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g join WeighmentTransaction wt ON g.ticketNo=wt.gateEntryTransaction.ticketNo where g.transactionType='Inbound' and wt.netWeight!=0.0 and g.vehicleOut IS NULL")
+    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Inbound' AND g.vehicleOut IS NULL")
     Long countPendingGateTransactionsInbound();
 
+
     @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g join WeighmentTransaction wt ON g.ticketNo=wt.gateEntryTransaction.ticketNo where g.transactionType='Outbound' and wt.netWeight!=0.0 and g.vehicleOut IS NULL")
+
+    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Outbound' AND g.vehicleOut IS NULL")
+
     Long countPendingGateTransactionsOutbound();
+
+    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g where g.vehicleOut IS Not null ")
+    Long countCompleteGateTransaction();
 }

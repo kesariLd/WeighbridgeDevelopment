@@ -922,4 +922,31 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while retrieving inbound gate entry transactions. Please try again later.");
         }
     }
+
+    @Override
+    public Long countPendingGateTransactionsInbound() {
+        Long count = gateEntryTransactionRepository.countPendingGateTransactionsInbound();
+        if(count!=null) {
+            return count;
+        }
+        return 0L;
+    }
+
+    @Override
+    public Long countPendingGateTransactionsOutbound() {
+        Long count = gateEntryTransactionRepository.countPendingGateTransactionsOutbound();
+        if(count!=null) {
+            return count;
+        }
+        return 0L;
+    }
+
+    @Override
+    public Long countCompleteTransactions() {
+        Long count = gateEntryTransactionRepository.countCompleteGateTransaction();
+        if(count!=null) {
+            return count;
+        }
+        return 0L;
+    }
 }

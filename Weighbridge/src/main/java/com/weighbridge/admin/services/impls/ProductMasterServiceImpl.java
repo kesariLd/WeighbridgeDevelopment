@@ -3,7 +3,9 @@ package com.weighbridge.admin.services.impls;
 import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.dtos.ProductMasterDto;
 import com.weighbridge.admin.entities.*;
+import com.weighbridge.admin.payloads.MaterialParameterResponse;
 import com.weighbridge.admin.payloads.ProductAndTypeRequest;
+import com.weighbridge.admin.payloads.ProductParameterResponse;
 import com.weighbridge.admin.payloads.ProductWithParameters;
 import com.weighbridge.admin.repsitories.ProductMasterRepository;
 import com.weighbridge.admin.repsitories.ProductTypeMasterRepository;
@@ -134,6 +136,14 @@ public class ProductMasterServiceImpl implements ProductMasterService {
             productTypeMasterRepository.save(productTypeMaster);
         }
         return "Product is saved Successfully";
+    }
+
+    @Override
+    public List<ProductParameterResponse> getProductParameters(String productName) {
+        List<QualityRangeMaster> qualityRangeMasterList = qualityRangeMasterRepository.findByProductMasterProductName(productName);
+        return qualityRangeMasterList.stream()
+                .map(qualityRangeMaster -> modelMapper.map(qualityRangeMaster, ProductParameterResponse.class))
+                .collect(Collectors.toList());
     }
 
     private List<ProductWithParameters> mapQualityRangesToProductWithParameters(List<QualityRangeMaster> qualityRangeMasters) {

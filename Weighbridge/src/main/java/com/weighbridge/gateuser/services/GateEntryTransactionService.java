@@ -50,5 +50,8 @@ public interface GateEntryTransactionService {
     GateEntryPrint getPrintTicketWise(Integer ticketNo);
 
     GateEntryTransactionPageResponse getInboundTransaction(Pageable pageable);
+    Long countPendingGateTransactionsInbound();
+    Long countPendingGateTransactionsOutbound();
+    Long countCompleteTransactions();
 }
 
