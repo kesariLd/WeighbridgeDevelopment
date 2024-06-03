@@ -2,6 +2,7 @@ package com.weighbridge.admin.services;
 
 import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.payloads.MaterialAndTypeRequest;
+import com.weighbridge.admin.payloads.MaterialParameterResponse;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
 
 import java.util.List;
@@ -20,4 +21,6 @@ public interface MaterialMasterService {
     List<MaterialWithParameters> getQualityRangesByMaterialNameAndSupplierNameAndAddress(String materialName, String supplierName, String supplierAddress);
 
     String saveMaterialAndMaterialType(MaterialAndTypeRequest materialAndTypeRequest);
+
+    List<MaterialParameterResponse> getMaterialParameters(String materialName);
 }

@@ -2,6 +2,7 @@ package com.weighbridge.admin.controllers;
 
 import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.payloads.MaterialAndTypeRequest;
+import com.weighbridge.admin.payloads.MaterialParameterResponse;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
 import com.weighbridge.admin.services.MaterialMasterService;
 import org.springframework.http.HttpStatus;
@@ -108,6 +109,12 @@ public class MaterialMasterController {
     public ResponseEntity<String> saveMaterialAndMaterialType(@RequestBody MaterialAndTypeRequest materialAndTypeRequest) {
         String response = materialMasterService.saveMaterialAndMaterialType(materialAndTypeRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/view/{materialName}/parameters")
+    public ResponseEntity<List<MaterialParameterResponse>> getMaterialParameters(@PathVariable String materialName) {
+        List<MaterialParameterResponse> response = materialMasterService.getMaterialParameters(materialName);
+        return ResponseEntity.ok(response);
     }
 
 }
