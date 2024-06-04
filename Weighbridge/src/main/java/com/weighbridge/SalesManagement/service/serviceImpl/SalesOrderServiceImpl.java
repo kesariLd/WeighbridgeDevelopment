@@ -8,9 +8,11 @@ import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.SalesManagement.service.SalesOrderService;
 import com.weighbridge.admin.entities.CustomerMaster;
 import com.weighbridge.admin.entities.MaterialMaster;
+import com.weighbridge.admin.entities.UserMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.repsitories.CustomerMasterRepository;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
+import com.weighbridge.admin.repsitories.UserMasterRepository;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -29,16 +31,19 @@ import java.util.StringJoiner;
 @Service
 public class SalesOrderServiceImpl implements SalesOrderService {
     @Autowired
-    SalesOrderRespository salesOrderRespository;
+    private SalesOrderRespository salesOrderRespository;
 
     @Autowired
-    CustomerMasterRepository customerMasterRepository;
+    private CustomerMasterRepository customerMasterRepository;
 
     @Autowired
-    MaterialMasterRepository materialMasterRepository;
+    private MaterialMasterRepository materialMasterRepository;
 
     @Autowired
-    SalesProcessRepository salesProcessRepository;
+    private SalesProcessRepository salesProcessRepository;
+
+    @Autowired
+    private UserMasterRepository userMasterRepository;
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -98,8 +103,9 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         salesOrder.setProductName(salesOrderRequest.getProductName());
        // salesOrder.setProgressiveQuantity(salesOrderRequest.getProgressiveQuantity());
         salesOrder.setBalanceQuantity(salesOrderRequest.getOrderedQuantity());
-        salesOrder.setCompanyId(salesOrderRequest.getCompanyId());
-        salesOrder.setSiteId(salesOrder.getSiteId());
+        UserMaster userMaster = userMasterRepository.findById(salesOrderRequest.getUserId()).orElseThrow(() -> new ResourceNotFoundException("userId not found."));
+        salesOrder.setCompanyId(userMaster.getCompany().getCompanyId());
+        salesOrder.setSiteId(userMaster.getSite().getSiteId());
         salesOrderRespository.save(salesOrder);
         return "Sales details added";
     }
@@ -206,7 +212,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     @Override
     public SalesDashboardResponse searchBySaleOrderNo(String saleOrderNo,String siteId,String companyId){
-        SalesOrder bySaleOrderNo = salesOrderRespository.findBySaleOrderNoAndSiteIdAndCompanyId(saleOrderNo);
+        SalesOrder bySaleOrderNo = salesOrderRespository.findBySaleOrderNoAndSiteIdAndCompanyId(saleOrderNo,siteId,companyId);
         if(bySaleOrderNo!=null){
             SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
             salesDashboardResponse.setPurchaseOrderNo(bySaleOrderNo.getPurchaseOrderNo());
