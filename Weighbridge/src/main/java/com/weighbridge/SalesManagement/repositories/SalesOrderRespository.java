@@ -24,5 +24,5 @@ public interface SalesOrderRespository extends JpaRepository<SalesOrder,String> 
 
     Page<SalesOrder> findAllBySiteIdAndCompanyId(String siteId,String companyId, Pageable pageable);
 
-    SalesOrder findBySaleOrderNoAndSiteIdAndCompanyId(String saleOrderNo);
+    SalesOrder findBySaleOrderNoAndSiteIdAndCompanyId(String saleOrderNo,String siteId,String companyId);
 }
