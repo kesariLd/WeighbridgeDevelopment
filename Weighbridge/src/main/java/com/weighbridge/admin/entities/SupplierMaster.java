@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @Data
+@Table(name = "supplier_master", indexes = {
+        @Index(name = "idx_supplier_master1 ", columnList = "supplier_id"),
+        @Index(name = "idx_supplier_master2", columnList = "supplier_id, supplierName, supplierAddressLine1, supplierAddressLine2")
+})
 public class SupplierMaster {
 
     @Id

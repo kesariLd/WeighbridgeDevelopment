@@ -26,6 +26,7 @@ public class ManagementDashboardController {
         this.qualityTransactionService = qualityTransactionService;
     }
 
+    // bar chart for the material or product received data wise
     @PostMapping("/material-product")
     public ResponseEntity<MaterialProductDataResponse> materialProductBarChartDataResponse(@RequestBody ManagementPayload managementRequest) {
         MaterialProductDataResponse response = managementDashboardService.getMaterialProductBarChartData(managementRequest);

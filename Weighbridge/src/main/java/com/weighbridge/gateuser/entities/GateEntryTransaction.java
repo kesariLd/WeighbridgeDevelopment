@@ -19,6 +19,9 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Table(name = "gate_entry_transaction", indexes = {
+        @Index(name = "idx_gate_entry_transaction", columnList = "siteId, companyId, transactionDate DESC")
+})
 public class GateEntryTransaction {
 
     @Id

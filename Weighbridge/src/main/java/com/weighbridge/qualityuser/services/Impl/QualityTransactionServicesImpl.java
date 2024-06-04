@@ -298,19 +298,39 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
                     try {
                         if (transaction.getTransactionType().equalsIgnoreCase("Inbound")) {
-                            SupplierMaster supplierMaster = supplierMasterRepository.findById(transaction.getSupplierId())
-                                    .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", String.valueOf(transaction.getSupplierId())));
-                            qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
-                            qualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2());
+//                            SupplierMaster supplierMaster = supplierMasterRepository.findById(transaction.getSupplierId())
+//                                    .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", String.valueOf(transaction.getSupplierId())));
+//                            qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
+//                            qualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2());
+                            Object[] supplier = supplierMasterRepository.findSupplierNameAndSupplierAddressesBySupplierId(transaction.getSupplierId());
+                            if (supplier != null && supplier.length == 3) {
+                                qualityDashboardResponse.setSupplierOrCustomerName(supplier[0].toString());
+                                qualityDashboardResponse.setSupplierOrCustomerAddress(supplier[1] + "," + supplier[2]);
+                            } else {
+                                // Handle the case where the returned array has a different length
+                                log.error("Unexpected array length returned from findSupplierNameAndSupplierAddressesBySupplierId");
+                                qualityDashboardResponse.setSupplierOrCustomerName(null);
+                                qualityDashboardResponse.setSupplierOrCustomerAddress(null);
+                            }
 
                             String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
                             qualityDashboardResponse.setMaterialName(materialName);
                         } else {
-                            CustomerMaster customerMaster = customerMasterRepository.findById(transaction.getCustomerId())
-                                    .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", String.valueOf(transaction.getCustomerId())));
-                            qualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
-                            qualityDashboardResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine1() + "," + customerMaster.getCustomerAddressLine2());
+//                            CustomerMaster customerMaster = customerMasterRepository.findById(transaction.getCustomerId())
+//                                    .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", String.valueOf(transaction.getCustomerId())));
+//                            qualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
+//                            qualityDashboardResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine1() + "," + customerMaster.getCustomerAddressLine2());
 
+                            Object[] customer = customerMasterRepository.findCustomerNameAndCustomerAddressesByCustomerId(transaction.getCustomerId());
+                            if (customer != null && customer.length == 3) {
+                                qualityDashboardResponse.setSupplierOrCustomerName(customer[0].toString());
+                                qualityDashboardResponse.setSupplierOrCustomerAddress(customer[1] + "," + customer[2]);
+                            } else {
+                                // Handle the case where the returned array has a different length
+                                log.error("Unexpected array length returned from findCustomerNameAndCustomerAddressesByCustomerId");
+                                qualityDashboardResponse.setSupplierOrCustomerName(null);
+                                qualityDashboardResponse.setSupplierOrCustomerAddress(null);
+                            }
                             String productName = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
                             qualityDashboardResponse.setMaterialName(productName);
                         }
