@@ -1,21 +1,31 @@
 package com.weighbridge.SalesManagement.controller;
 
-import com.weighbridge.SalesManagement.payloads.SalesDashboardResponse;
-import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
-import com.weighbridge.SalesManagement.payloads.SalesOrderRequest;
-import com.weighbridge.SalesManagement.payloads.VehicleAndTransporterDetail;
+import com.weighbridge.SalesManagement.payloads.*;
+import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.service.SalesOrderService;
+import com.weighbridge.admin.entities.UserMaster;
+import com.weighbridge.admin.exceptions.ResourceNotFoundException;
+import com.weighbridge.admin.repsitories.UserMasterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
+
 // todo sales person only can have Outbound report
 @RestController
 @RequestMapping("/api/v1/sales")
 public class SalesOrderController {
 
     @Autowired
-    SalesOrderService salesOrderService;
+    private SalesOrderService salesOrderService;
+
+    @Autowired
+    private UserMasterRepository userMasterRepository;
 
     @PostMapping("/add/salesdetail")
     public ResponseEntity<String> addSalesDetail(@RequestBody SalesOrderRequest salesOrderRequest){
@@ -23,9 +33,24 @@ public class SalesOrderController {
         return ResponseEntity.ok(str);
     }
 
-    @GetMapping("/getAll/sales")
-    public ResponseEntity<List<SalesDashboardResponse>> getAllSales(){
-        List<SalesDashboardResponse> allSalesDetails = salesOrderService.getAllSalesDetails();
+    @GetMapping("/getAll/sales/{userId}")
+    public ResponseEntity<SalesUserPageResponse> getAllSales(@RequestParam(defaultValue = "0", required = false) int page,
+                                                                    @RequestParam(defaultValue = "5", required = false) int size,
+                                                                    @RequestParam(required = false, defaultValue = "saleOrderNo") String sortField,
+                                                                    @RequestParam(defaultValue = "desc", required = false) String sortOrder,@PathVariable String userId){
+
+        Pageable pageable;
+        if(sortField!=null && !sortField.isEmpty()){
+            Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;
+            Sort sort = Sort.by(direction,sortField);
+            pageable = PageRequest.of(page,size,sort);
+        }
+        else{
+            pageable = PageRequest.of(page,size);
+        }
+        UserMaster byId = userMasterRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("userId doesnt exist"));
+        System.out.println(byId);
+        SalesUserPageResponse allSalesDetails = salesOrderService.getAllSalesDetails(byId.getCompany().getCompanyId(),byId.getSite().getSiteId(),pageable);
         return ResponseEntity.ok(allSalesDetails);
     }
 
@@ -46,5 +71,12 @@ public class SalesOrderController {
     public ResponseEntity<VehicleAndTransporterDetail> getVehicleDetailByPassNo(@RequestParam String salePassNo){
         VehicleAndTransporterDetail vehicleAndTransporterDetail=salesOrderService.getBySalePassNo(salePassNo);
         return ResponseEntity.ok(vehicleAndTransporterDetail);
+    }
+
+    @GetMapping("/searchBySo/{saleOrderNo}")
+    public ResponseEntity<SalesDashboardResponse> searchBySaleOrderNo(@PathVariable String saleOrderNo,@RequestParam String userId){
+        UserMaster byUserId = userMasterRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("userId doesnt exist"));
+        SalesDashboardResponse salesDashboardResponse = salesOrderService.searchBySaleOrderNo(saleOrderNo,byUserId.getSite().getSiteId(),byUserId.getCompany().getCompanyId());
+        return ResponseEntity.ok(salesDashboardResponse);
     }
 }

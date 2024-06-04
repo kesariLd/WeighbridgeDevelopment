@@ -2,18 +2,19 @@ package com.weighbridge.SalesManagement.service.serviceImpl;
 
 import com.weighbridge.SalesManagement.entities.SalesOrder;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
-import com.weighbridge.SalesManagement.payloads.SalesDashboardResponse;
-import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
-import com.weighbridge.SalesManagement.payloads.SalesOrderRequest;
-import com.weighbridge.SalesManagement.payloads.VehicleAndTransporterDetail;
+import com.weighbridge.SalesManagement.payloads.*;
 import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.SalesManagement.service.SalesOrderService;
 import com.weighbridge.admin.entities.CustomerMaster;
 import com.weighbridge.admin.entities.MaterialMaster;
+import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.repsitories.CustomerMasterRepository;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
+import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -97,15 +98,18 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         salesOrder.setProductName(salesOrderRequest.getProductName());
        // salesOrder.setProgressiveQuantity(salesOrderRequest.getProgressiveQuantity());
         salesOrder.setBalanceQuantity(salesOrderRequest.getOrderedQuantity());
+        salesOrder.setCompanyId(salesOrderRequest.getCompanyId());
+        salesOrder.setSiteId(salesOrder.getSiteId());
         salesOrderRespository.save(salesOrder);
         return "Sales details added";
     }
 
     @Override
-    public List<SalesDashboardResponse> getAllSalesDetails() {
-        List<SalesOrder> allSales = salesOrderRespository.findAll();
+    public SalesUserPageResponse getAllSalesDetails(String companyId,String siteId,Pageable pageable) {
+        Page<SalesOrder> allSales = salesOrderRespository.findAllBySiteIdAndCompanyId(siteId,companyId,pageable);
+        List<SalesOrder> allUsers = allSales.getContent();
         List<SalesDashboardResponse> list = new ArrayList<>();
-        for(SalesOrder salesOrder : allSales) {
+        for(SalesOrder salesOrder : allUsers) {
             SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
             salesDashboardResponse.setPurchaseOrderNo(salesOrder.getPurchaseOrderNo());
             salesDashboardResponse.setOrderedQty(salesOrder.getOrderedQuantity());
@@ -119,8 +123,14 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             // Assuming getPurchasePassNo() is a method of SalesProcess, not List<SalesProcess>
             list.add(salesDashboardResponse);
         }
-        return list;
+        SalesUserPageResponse salesUserPageResponse=new SalesUserPageResponse();
+        salesUserPageResponse.setSales(list);
+        salesUserPageResponse.setTotalPage((long) allSales.getTotalPages());
+        salesUserPageResponse.setTotalElement(allSales.getTotalElements());
+        return salesUserPageResponse;
     }
+
+
 
     /**
      * @return
@@ -134,7 +144,6 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         salesDetailResponse.setBalanceWeight(byPurchaseOrderNo.getBalanceQuantity());
         return salesDetailResponse;
     }
-
 
     public List<VehicleAndTransporterDetail> getVehiclesAndTransporterDetails(){
         List<SalesProcess> allVehiclesDetails= salesProcessRepository.findAllByStatus(true);
@@ -165,7 +174,6 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         return listOfVehicle;
     }
 
-
     public VehicleAndTransporterDetail getBySalePassNo(String salePassNo){
         SalesProcess bySalePassNo = salesProcessRepository.findBySalePassNo(salePassNo);
         VehicleAndTransporterDetail vehicleAndTransporterDetail = new VehicleAndTransporterDetail();
@@ -194,6 +202,27 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         vehicleAndTransporterDetail.setSaleOrderDate(bySalePassNo.getPurchaseSale().getPurchaseOrderedDate());
         System.out.println(bySalePassNo.getPurchaseSale().getPurchaseOrderedDate());
         return vehicleAndTransporterDetail;
+    }
+
+    @Override
+    public SalesDashboardResponse searchBySaleOrderNo(String saleOrderNo,String siteId,String companyId){
+        SalesOrder bySaleOrderNo = salesOrderRespository.findBySaleOrderNoAndSiteIdAndCompanyId(saleOrderNo);
+        if(bySaleOrderNo!=null){
+            SalesDashboardResponse salesDashboardResponse = new SalesDashboardResponse();
+            salesDashboardResponse.setPurchaseOrderNo(bySaleOrderNo.getPurchaseOrderNo());
+            salesDashboardResponse.setOrderedQty(bySaleOrderNo.getOrderedQuantity());
+            CustomerMaster byId = customerMasterRepository.findById(bySaleOrderNo.getCustomerId()).get();
+            salesDashboardResponse.setCustomerName(byId.getCustomerName());
+            salesDashboardResponse.setSaleOrderNo(bySaleOrderNo.getSaleOrderNo());
+            salesDashboardResponse.setProductName(bySaleOrderNo.getProductName());
+            salesDashboardResponse.setBrokerName(bySaleOrderNo.getBrokerName());
+            salesDashboardResponse.setProgressiveQty(bySaleOrderNo.getProgressiveQuantity());
+            salesDashboardResponse.setBalanceQty(bySaleOrderNo.getBalanceQuantity());
+            return salesDashboardResponse;
+        }
+        else {
+            throw new ResourceNotFoundException("no match found.");
+        }
     }
 
 }

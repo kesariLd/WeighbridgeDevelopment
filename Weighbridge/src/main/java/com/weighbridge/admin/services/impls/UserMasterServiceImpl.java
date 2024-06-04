@@ -311,7 +311,7 @@ public class UserMasterServiceImpl implements UserMasterService {
                 userHistory.setRoles(roles);
                 System.out.println(roles);
 
-                userHistory.setSite(siteName + ", " + siteAddress);
+                userHistory.setSite(userMaster.getSite().getSiteName() + ", " +userMaster.getSite().getSiteAddress());
                 userHistory.setCompany(userMaster.getCompany().getCompanyName());
                 userHistory.setUserCreatedBy(userMaster.getUserCreatedBy());
                 userHistory.setUserCreatedDate(userMaster.getUserCreatedDate());
