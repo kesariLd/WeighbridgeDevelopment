@@ -255,13 +255,13 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
     @Override
     public int getOutboundQCTCompletedSize() {
-        List<QualityDashboardResponse> outboundResponses=getQCTCompletedOutbound();
+        List<QualityDashboardResponse> outboundResponses = getQCTCompletedOutbound();
         return outboundResponses.size();
     }
 
     @Override
     public int getTotalQCTCompletedSize() {
-        List<QualityDashboardResponse> allResponses=getQCTCompleted();
+        List<QualityDashboardResponse> allResponses = getQCTCompleted();
         return allResponses.size();
     }
 
@@ -336,6 +336,12 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                     }
                     qualityDashboardResponse.setDate(transaction.getTransactionDate());
 
+                    QualityTransaction qualityTransaction = qualityTransactionRepository.findByTicketNo(transaction.getTicketNo());
+                    if (qualityTransaction == null) {
+                        qualityDashboardResponse.setQualityParametersPresent(false);
+                    } else {
+                        qualityDashboardResponse.setQualityParametersPresent(true);
+                    }
                     qualityDashboardResponses.add(qualityDashboardResponse);
                 }
             }
@@ -343,7 +349,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
         return qualityDashboardResponses;
     }
-
 
 
     @Override
@@ -448,7 +453,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
         if (gateEntryTransaction != null) {
             VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(gateEntryTransaction.getTicketNo());
-
             ReportResponse reportResponse = new ReportResponse();
             reportResponse.setTicketNo(gateEntryTransaction.getTicketNo());
             reportResponse.setDate(String.valueOf(gateEntryTransaction.getTransactionDate()));
@@ -494,6 +498,11 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                     dynamicQualityParameters.put(parameterName, Double.valueOf(value));
                 }
                 reportResponse.setQualityParameters(dynamicQualityParameters);
+                //for enable and disable report for quality user
+                //set the quality parameters present
+                reportResponse.setQualityParametersPresent(!dynamicQualityParameters.isEmpty());
+            } else {
+                reportResponse.setQualityParametersPresent(false);
             }
             return reportResponse;
         }

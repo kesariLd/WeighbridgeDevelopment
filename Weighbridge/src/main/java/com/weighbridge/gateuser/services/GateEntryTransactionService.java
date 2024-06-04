@@ -1,6 +1,7 @@
 package com.weighbridge.gateuser.services;
 
 import com.weighbridge.gateuser.dtos.GateEntryPrint;
+import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
@@ -21,6 +22,10 @@ public interface GateEntryTransactionService {
      * @return The ticket number of the saved gate entry transaction.
      */
     Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest);
+
+    GateEntryTransactionRequest editGateEntryByTicketNo(Integer ticketNo);
+
+    Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest,Integer ticketNo);
 
     /**
      * Sets the out time for a vehicle associated with the specified ticket number.
@@ -45,10 +50,12 @@ public interface GateEntryTransactionService {
 
     GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable);
 
-    GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable);
+    GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable,String vehicleStatus);
 
     GateEntryPrint getPrintTicketWise(Integer ticketNo);
 
-    GateEntryTransactionPageResponse getInboundTransaction(Pageable pageable);
+    Long countPendingGateTransactionsInbound();
+    Long countPendingGateTransactionsOutbound();
+    Long countCompleteTransactions();
 }
 

@@ -79,4 +79,6 @@ public class QualityDashboardResponse {
      * Transaction type. (Inbound or Outbound)
      */
     private String transactionType;
+
+    private Boolean qualityParametersPresent;
 }

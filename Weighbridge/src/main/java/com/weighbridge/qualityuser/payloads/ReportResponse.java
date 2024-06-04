@@ -17,4 +17,6 @@ public class ReportResponse {
     private String supplierOrCustomerAddress;
     private String transactionType;
     private Map<String, Double> qualityParameters;
+
+    private Boolean QualityParametersPresent;
 }

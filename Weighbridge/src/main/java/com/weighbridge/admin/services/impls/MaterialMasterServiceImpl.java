@@ -5,6 +5,7 @@ import com.weighbridge.admin.entities.MaterialMaster;
 import com.weighbridge.admin.entities.MaterialTypeMaster;
 import com.weighbridge.admin.entities.QualityRangeMaster;
 import com.weighbridge.admin.payloads.MaterialAndTypeRequest;
+import com.weighbridge.admin.payloads.MaterialParameterResponse;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
 import com.weighbridge.admin.payloads.MaterialWithParameters.Parameter;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
@@ -136,12 +137,25 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
 
 //        MaterialTypeMaster materialTypeMaster = materialTypeMasterRepository.findByMaterialTypeName(request.getMaterialTypeName());
         if (request.getMaterialTypeName() != null) {
+            Boolean isExists = materialTypeMasterRepository
+                    .existsByMaterialTypeNameAndMaterialMasterMaterialId(request.getMaterialTypeName(), materialMaster.getMaterialId());
+            if (isExists) {
+                throw new ResponseStatusException(HttpStatus.FOUND, "Material type \"" + request.getMaterialTypeName() + "\" already exists !");
+            }
             MaterialTypeMaster materialTypeMaster = new MaterialTypeMaster();
             materialTypeMaster.setMaterialTypeName(request.getMaterialTypeName());
             materialTypeMaster.setMaterialMaster(materialMaster);
             materialTypeMasterRepository.save(materialTypeMaster);
         }
-        return "Material is saved Successfully";
+        return request.getMaterialName() + " is saved Successfully";
+    }
+
+    @Override
+    public List<MaterialParameterResponse> getMaterialParameters(String materialName) {
+        List<QualityRangeMaster> qualityRangeMasterList = qualityRangeMasterRepository.findByMaterialMasterMaterialName(materialName);
+        return qualityRangeMasterList.stream()
+                .map(qualityRangeMaster -> modelMapper.map(qualityRangeMaster, MaterialParameterResponse.class))
+                .collect(Collectors.toList());
     }
 
     private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRangeMaster> qualityRangeMasters, String supplierName, String supplierAddress) {

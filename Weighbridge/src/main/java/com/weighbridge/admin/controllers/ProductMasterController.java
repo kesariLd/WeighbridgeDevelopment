@@ -2,10 +2,7 @@ package com.weighbridge.admin.controllers;
 
 import com.weighbridge.admin.dtos.MaterialMasterDto;
 import com.weighbridge.admin.dtos.ProductMasterDto;
-import com.weighbridge.admin.payloads.MaterialAndTypeRequest;
-import com.weighbridge.admin.payloads.MaterialWithParameters;
-import com.weighbridge.admin.payloads.ProductAndTypeRequest;
-import com.weighbridge.admin.payloads.ProductWithParameters;
+import com.weighbridge.admin.payloads.*;
 import com.weighbridge.admin.services.ProductMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,5 +60,11 @@ public class ProductMasterController {
     public ResponseEntity<String> saveProductAndProductType(@RequestBody ProductAndTypeRequest productAndTypeRequest) {
         String response = productMasterService.saveProductAndProductType(productAndTypeRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/view/{productName}/parameters")
+    public ResponseEntity<List<ProductParameterResponse>> getMaterialParameters(@PathVariable String productName) {
+        List<ProductParameterResponse> response = productMasterService.getProductParameters(productName);
+        return ResponseEntity.ok(response);
     }
 }
