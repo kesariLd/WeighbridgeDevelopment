@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface WeighmentTransactionRepository extends JpaRepository<WeighmentTransaction,Integer>, JpaSpecificationExecutor<WeighmentTransaction> {
@@ -46,4 +47,6 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
     @Query("SELECT COUNT(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.netWeight = 0.0 AND wt.gateEntryTransaction.transactionType = 'Inbound'")
     Long countInboundTransactionsWithZeroNetWeight();
 
+    @Query("SELECT wt FROM WeighmentTransaction wt WHERE wt.gateEntryTransaction.companyId = :companyId AND wt.gateEntryTransaction.siteId = :siteId AND wt.gateEntryTransaction.transactionDate = :transactionDate")
+    List<WeighmentTransaction> findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(@Param("companyId") String companyId, @Param("siteId") String siteId, @Param("transactionDate") LocalDate date);
 }

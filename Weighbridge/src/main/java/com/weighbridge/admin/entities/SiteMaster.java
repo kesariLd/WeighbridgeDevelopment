@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "site_master")
 public class SiteMaster {
-
     @Id
     @Column(name = "site_id")
     private String siteId;

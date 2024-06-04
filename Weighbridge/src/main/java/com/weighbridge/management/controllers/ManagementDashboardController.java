@@ -4,6 +4,11 @@ import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import com.weighbridge.management.payload.ManagementPayload;
+import com.weighbridge.management.payload.MaterialProductDataResponse;
+import com.weighbridge.management.services.ManagementDashboardService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -13,10 +18,18 @@ import java.util.List;
 @RequestMapping("/api/v1/management")
 public class ManagementDashboardController {
 
+    private final ManagementDashboardService managementDashboardService;
     private final QualityTransactionService qualityTransactionService;
 
-    public ManagementDashboardController(QualityTransactionService qualityTransactionService) {
+    public ManagementDashboardController(ManagementDashboardService managementDashboardService, QualityTransactionService qualityTransactionService) {
+        this.managementDashboardService = managementDashboardService;
         this.qualityTransactionService = qualityTransactionService;
+    }
+
+    @PostMapping("/material-product")
+    public ResponseEntity<MaterialProductDataResponse> materialProductBarChartDataResponse(@RequestBody ManagementPayload managementRequest) {
+        MaterialProductDataResponse response = managementDashboardService.getMaterialProductBarChartData(managementRequest);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/qct-completed")

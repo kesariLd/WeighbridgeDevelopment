@@ -1,13 +1,16 @@
 package com.weighbridge.admin.entities;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.Set;
-
 
 @Data
 @NoArgsConstructor
@@ -15,7 +18,6 @@ import java.util.Set;
 @Entity
 @Table(name = "role_master")
 public class RoleMaster {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
@@ -39,7 +41,4 @@ public class RoleMaster {
 
     @Column(name = "role_modified_date")
     private LocalDateTime roleModifiedDate;
-
-//    @ManyToMany(mappedBy = "roles")
-//    private Set<UserAuthentication> users;
 }
