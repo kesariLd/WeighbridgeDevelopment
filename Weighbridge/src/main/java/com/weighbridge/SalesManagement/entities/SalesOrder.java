@@ -1,5 +1,6 @@
 package com.weighbridge.SalesManagement.entities;
 
+import com.weighbridge.admin.entities.CompanyMaster;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +30,10 @@ public class SalesOrder {
     private double balanceQuantity;
     private String brokerName;
     private String brokerAddress;
+    @NotNull
+    private String companyId;
+    @NotNull
+    private String siteId;
 
     //to remove record from dashboard on basis of status
     private boolean status=true;

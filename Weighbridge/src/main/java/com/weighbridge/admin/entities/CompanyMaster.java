@@ -55,6 +55,6 @@ public class CompanyMaster {
     @Column(name = "company_modified_date")
     private LocalDateTime companyModifiedDate;
 
-    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<SiteMaster> sites;
+  /*  @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    private List<SiteMaster> sites;*/
 }
