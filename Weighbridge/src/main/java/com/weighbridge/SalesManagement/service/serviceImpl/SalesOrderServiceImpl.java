@@ -14,6 +14,8 @@ import com.weighbridge.admin.repsitories.CustomerMasterRepository;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
 import com.weighbridge.admin.repsitories.UserMasterRepository;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +46,9 @@ public class SalesOrderServiceImpl implements SalesOrderService {
 
     @Autowired
     private UserMasterRepository userMasterRepository;
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
 
     private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -151,10 +156,22 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         return salesDetailResponse;
     }
 
-    public List<VehicleAndTransporterDetail> getVehiclesAndTransporterDetails(){
-        List<SalesProcess> allVehiclesDetails= salesProcessRepository.findAllByStatus(true);
+    public SalesUserPageResponse getVehiclesAndTransporterDetails(Pageable pageable){
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompany;
+        String userSite;
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSite = session.getAttribute("userSite").toString();
+            userCompany = session.getAttribute("userCompany").toString();
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
+        }
+       Page<SalesProcess> allVehiclesDetails= salesProcessRepository.findAllByStatusAndPurchaseSaleSiteIdAndPurchaseSaleCompanyId(true,userSite,userCompany,pageable);
+        List<SalesProcess> allUsers = allVehiclesDetails.getContent();
         List<VehicleAndTransporterDetail> listOfVehicle=new ArrayList<>();
-        for (SalesProcess salesProcess:allVehiclesDetails) {
+        for (SalesProcess salesProcess:allUsers) {
             VehicleAndTransporterDetail vehicleAndTransporterDetail = new VehicleAndTransporterDetail();
             vehicleAndTransporterDetail.setSalePassNo(salesProcess.getSalePassNo());
             vehicleAndTransporterDetail.setTransporterName(salesProcess.getTransporterName());
@@ -177,8 +194,13 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             vehicleAndTransporterDetail.setSaleOrderDate(salesProcess.getPurchaseSale().getPurchaseOrderedDate());
             listOfVehicle.add(vehicleAndTransporterDetail);
         }
-        return listOfVehicle;
+        SalesUserPageResponse salesUserPageResponse=new SalesUserPageResponse();
+        salesUserPageResponse.setSales(listOfVehicle);
+        salesUserPageResponse.setTotalElement(allVehiclesDetails.getTotalElements());
+        salesUserPageResponse.setTotalPage((long) allVehiclesDetails.getTotalPages());
+        return salesUserPageResponse;
     }
+
 
     public VehicleAndTransporterDetail getBySalePassNo(String salePassNo){
         SalesProcess bySalePassNo = salesProcessRepository.findBySalePassNo(salePassNo);
@@ -210,6 +232,7 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         return vehicleAndTransporterDetail;
     }
 
+
     @Override
     public SalesDashboardResponse searchBySaleOrderNo(String saleOrderNo,String siteId,String companyId){
         SalesOrder bySaleOrderNo = salesOrderRespository.findBySaleOrderNoAndSiteIdAndCompanyId(saleOrderNo,siteId,companyId);
@@ -230,5 +253,4 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             throw new ResourceNotFoundException("no match found.");
         }
     }
-
 }
