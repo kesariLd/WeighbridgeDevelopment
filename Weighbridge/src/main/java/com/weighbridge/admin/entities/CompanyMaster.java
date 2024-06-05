@@ -1,5 +1,6 @@
 package com.weighbridge.admin.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -55,6 +56,7 @@ public class CompanyMaster {
     @Column(name = "company_modified_date")
     private LocalDateTime companyModifiedDate;
 
-  /*  @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
-    private List<SiteMaster> sites;*/
+    @OneToMany(mappedBy = "company", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<SiteMaster> sites;
 }
