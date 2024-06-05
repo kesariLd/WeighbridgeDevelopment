@@ -1,6 +1,8 @@
 package com.weighbridge.SalesManagement.repositories;
 
 import com.weighbridge.SalesManagement.entities.SalesProcess;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -15,5 +17,6 @@ public interface SalesProcessRepository extends JpaRepository<SalesProcess,Strin
 
     SalesProcess findBySalePassNo(String tpNo);
 
-    List<SalesProcess> findAllByStatus(boolean status);
+
+    Page<SalesProcess> findAllByStatusAndPurchaseSaleSiteIdAndPurchaseSaleCompanyId(boolean b, String userSite, String userCompany, Pageable pageable);
 }
