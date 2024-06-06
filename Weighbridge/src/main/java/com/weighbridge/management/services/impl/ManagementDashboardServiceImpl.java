@@ -2,16 +2,13 @@ package com.weighbridge.management.services.impl;
 
 import ch.qos.logback.classic.Logger;
 import com.weighbridge.admin.entities.SiteMaster;
-
 import com.weighbridge.admin.exceptions.SessionExpiredException;
-import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
-
 import com.weighbridge.admin.repsitories.*;
-
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
+import com.weighbridge.management.dtos.WeightResponseForGraph;
 import com.weighbridge.management.payload.ManagementPayload;
 import com.weighbridge.management.payload.MaterialProductDataResponse;
 import com.weighbridge.management.payload.MaterialProductQualityResponse;
@@ -116,14 +113,12 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                 if (weighmentTransaction.getNetWeight() != 0.0) {
                     String transactionType = weighmentTransaction.getGateEntryTransaction().getTransactionType();
                     long materialOrProductId = weighmentTransaction.getGateEntryTransaction().getMaterialId();
-
                     String materialName;
                     if (transactionType.equals("Inbound")) {
                         materialName = materialMasterRepository.findMaterialNameByMaterialId(materialOrProductId);
                     } else {
                         materialName = productMasterRepository.findProductNameByProductId(materialOrProductId);
                     }
-
                     materialData.put(materialName, materialData.get(materialName) + weighmentTransaction.getNetWeight());
                 }
             }
@@ -168,7 +163,6 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         // Fetch the data from repository
         return gateEntryTransactionRepository.findByTransactionStartDateAndTransactionEndDateCompanySite(startDate, endDate, companyId, siteIdByFetch);
     }
-
 
     @Override
     public MaterialProductQualityResponse getMaterialProductQualities(ManagementPayload managementRequest) {
@@ -263,4 +257,30 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         gateEntryTransactionRepository.countInbounddetails
         return null;
     }*/
+
+    @Override
+    public List<WeightResponseForGraph> getQtyResponseInGraph(ManagementPayload managementPayload) {
+        if(managementPayload.getFromDate()==null||managementPayload.getToDate()==null){
+            LocalDate today = LocalDate.now();
+            managementPayload.setFromDate(today);
+            managementPayload.setToDate(today);
+        }
+        String[] site = managementPayload.getSiteName().split(",");
+        String siteIdBySiteName = siteMasterRepository.findSiteIdBySiteName(site[0], site[1]);
+        String companyIdByCompanyName = companyMasterRepository.findCompanyIdByCompanyName(managementPayload.getCompanyName());
+        List<Object[]> totalNetWeightByTransactionDateAndMaterialId = weighmentTransactionRepository.findTotalNetWeightByTransactionDateAndMaterialId(managementPayload.getFromDate(), managementPayload.getToDate(),companyIdByCompanyName,siteIdBySiteName);
+        System.out.println("response "+totalNetWeightByTransactionDateAndMaterialId);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-YYYY");
+        List<WeightResponseForGraph> weightResponseForGraphs=new ArrayList<>();
+        for(Object[] result:totalNetWeightByTransactionDateAndMaterialId) {
+            WeightResponseForGraph weightResponseForGraph = new WeightResponseForGraph();
+            LocalDate date = (LocalDate) result[0];
+            weightResponseForGraph.setTransactionDate(date!=null?date.format(formatter):"");
+            String materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId((Long) result[1]);
+            weightResponseForGraph.setMaterialName(materialNameByMaterialId);
+            weightResponseForGraph.setTotalQuantity((Double) result[2]);
+            weightResponseForGraphs.add(weightResponseForGraph);
+        }
+        return weightResponseForGraphs;
+    }
 }
