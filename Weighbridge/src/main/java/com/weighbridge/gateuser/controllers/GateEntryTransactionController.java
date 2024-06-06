@@ -69,9 +69,9 @@ public class GateEntryTransactionController {
         GateEntryTransactionRequest gateEntryTransactionRequest = gateEntryTransactionService.editGateEntryByTicketNo(ticketNo);
         return new ResponseEntity<>(gateEntryTransactionRequest,HttpStatus.OK);
     }
-    @PostMapping("/update/{ticketNo}")
-    public ResponseEntity<Integer> updateGateEntryDetail(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest,@PathVariable("ticketNo") Integer ticketNo){
-        Integer gateEntryTransactionResponse = gateEntryTransactionService.updateGateEntryByTicketNo(gateEntryTransactionRequest,ticketNo);
+    @PostMapping("/update")
+    public ResponseEntity<Integer> updateGateEntryDetail(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest){
+        Integer gateEntryTransactionResponse = gateEntryTransactionService.updateGateEntryByTicketNo(gateEntryTransactionRequest,Integer.parseInt(gateEntryTransactionRequest.getTicketNo()));
         return new ResponseEntity<>(gateEntryTransactionResponse,HttpStatus.OK);
     }
     /**
