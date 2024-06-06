@@ -7,11 +7,8 @@ import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.dtos.GateEntryPrint;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
+import com.weighbridge.gateuser.payloads.*;
 import com.weighbridge.weighbridgeoperator.entities.VehicleTransactionStatus;
-import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
-import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
-import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
-import com.weighbridge.gateuser.payloads.GateEntryTransactionSpecification;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.gateuser.services.GateEntryTransactionService;
@@ -361,7 +358,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     }
 
     @Override
-    public GateEntryTransactionRequest editGateEntryByTicketNo(Integer ticketNo) {
+    public GateEntryEditResponse editGateEntryByTicketNo(Integer ticketNo) {
         try {
 
             // Set user session details
@@ -378,7 +375,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             }
             GateEntryTransaction transaction = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo,userCompany,userSite);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-            GateEntryTransactionRequest response = new GateEntryTransactionRequest();
+            GateEntryEditResponse response = new GateEntryEditResponse();
             // Fetching associated entity names
             Object[] vehicleNoAndVehicleTypeAndVehicleWheelsNoByVehicleId = vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId());
             String transporterName = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getTransporterId());

@@ -1,10 +1,7 @@
 package com.weighbridge.management.services.impl;
 
 import com.weighbridge.admin.entities.SiteMaster;
-import com.weighbridge.admin.repsitories.CompanyMasterRepository;
-import com.weighbridge.admin.repsitories.MaterialMasterRepository;
-import com.weighbridge.admin.repsitories.ProductMasterRepository;
-import com.weighbridge.admin.repsitories.SiteMasterRepository;
+import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.management.dtos.WeightResponseForGraph;
 import com.weighbridge.management.payload.ManagementPayload;
@@ -42,7 +39,8 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Autowired
     private ProductMasterRepository productMasterRepository;
-
+    @Autowired
+    private CustomerMasterRepository customerMasterRepository;
     @Override
     public MaterialProductDataResponse getMaterialProductBarChartData(ManagementPayload managementRequest) {
         LocalDate startDate = managementRequest.getFromDate();
@@ -93,6 +91,42 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         response.setMaterialProductData(materialProductDataList);
         return response;
     }
+    @Override
+    public List<Map<String, Object>> managementGateEntryDashboard(ManagementPayload managementRequest) {
+        // Validate the request
+        if (managementRequest == null || managementRequest.getCompanyName() == null || managementRequest.getSiteName() == null) {
+            throw new IllegalArgumentException("Invalid management request: request, company name, or site name is null");
+        }
+
+        String companyName = managementRequest.getCompanyName();
+        String[] siteInfoParts = managementRequest.getSiteName().split(",", 2);
+        String siteName = siteInfoParts[0].trim();
+        String siteAddress = siteInfoParts.length == 2 ? siteInfoParts[1].trim() : "";
+
+        LocalDate startDate = managementRequest.getFromDate();
+        LocalDate endDate = managementRequest.getToDate();
+
+        // Validate date range
+        if (startDate == null || endDate == null || endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("Invalid date range: startDate and endDate must be valid and endDate should be after startDate");
+        }
+
+        // Fetch company ID
+        String companyId = companyMasterRepository.findCompanyIdByCompanyName(companyName);
+        if (companyId == null) {
+            throw new IllegalArgumentException("Company not found for the provided name: " + companyName);
+        }
+
+        // Fetch site ID
+        String siteIdByFetch = siteMasterRepository.findSiteIdBySiteNameAndSiteAddressAndCompanyId(siteName, siteAddress, companyId);
+        if (siteIdByFetch == null) {
+            throw new IllegalArgumentException("Site not found for the provided name and address: " + siteName + ", " + siteAddress);
+        }
+
+        // Fetch the data from repository
+        return gateEntryTransactionRepository.findByTransactionStartDateAndTransactionEndDateCompanySite(startDate, endDate, companyId, siteIdByFetch);
+    }
+
 
     /**
      * @param startDate
