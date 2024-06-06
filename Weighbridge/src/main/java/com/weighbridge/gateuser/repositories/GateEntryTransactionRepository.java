@@ -1,15 +1,18 @@
 package com.weighbridge.gateuser.repositories;
 
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Repository interface for accessing gate entry transaction data.
@@ -53,6 +56,23 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     @Query("SELECT g FROM GateEntryTransaction g WHERE g.customerId = :customerId ORDER BY g.ticketNo DESC")
     List<GateEntryTransaction> findByCustomerIdOrderByTicketNoDesc(Long customerId);
+
+
+    @Query("SELECT new map(g.transactionDate as transactionDate, " +
+            "SUM(CASE WHEN g.transactionType = 'Inbound' THEN 1 ELSE 0 END) as inboundCount, " +
+            "SUM(CASE WHEN g.transactionType = 'Outbound' THEN 1 ELSE 0 END) as outboundCount) " +
+            "FROM GateEntryTransaction g " +
+            "WHERE g.transactionDate BETWEEN :startDate AND :endDate " +
+            "AND g.companyId = :companyId " +
+            "AND g.siteId = :siteId " +
+            "AND g.vehicleOut IS NOT NULL " +
+            "GROUP BY g.transactionDate")
+    List<Map<String, Object>> findByTransactionStartDateAndTransactionEndDateCompanySite(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("companyId") String companyId,
+            @Param("siteId") String siteId
+    );
 
 
     @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Inbound' AND g.vehicleOut IS NULL")
