@@ -259,7 +259,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     }*/
 
     @Override
-    public List<WeightResponseForGraph> getQtyResponseInGraph(ManagementPayload managementPayload) {
+    public List<WeightResponseForGraph> getQtyResponseInGraph(ManagementPayload managementPayload,String transactionType) {
         if(managementPayload.getFromDate()==null||managementPayload.getToDate()==null){
             LocalDate today = LocalDate.now();
             managementPayload.setFromDate(today);
@@ -268,7 +268,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         String[] site = managementPayload.getSiteName().split(",");
         String siteIdBySiteName = siteMasterRepository.findSiteIdBySiteName(site[0], site[1]);
         String companyIdByCompanyName = companyMasterRepository.findCompanyIdByCompanyName(managementPayload.getCompanyName());
-        List<Object[]> totalNetWeightByTransactionDateAndMaterialId = weighmentTransactionRepository.findTotalNetWeightByTransactionDateAndMaterialId(managementPayload.getFromDate(), managementPayload.getToDate(),companyIdByCompanyName,siteIdBySiteName);
+        List<Object[]> totalNetWeightByTransactionDateAndMaterialId = weighmentTransactionRepository.findTotalNetWeightByTransactionDateAndMaterialId(managementPayload.getFromDate(), managementPayload.getToDate(),companyIdByCompanyName,siteIdBySiteName,transactionType);
         System.out.println("response "+totalNetWeightByTransactionDateAndMaterialId);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-YYYY");
         List<WeightResponseForGraph> weightResponseForGraphs=new ArrayList<>();

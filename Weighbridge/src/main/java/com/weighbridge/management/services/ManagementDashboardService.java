@@ -13,9 +13,9 @@ import java.util.Map;
 public interface ManagementDashboardService {
     MaterialProductDataResponse getMaterialProductBarChartData(ManagementPayload managementRequest);
 
-    MaterialProductQualityResponse getMaterialProductQualities(ManagementPayload managementRequest);
+    List<WeightResponseForGraph> getQtyResponseInGraph(ManagementPayload managementPayload,String transactionType);
 
-    List<WeightResponseForGraph> getQtyResponseInGraph(ManagementPayload managementPayload);
+    MaterialProductQualityResponse getMaterialProductQualities(ManagementPayload managementRequest);
 
     List<Map<String, Object>> managementGateEntryDashboard(ManagementPayload managementRequest);
 
