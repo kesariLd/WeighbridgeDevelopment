@@ -1,5 +1,6 @@
 package com.weighbridge.management.controllers;
 
+import com.weighbridge.management.dtos.WeightResponseForGraph;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +38,11 @@ public class ManagementDashboardController {
     public ResponseEntity<List<QualityDashboardResponse>> getQCTCompleted(){
         List<QualityDashboardResponse> responses=qualityTransactionService.getQCTCompleted();
         return ResponseEntity.ok(responses);
+    }
+
+    @PostMapping("/getQtyByGraph")
+    public ResponseEntity<List<WeightResponseForGraph>> getQtyResponseAsGraph(@RequestBody ManagementPayload managementPayload){
+        List<WeightResponseForGraph> qtyResponseInGraph = managementDashboardService.getQtyResponseInGraph(managementPayload);
+        return ResponseEntity.ok(qtyResponseInGraph);
     }
 }

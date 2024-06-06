@@ -6,6 +6,7 @@ import com.weighbridge.admin.repsitories.MaterialMasterRepository;
 import com.weighbridge.admin.repsitories.ProductMasterRepository;
 import com.weighbridge.admin.repsitories.SiteMasterRepository;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
+import com.weighbridge.management.dtos.WeightResponseForGraph;
 import com.weighbridge.management.payload.ManagementPayload;
 import com.weighbridge.management.payload.MaterialProductDataResponse;
 import com.weighbridge.management.services.ManagementDashboardService;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,14 +78,12 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                 if (weighmentTransaction.getNetWeight() != 0.0) {
                     String transactionType = weighmentTransaction.getGateEntryTransaction().getTransactionType();
                     long materialOrProductId = weighmentTransaction.getGateEntryTransaction().getMaterialId();
-
                     String materialName;
                     if (transactionType.equals("Inbound")) {
                         materialName = materialMasterRepository.findMaterialNameByMaterialId(materialOrProductId);
                     } else {
                         materialName = productMasterRepository.findProductNameByProductId(materialOrProductId);
                     }
-
                     materialData.put(materialName, materialData.get(materialName) + weighmentTransaction.getNetWeight());
                 }
             }
@@ -94,9 +94,34 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         return response;
     }
 
-
-  /*  public Long getInboundCount(ManagementPayload managementPayload){
-        gateEntryTransactionRepository.countInbounddetails
-        return null;
-    }*/
+    /**
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @Override
+    public List<WeightResponseForGraph> getQtyResponseInGraph(ManagementPayload managementPayload) {
+        if(managementPayload.getFromDate()==null||managementPayload.getToDate()==null){
+            LocalDate today = LocalDate.now();
+            managementPayload.setFromDate(today);
+            managementPayload.setToDate(today);
+        }
+        String[] site = managementPayload.getSiteName().split(",");
+        String siteIdBySiteName = siteMasterRepository.findSiteIdBySiteName(site[0], site[1]);
+        String companyIdByCompanyName = companyMasterRepository.findCompanyIdByCompanyName(managementPayload.getCompanyName());
+        List<Object[]> totalNetWeightByTransactionDateAndMaterialId = weighmentTransactionRepository.findTotalNetWeightByTransactionDateAndMaterialId(managementPayload.getFromDate(), managementPayload.getToDate(),companyIdByCompanyName,siteIdBySiteName);
+        System.out.println("response "+totalNetWeightByTransactionDateAndMaterialId);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-YYYY");
+        List<WeightResponseForGraph> weightResponseForGraphs=new ArrayList<>();
+        for(Object[] result:totalNetWeightByTransactionDateAndMaterialId) {
+            WeightResponseForGraph weightResponseForGraph = new WeightResponseForGraph();
+            LocalDate date = (LocalDate) result[0];
+            weightResponseForGraph.setTransactionDate(date!=null?date.format(formatter):"");
+            String materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId((Long) result[1]);
+            weightResponseForGraph.setMaterialName(materialNameByMaterialId);
+            weightResponseForGraph.setTotalQuantity((Double) result[2]);
+            weightResponseForGraphs.add(weightResponseForGraph);
+        }
+        return weightResponseForGraphs;
+    }
 }
