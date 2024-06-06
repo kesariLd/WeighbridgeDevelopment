@@ -32,6 +32,7 @@ public class QualityTransaction {
 
     private String qualityRangeId;
     private String qualityValues;
+    private Boolean isQualityGood;
     /**
      * The associated Gate Entry Transaction.
      *
@@ -40,4 +41,6 @@ public class QualityTransaction {
     @OneToOne
     @JoinColumn(name = "ticket_no", referencedColumnName = "ticketNo")
     private GateEntryTransaction gateEntryTransaction;
+
+
 }
