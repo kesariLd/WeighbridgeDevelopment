@@ -5,6 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 @Data
 public class WeighbridgeReportResponseList {
+    private Integer ticketNo;
     private LocalDate transactionDate;
     private String vehicleNo;
     private String tpNo;
