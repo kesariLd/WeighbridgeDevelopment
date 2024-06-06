@@ -2,6 +2,7 @@ package com.weighbridge.gateuser.controllers;
 
 import com.weighbridge.gateuser.dtos.GateEntryPrint;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
+import com.weighbridge.gateuser.payloads.GateEntryEditResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
@@ -65,9 +66,9 @@ public class GateEntryTransactionController {
     }
 
     @GetMapping("/edit/{ticketNo}")
-    public ResponseEntity<GateEntryTransactionRequest> editGateEntryDetail(@PathVariable("ticketNo") Integer ticketNo){
-        GateEntryTransactionRequest gateEntryTransactionRequest = gateEntryTransactionService.editGateEntryByTicketNo(ticketNo);
-        return new ResponseEntity<>(gateEntryTransactionRequest,HttpStatus.OK);
+    public ResponseEntity<GateEntryEditResponse> editGateEntryDetail(@PathVariable("ticketNo") Integer ticketNo){
+        GateEntryEditResponse gateEntryEditResponse = gateEntryTransactionService.editGateEntryByTicketNo(ticketNo);
+        return new ResponseEntity<>(gateEntryEditResponse,HttpStatus.OK);
     }
     @PostMapping("/update")
     public ResponseEntity<Integer> updateGateEntryDetail(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest){
