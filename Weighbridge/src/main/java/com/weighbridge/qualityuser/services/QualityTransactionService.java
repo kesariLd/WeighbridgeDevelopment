@@ -66,4 +66,6 @@ public interface QualityTransactionService {
     int getOutboundQCTCompletedSize();
 
     int getTotalQCTCompletedSize();
+
+
 }

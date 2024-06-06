@@ -1,5 +1,7 @@
 package com.weighbridge.management.controllers;
 
+import com.weighbridge.management.payload.MaterialProductQualityResponse;
+import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
 import org.springframework.http.ResponseEntity;
@@ -19,11 +21,12 @@ import java.util.List;
 public class ManagementDashboardController {
 
     private final ManagementDashboardService managementDashboardService;
-    private final QualityTransactionService qualityTransactionService;
 
-    public ManagementDashboardController(ManagementDashboardService managementDashboardService, QualityTransactionService qualityTransactionService) {
+
+
+    public ManagementDashboardController(ManagementDashboardService managementDashboardService) {
         this.managementDashboardService = managementDashboardService;
-        this.qualityTransactionService = qualityTransactionService;
+
     }
 
     // bar chart for the material or product received data wise
@@ -33,9 +36,13 @@ public class ManagementDashboardController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/qct-completed")
-    public ResponseEntity<List<QualityDashboardResponse>> getQCTCompleted(){
-        List<QualityDashboardResponse> responses=qualityTransactionService.getQCTCompleted();
-        return ResponseEntity.ok(responses);
+   //bar chart for good quality
+
+    @PostMapping("/material-product/qualities")
+    public ResponseEntity<MaterialProductQualityResponse> getMaterialProductQualities(@RequestBody ManagementPayload managementRequest){
+        MaterialProductQualityResponse response =managementDashboardService.getMaterialProductQualities(managementRequest);
+        return ResponseEntity.ok(response);
     }
+
+
 }

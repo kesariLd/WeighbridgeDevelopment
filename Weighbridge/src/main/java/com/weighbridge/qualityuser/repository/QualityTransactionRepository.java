@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface QualityTransactionRepository extends JpaRepository<QualityTransaction,Integer> {
@@ -13,4 +14,9 @@ public interface QualityTransactionRepository extends JpaRepository<QualityTrans
     QualityTransaction findByTicketNo(@Param("ticketNo") Integer ticketNo);
   
     QualityTransaction findByGateEntryTransactionTicketNo(@Param("ticketNo") Integer ticketNo);
+
+
+    @Query("SELECT qt FROM QualityTransaction qt WHERE qt.gateEntryTransaction.companyId = :companyId AND qt.gateEntryTransaction.siteId = :siteId AND qt.gateEntryTransaction.transactionDate = :transactionDate")
+    List<QualityTransaction> findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(@Param("companyId") String companyId, @Param("siteId") String siteId, @Param("transactionDate") LocalDate transactionDate);
+
 }

@@ -1,25 +1,39 @@
 package com.weighbridge.management.services.impl;
 
+import ch.qos.logback.classic.Logger;
 import com.weighbridge.admin.entities.SiteMaster;
-import com.weighbridge.admin.repsitories.CompanyMasterRepository;
-import com.weighbridge.admin.repsitories.MaterialMasterRepository;
-import com.weighbridge.admin.repsitories.ProductMasterRepository;
-import com.weighbridge.admin.repsitories.SiteMasterRepository;
+import com.weighbridge.admin.exceptions.SessionExpiredException;
+import com.weighbridge.admin.repsitories.*;
+import com.weighbridge.gateuser.entities.GateEntryTransaction;
+import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
+import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.management.payload.ManagementPayload;
 import com.weighbridge.management.payload.MaterialProductDataResponse;
+import com.weighbridge.management.payload.MaterialProductQualityResponse;
 import com.weighbridge.management.services.ManagementDashboardService;
+import com.weighbridge.qualityuser.entites.QualityTransaction;
+import com.weighbridge.qualityuser.exception.ResourceNotFoundException;
+import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
+import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
+import com.weighbridge.weighbridgeoperator.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ManagementDashboardServiceImpl implements ManagementDashboardService {
 
@@ -40,6 +54,31 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Autowired
     private ProductMasterRepository productMasterRepository;
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+    @Autowired
+    private final QualityTransactionRepository qualityTransactionRepository;
+
+    @Autowired
+    private final SupplierMasterRepository supplierMasterRepository;
+    private final CustomerMasterRepository customerMasterRepository;
+    @Autowired
+    private final TransporterMasterRepository transporterMasterRepository;
+    private final VehicleMasterRepository vehicleMasterRepository;
+    private final TransactionLogRepository transactionLogRepository;
+
+
+    public ManagementDashboardServiceImpl(QualityTransactionRepository qualityTransactionRepository, SupplierMasterRepository supplierMasterRepository, CustomerMasterRepository customerMasterRepository, TransporterMasterRepository transporterMasterRepository, VehicleMasterRepository vehicleMasterRepository, TransactionLogRepository transactionLogRepository) {
+        this.qualityTransactionRepository = qualityTransactionRepository;
+
+        this.supplierMasterRepository = supplierMasterRepository;
+        this.customerMasterRepository = customerMasterRepository;
+        this.transporterMasterRepository = transporterMasterRepository;
+        this.vehicleMasterRepository = vehicleMasterRepository;
+        this.transactionLogRepository = transactionLogRepository;
+
+    }
+
 
     @Override
     public MaterialProductDataResponse getMaterialProductBarChartData(ManagementPayload managementRequest) {
@@ -93,6 +132,94 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         response.setMaterialProductData(materialProductDataList);
         return response;
     }
+
+    @Override
+    public MaterialProductQualityResponse getMaterialProductQualities(ManagementPayload managementRequest) {
+        LocalDate startDate = managementRequest.getFromDate();
+        LocalDate endDate = managementRequest.getToDate();
+
+        MaterialProductQualityResponse response = new MaterialProductQualityResponse();
+        response.setCompanyName(managementRequest.getCompanyName());
+        response.setSiteName(managementRequest.getSiteName());
+
+        String companyId = companyMasterRepository.findCompanyIdByCompanyName(managementRequest.getCompanyName());
+        String[] site = managementRequest.getSiteName().split(",");
+        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(site[0], site[1]);
+
+        List<MaterialProductQualityResponse.MaterialProductQualityData> materialProductQualityDataList = new ArrayList<>();
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            List<QualityTransaction> qualityTransactions = qualityTransactionRepository.findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(companyId, siteMaster.getSiteId(), date);
+            MaterialProductQualityResponse.MaterialProductQualityData materialProductQualityData = new MaterialProductQualityResponse.MaterialProductQualityData();
+            materialProductQualityData.setTransactionDate(date);
+
+            System.out.println("Date: " + date + ", Quality Transactions: " + qualityTransactions.size());
+
+            Map<String, List<QualityTransaction>> groupedTransaction = qualityTransactions.stream().collect(Collectors.groupingBy(transaction -> {
+                        System.out.println("================================");
+                        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(transaction.getGateEntryTransaction().getTicketNo());
+                        System.out.println("gate entry transaction:" + gateEntryTransaction);
+                        return getMaterialOrProductName(gateEntryTransaction);
+                    }
+            ));
+
+            List<MaterialProductQualityResponse.QualityData> qualityDataList = new ArrayList<>();
+            for (Map.Entry<String, List<QualityTransaction>> entry : groupedTransaction.entrySet()) {
+                String materialOrProductName = entry.getKey();
+                List<QualityTransaction> transactions = entry.getValue();
+
+                long totalTransactions = transactions.size();
+                System.out.println("total transactions :" + totalTransactions);
+                long goodTransactions = transactions.stream()
+                        .filter(transaction -> {
+                            Boolean isQualityGood = transaction.getIsQualityGood();
+                            return isQualityGood != null && isQualityGood;
+                        })
+                        .count();
+
+                System.out.println("good transactions :" + goodTransactions);
+                long badTransactions = totalTransactions - goodTransactions;
+                System.out.println("bad transactions:" + badTransactions);
+
+                double goodPercentage = (double) goodTransactions / totalTransactions * 100;
+                double badPercentage = (double) badTransactions / totalTransactions * 100;
+
+                MaterialProductQualityResponse.QualityData qualityData = new MaterialProductQualityResponse.QualityData();
+                qualityData.setMaterialOrProductName(materialOrProductName);
+                qualityData.setGoodPercentage(goodPercentage);
+                qualityData.setBadPercentage(badPercentage);
+
+                qualityDataList.add(qualityData);
+
+            }
+            materialProductQualityData.setQualityData(qualityDataList);
+            materialProductQualityDataList.add(materialProductQualityData);
+
+        }
+        response.setMaterialProductQualityData(materialProductQualityDataList);
+
+        return response;
+    }
+
+    private String getMaterialOrProductName(GateEntryTransaction gateEntryTransaction) {
+        if (gateEntryTransaction == null) {
+            return "materialOrProductName is not found";
+        }
+
+        String materialName;
+
+        if ("Inbound".equalsIgnoreCase(gateEntryTransaction.getTransactionType())) {
+            materialName = materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId());
+        } else {
+            materialName = productMasterRepository.findProductNameByProductId(gateEntryTransaction.getMaterialId());
+        }
+        if (materialName == null) {
+            return "materialOrProductName is not found";
+        }
+        System.out.println("material name:" + materialName);
+        return materialName;
+    }
+
+
 
 
   /*  public Long getInboundCount(ManagementPayload managementPayload){
