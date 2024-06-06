@@ -12,7 +12,7 @@ import java.util.Map;
 public interface ManagementDashboardService {
     MaterialProductDataResponse getMaterialProductBarChartData(ManagementPayload managementRequest);
 
-    List<WeightResponseForGraph> getQtyResponseInGraph(ManagementPayload managementPayload);
+    List<WeightResponseForGraph> getQtyResponseInGraph(ManagementPayload managementPayload,String transactionType);
     List<Map<String, Object>> managementGateEntryDashboard(ManagementPayload managementRequest);
 
 }

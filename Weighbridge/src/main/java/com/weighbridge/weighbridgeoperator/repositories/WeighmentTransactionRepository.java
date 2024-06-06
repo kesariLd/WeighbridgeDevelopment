@@ -56,7 +56,7 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
             "FROM WeighmentTransaction wt " +
             "JOIN wt.gateEntryTransaction gt " +
             "WHERE gt.transactionDate BETWEEN :startDate AND :endDate " +
-            "AND gt.transactionType = 'Inbound' AND gt.siteId = :siteId AND gt.companyId = :companyId " +
+            "AND gt.transactionType =:transactionType AND gt.siteId = :siteId AND gt.companyId = :companyId " +
             "GROUP BY gt.transactionDate, gt.materialId")
-    List<Object[]> findTotalNetWeightByTransactionDateAndMaterialId(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("companyId") String companyId, @Param("siteId") String siteId);
+    List<Object[]> findTotalNetWeightByTransactionDateAndMaterialId(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("companyId") String companyId, @Param("siteId") String siteId,@Param("transactionType")String transactionType);
 }
