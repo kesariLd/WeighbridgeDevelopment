@@ -48,7 +48,7 @@ public class ManagementDashboardController {
     public ResponseEntity<List<WeightResponseForGraph>> getQtyResponseAsGraph(@RequestBody ManagementPayload managementPayload){
         List<WeightResponseForGraph> qtyResponseInGraph = managementDashboardService.getQtyResponseInGraph(managementPayload);
         return ResponseEntity.ok(qtyResponseInGraph);
-
+    }
     @PostMapping("/gate-dash")
     public ResponseEntity<List<Map<String, Object>>> getManagementGateEntryDashboard(@RequestBody ManagementPayload managementRequest) {
         List<Map<String, Object>> data = managementDashboardService.managementGateEntryDashboard(managementRequest);
