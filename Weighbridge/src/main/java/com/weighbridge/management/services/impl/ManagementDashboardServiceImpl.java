@@ -60,22 +60,22 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     private HttpServletRequest httpServletRequest;
     
     @Autowired
-    private final QualityTransactionRepository qualityTransactionRepository;
+    private QualityTransactionRepository qualityTransactionRepository;
 
     @Autowired
-    private final SupplierMasterRepository supplierMasterRepository;
+    private SupplierMasterRepository supplierMasterRepository;
 
     @Autowired
-    private final CustomerMasterRepository customerMasterRepository;
+    private CustomerMasterRepository customerMasterRepository;
     
     @Autowired
-    private final TransporterMasterRepository transporterMasterRepository;
+    private TransporterMasterRepository transporterMasterRepository;
 
     @Autowired
-    private final VehicleMasterRepository vehicleMasterRepository;
+    private VehicleMasterRepository vehicleMasterRepository;
 
     @Autowired
-    private final TransactionLogRepository transactionLogRepository;
+    private TransactionLogRepository transactionLogRepository;
 
 
     @Override
