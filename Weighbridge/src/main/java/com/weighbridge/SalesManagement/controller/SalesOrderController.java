@@ -61,8 +61,20 @@ public class SalesOrderController {
     }
 
     @GetMapping("/getAllVehicleDetails")
-    public ResponseEntity<List<VehicleAndTransporterDetail>> getVehiclesDetail(){
-        List<VehicleAndTransporterDetail> vehiclesAndTransporterDetails = salesOrderService.getVehiclesAndTransporterDetails();
+    public ResponseEntity<SalesUserPageResponse> getVehiclesDetail(@RequestParam(defaultValue = "0", required = false) int page,
+                                                                               @RequestParam(defaultValue = "5", required = false) int size,
+                                                                               @RequestParam(required = false, defaultValue = "salePassNo") String sortField,
+                                                                               @RequestParam(defaultValue = "desc", required = false) String sortOrder){
+        Pageable pageable;
+        if(sortField!=null && !sortField.isEmpty()){
+            Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;
+            Sort sort = Sort.by(direction,sortField);
+            pageable = PageRequest.of(page,size,sort);
+        }
+        else{
+            pageable = PageRequest.of(page,size);
+        }
+        SalesUserPageResponse vehiclesAndTransporterDetails = salesOrderService.getVehiclesAndTransporterDetails(pageable);
         return ResponseEntity.ok(vehiclesAndTransporterDetails);
     }
 

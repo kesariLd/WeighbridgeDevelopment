@@ -4,6 +4,8 @@ import com.weighbridge.management.payload.MaterialProductQualityResponse;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.weighbridge.management.payload.ManagementPayload;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/management")
@@ -44,5 +47,11 @@ public class ManagementDashboardController {
         return ResponseEntity.ok(response);
     }
 
+
+    @PostMapping("/gate-dash")
+    public ResponseEntity<List<Map<String, Object>>> getManagementGateEntryDashboard(@RequestBody ManagementPayload managementRequest) {
+        List<Map<String, Object>> data = managementDashboardService.managementGateEntryDashboard(managementRequest);
+        return new ResponseEntity<>(data, HttpStatus.OK);
+    }
 
 }

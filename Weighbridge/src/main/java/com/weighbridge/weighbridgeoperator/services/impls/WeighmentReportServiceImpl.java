@@ -245,6 +245,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         weighbridgeReportResponseList.setVehicleNo(gateEntryResponse.getVehicleNo());
         weighbridgeReportResponseList.setTpNo(gateEntryResponse.getTpNo());
         weighbridgeReportResponseList.setChallanDate(gateEntryResponse.getChallanDate());
+        weighbridgeReportResponseList.setTicketNo(gateEntryResponse.getTicketNo());
 
         if (weighmentTransaction != null) {
             double supplyConsignmentWeight = gateEntryResponse.getTpNetWeight();

@@ -32,3 +32,4 @@ public class GateEntryTransactionRequest {
     private String ewayBillNo;
     private LocalDate challanDate;
 }
+//todo change this to a response class

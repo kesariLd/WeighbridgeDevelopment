@@ -43,9 +43,4 @@ public class GateEntryFetchController {
         Long countPending = gateEntryTransactionService.countPendingGateTransactionsOutbound();
         return new ResponseEntity<>(countPending, HttpStatus.OK);
     }
-    @GetMapping("/count/Complete")
-    public ResponseEntity<Long> getCompleteCount(){
-        Long countPending = gateEntryTransactionService.countCompleteTransactions();
-        return new ResponseEntity<>(countPending, HttpStatus.OK);
-    }
 }

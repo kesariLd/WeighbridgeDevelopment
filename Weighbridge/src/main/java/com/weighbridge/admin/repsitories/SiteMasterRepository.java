@@ -24,6 +24,9 @@ public interface SiteMasterRepository extends JpaRepository<SiteMaster, String> 
     @Query("SELECT s.siteName FROM SiteMaster s WHERE s.siteId = :siteId")
     String findSiteNameBySiteId(@Param("siteId") String siteId);
 
-
+    @Query("SELECT s.siteId FROM SiteMaster s WHERE s.siteName = :siteName AND s.siteAddress = :siteAddress AND s.company.companyId = :companyId")
+    String findSiteIdBySiteNameAndSiteAddressAndCompanyId(@Param("siteName") String siteName,
+                                                          @Param("siteAddress") String siteAddress,
+                                                          @Param("companyId") String companyId);
     SiteMaster findBySiteNameAndSiteAddressAndCompanyCompanyId(String siteName, String siteAddress, String companyId);
 }
