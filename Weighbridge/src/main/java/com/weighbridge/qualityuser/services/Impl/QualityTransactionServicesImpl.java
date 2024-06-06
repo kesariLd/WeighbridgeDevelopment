@@ -265,6 +265,8 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         return allResponses.size();
     }
 
+
+
     @Override
     public List<QualityDashboardResponse> getQCTCompleted() {
         HttpSession session = httpServletRequest.getSession(false);
@@ -298,11 +300,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
                     try {
                         if (transaction.getTransactionType().equalsIgnoreCase("Inbound")) {
-//                            SupplierMaster supplierMaster = supplierMasterRepository.findById(transaction.getSupplierId())
-//                                    .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", String.valueOf(transaction.getSupplierId())));
-//                            qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
-//                            qualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2());
-                            Object[] supplier = supplierMasterRepository.findSupplierNameAndSupplierAddressesBySupplierId(transaction.getSupplierId());
+                         Object[] supplier = supplierMasterRepository.findSupplierNameAndSupplierAddressesBySupplierId(transaction.getSupplierId());
                             if (supplier != null && supplier.length == 3) {
                                 qualityDashboardResponse.setSupplierOrCustomerName(supplier[0].toString());
                                 qualityDashboardResponse.setSupplierOrCustomerAddress(supplier[1] + "," + supplier[2]);
@@ -316,10 +314,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                             String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
                             qualityDashboardResponse.setMaterialName(materialName);
                         } else {
-//                            CustomerMaster customerMaster = customerMasterRepository.findById(transaction.getCustomerId())
-//                                    .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", String.valueOf(transaction.getCustomerId())));
-//                            qualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
-//                            qualityDashboardResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine1() + "," + customerMaster.getCustomerAddressLine2());
 
                             Object[] customer = customerMasterRepository.findCustomerNameAndCustomerAddressesByCustomerId(transaction.getCustomerId());
                             if (customer != null && customer.length == 3) {
@@ -408,40 +402,52 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo)
                 .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with " + ticketNo));
+
+        QualityTransaction qualityTransaction = new QualityTransaction();
+        StringBuilder qualityRangeIds = new StringBuilder();
+        StringBuilder qualityValues = new StringBuilder();
+        boolean isQualityGood=true;
         if (gateEntryTransaction.getTransactionType().equals("Inbound")) {
             String materialName = materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId());
-            QualityTransaction qualityTransaction = new QualityTransaction();
-            StringBuilder qualityRangeIds = new StringBuilder();
-            StringBuilder qualityValues = new StringBuilder();
             SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(gateEntryTransaction.getSupplierId());
             String supplierAddress = supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2();
             for (Map.Entry<String, Double> entry : transactionRequest.entrySet()) {
                 String key = entry.getKey();
                 Double value = entry.getValue();
                 Long qualityId = qualityRangeMasterRepository.findQualityRangeIdByParameterNameAndMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(key, materialName, supplierMaster.getSupplierName(), supplierAddress);
+                QualityRangeMaster qualityRangeMaster=qualityRangeMasterRepository.findById(qualityId).orElseThrow(()->new ResourceNotFoundException("Range not found for qualityId:"+qualityId));
+
+                if(value < qualityRangeMaster.getRangeFrom() || value > qualityRangeMaster.getRangeTo()){
+                    isQualityGood=false;
+                }
                 qualityRangeIds.append(qualityId).append(",");
                 qualityValues.append(value).append(",");
+
             }
             qualityTransaction.setGateEntryTransaction(gateEntryTransaction);
             qualityTransaction.setQualityRangeId(qualityRangeIds.toString().replaceAll(",$", "").trim());
             qualityTransaction.setQualityValues(qualityValues.toString().replaceAll(",$", "").trim());
+            qualityTransaction.setIsQualityGood(isQualityGood);
             qualityTransactionRepository.save(qualityTransaction);
         }
         if (gateEntryTransaction.getTransactionType().equals("Outbound")) {
             String productName = productMasterRepository.findProductNameByProductId(gateEntryTransaction.getMaterialId());
-            QualityTransaction qualityTransaction = new QualityTransaction();
-            StringBuilder qualityValues = new StringBuilder();
-            StringBuilder qualityRangeIds = new StringBuilder();
             for (Map.Entry<String, Double> entry : transactionRequest.entrySet()) {
                 String key = entry.getKey();
                 Double value = entry.getValue();
                 Long qualityId = qualityRangeMasterRepository.findQualityRangeIdByParameterNameAndProductMasterProductName(key, productName);
+                QualityRangeMaster qualityRangeMaster=qualityRangeMasterRepository.findById(qualityId).orElseThrow(()->new ResourceNotFoundException("Range not found for qualityId:"+qualityId));
+
+                if(value < qualityRangeMaster.getRangeFrom() || value > qualityRangeMaster.getRangeTo()){
+                    isQualityGood=false;
+                }
                 qualityRangeIds.append(qualityId).append(",");
                 qualityValues.append(value).append(",");
             }
             qualityTransaction.setGateEntryTransaction(gateEntryTransaction);
             qualityTransaction.setQualityRangeId(qualityRangeIds.toString().replaceAll(",$", "").trim());
             qualityTransaction.setQualityValues(qualityValues.toString().replaceAll(",$", "").trim());
+            qualityTransaction.setIsQualityGood(isQualityGood);
             qualityTransactionRepository.save(qualityTransaction);
         }
 
@@ -467,7 +473,9 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         }
     }
 
-    //Generate report for quality check
+
+
+//Generate report for quality check
     @Override
     public ReportResponse getReportResponse(Integer ticketNo) {
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
