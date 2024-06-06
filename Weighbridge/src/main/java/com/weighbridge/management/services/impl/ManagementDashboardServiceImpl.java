@@ -58,34 +58,28 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Autowired
     private ProductMasterRepository productMasterRepository;
+    
     @Autowired
-
     private HttpServletRequest httpServletRequest;
+    
     @Autowired
     private final QualityTransactionRepository qualityTransactionRepository;
 
     @Autowired
     private final SupplierMasterRepository supplierMasterRepository;
+
+    @Autowired
     private final CustomerMasterRepository customerMasterRepository;
+    
     @Autowired
     private final TransporterMasterRepository transporterMasterRepository;
+
+    @Autowired
     private final VehicleMasterRepository vehicleMasterRepository;
+
+    @Autowired
     private final TransactionLogRepository transactionLogRepository;
 
-
-    public ManagementDashboardServiceImpl(QualityTransactionRepository qualityTransactionRepository, SupplierMasterRepository supplierMasterRepository, CustomerMasterRepository customerMasterRepository, TransporterMasterRepository transporterMasterRepository, VehicleMasterRepository vehicleMasterRepository, TransactionLogRepository transactionLogRepository) {
-        this.qualityTransactionRepository = qualityTransactionRepository;
-
-        this.supplierMasterRepository = supplierMasterRepository;
-        this.customerMasterRepository = customerMasterRepository;
-        this.transporterMasterRepository = transporterMasterRepository;
-        this.vehicleMasterRepository = vehicleMasterRepository;
-        this.transactionLogRepository = transactionLogRepository;
-
-    }
-
-
-    private CustomerMasterRepository customerMasterRepository;
 
     @Override
     public MaterialProductDataResponse getMaterialProductBarChartData(ManagementPayload managementRequest) {
