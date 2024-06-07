@@ -20,6 +20,7 @@ import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import ch.qos.logback.classic.Logger;
 import com.weighbridge.admin.entities.SiteMaster;
+import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
@@ -28,9 +29,20 @@ import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionSpecification;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
+
+import com.weighbridge.management.dtos.WeightResponseForGraph;
+import com.weighbridge.management.payload.AllTransactionResponse;
+import com.weighbridge.management.payload.ManagementPayload;
+import com.weighbridge.management.payload.MaterialProductDataResponse;
+import com.weighbridge.management.payload.MaterialProductQualityResponse;
+import com.weighbridge.management.services.ManagementDashboardService;
+import com.weighbridge.qualityuser.entites.QualityTransaction;
+import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
+
 import com.weighbridge.management.payload.*;
 import com.weighbridge.management.services.ManagementDashboardService;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
+
 import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import com.weighbridge.weighbridgeoperator.entities.VehicleTransactionStatus;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
@@ -207,6 +219,42 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
         // Fetch the data from repository
         return gateEntryTransactionRepository.findByTransactionStartDateAndTransactionEndDateCompanySite(startDate, endDate, companyId, siteIdByFetch);
+    }
+
+    /**
+     * @param managementPayload
+     * @return
+     */
+    @Override
+    public AllTransactionResponse getAllTransactionResponse(ManagementPayload managementPayload,String transactionType) {
+        if(managementPayload.getCompanyName()==null&&managementPayload.getSiteName()==null){
+            throw new ResourceNotFoundException("Select proper site And Company.");
+        }
+        String companyIdByCompanyName = companyMasterRepository.findCompanyIdByCompanyName(managementPayload.getCompanyName());
+        String[] site = managementPayload.getSiteName().split(",");
+        String siteIdBySiteName = siteMasterRepository.findSiteIdBySiteName(site[0], site[1]);
+        Long gateEntry,gateExit,tareWeight,grossWeight,quality;
+        if(transactionType.equalsIgnoreCase("Inbound")) {
+             gateEntry = gateEntryTransactionRepository.countGateEntryWithDate("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+             gateExit = gateEntryTransactionRepository.countGateExitWithDate("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+             tareWeight = weighmentTransactionRepository.countCompletedInboundTareWeights(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+             grossWeight = weighmentTransactionRepository.countCompletedGrossWeightsInbound(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+           quality = qualityTransactionRepository.countInboundQuality("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), siteIdBySiteName, companyIdByCompanyName);
+        }
+        else{
+            gateEntry=gateEntryTransactionRepository.countGateEntryWithDate("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            gateExit=gateEntryTransactionRepository.countGateExitWithDate("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            tareWeight=weighmentTransactionRepository.countCompletedOutboundTareWeights(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            grossWeight=weighmentTransactionRepository.countCompletedGrossWeightsOutbound(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            quality=qualityTransactionRepository.countInboundQuality("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), siteIdBySiteName, companyIdByCompanyName);
+        }
+            AllTransactionResponse allTransactionResponse = new AllTransactionResponse();
+            allTransactionResponse.setNoOfQualityTransaction(quality);
+            allTransactionResponse.setNoOfGateExit(gateExit);
+            allTransactionResponse.setNoOfGateEntry(gateEntry);
+            allTransactionResponse.setNoOfTareWeight(tareWeight);
+            allTransactionResponse.setNoOfGrossWeight(grossWeight);
+            return allTransactionResponse;
     }
 
     @Override
@@ -522,7 +570,13 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
             WeightResponseForGraph weightResponseForGraph = new WeightResponseForGraph();
             LocalDate date = (LocalDate) result[0];
             weightResponseForGraph.setTransactionDate(date!=null?date.format(formatter):"");
-            String materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId((Long) result[1]);
+            String materialNameByMaterialId;
+            if(transactionType.equalsIgnoreCase("Inbound")) {
+                materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId((Long) result[1]);
+            }
+            else {
+                materialNameByMaterialId=productMasterRepository.findProductNameByProductId((Long) result[1]);
+            }
             weightResponseForGraph.setMaterialName(materialNameByMaterialId);
             weightResponseForGraph.setTotalQuantity((Double) result[2]);
             weightResponseForGraphs.add(weightResponseForGraph);

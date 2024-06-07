@@ -1,10 +1,14 @@
 package com.weighbridge.management.controllers;
 
+
+import com.weighbridge.management.payload.AllTransactionResponse;
+
 import com.weighbridge.management.payload.CoalMoisturePercentageRequest;
 import com.weighbridge.management.payload.CoalMoisturePercentageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.management.payload.ManagementGateEntryList;
 import com.weighbridge.management.payload.ManagementGateEntryTransactionResponse;
+
 import com.weighbridge.management.payload.MaterialProductQualityResponse;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.management.dtos.WeightResponseForGraph;
@@ -70,6 +74,14 @@ public class ManagementDashboardController {
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
 
+
+    @PostMapping("/getAlltransaction")
+    public  ResponseEntity<AllTransactionResponse> getAlltransactionResponse(@RequestBody ManagementPayload managementPayload,@RequestParam String transactionType){
+        AllTransactionResponse allTransactionResponse = managementDashboardService.getAllTransactionResponse(managementPayload,transactionType);
+        return ResponseEntity.ok(allTransactionResponse);
+    }
+
+
     @GetMapping("/transactions/ongoing")
     public ManagementGateEntryList getTransactionsOngoing(
             @RequestParam(defaultValue = "0", required = false) int page,
@@ -97,3 +109,4 @@ public class ManagementDashboardController {
         return managementGateEntryList;
     }
 }
+
