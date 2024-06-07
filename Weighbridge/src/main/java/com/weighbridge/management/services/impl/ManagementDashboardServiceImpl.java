@@ -312,6 +312,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
             response.setVehicleNo(vehicleNoGet);
             response.setVehicleType(vehicleType);
             response.setVehicleWheelsNo(vehicleWheelsNo);
+            response.setTpNetWeight(transaction.getSupplyConsignmentWeight());
         } else {
             // Handle case where vehicle info is not available
             response.setVehicleNo(null);
