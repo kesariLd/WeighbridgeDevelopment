@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -377,7 +378,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             GateEntryEditResponse response = new GateEntryEditResponse();
             // Fetching associated entity names
-            Object[] vehicleNoAndVehicleTypeAndVehicleWheelsNoByVehicleId = vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId());
+            Object[] vehicleNoAndVehicleTypeAndVehicleWheelsNoByVehicleId = vehicleMasterRepository.findDistinctVehicleInfoVehicleNoVehicleTypeFitnessByVehicleId(transaction.getVehicleId());
             String transporterName = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getTransporterId());
 
             // Setting values to response object
@@ -420,8 +421,11 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 String vehicleNo = (String) vehicleInfo[0];
                 String vehicleType = (String) vehicleInfo[1];
                 Integer vehicleWheelsNo = (Integer) vehicleInfo[2];
+                LocalDate vehicleFitnessUpTo = (LocalDate) vehicleInfo[3];
                 response.setVehicle(vehicleNo);
-
+                response.setVehicleType(vehicleType);
+                response.setVehicleWheelsNo(vehicleWheelsNo);
+                response.setVehicleFitnessUpTo(vehicleFitnessUpTo);
             } else {
                 // Handle case where vehicle info is not available
                 response.setVehicle(null);
