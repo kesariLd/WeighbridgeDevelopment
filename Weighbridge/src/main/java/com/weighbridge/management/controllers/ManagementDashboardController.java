@@ -1,5 +1,6 @@
 package com.weighbridge.management.controllers;
 
+import com.weighbridge.management.payload.AllTransactionResponse;
 import com.weighbridge.management.payload.MaterialProductQualityResponse;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.management.dtos.WeightResponseForGraph;
@@ -54,7 +55,11 @@ public class ManagementDashboardController {
     public ResponseEntity<List<Map<String, Object>>> getManagementGateEntryDashboard(@RequestBody ManagementPayload managementRequest) {
         List<Map<String, Object>> data = managementDashboardService.managementGateEntryDashboard(managementRequest);
         return new ResponseEntity<>(data, HttpStatus.OK);
-
     }
 
+    @PostMapping("/getAlltransaction")
+    public  ResponseEntity<AllTransactionResponse> getAlltransactionResponse(@RequestBody ManagementPayload managementPayload,@RequestParam String transactionType){
+        AllTransactionResponse allTransactionResponse = managementDashboardService.getAllTransactionResponse(managementPayload,transactionType);
+        return ResponseEntity.ok(allTransactionResponse);
+    }
 }

@@ -59,4 +59,16 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
             "AND gt.transactionType =:transactionType AND gt.siteId = :siteId AND gt.companyId = :companyId " +
             "GROUP BY gt.transactionDate, gt.materialId")
     List<Object[]> findTotalNetWeightByTransactionDateAndMaterialId(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("companyId") String companyId, @Param("siteId") String siteId,@Param("transactionType")String transactionType);
+
+    @Query("SELECT count(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.tareWeight!=0.0 AND wt.gateEntryTransaction.transactionDate BETWEEN :startDate AND :endDate AND wt.gateEntryTransaction.siteId=:siteId AND wt.gateEntryTransaction.companyId=:companyId AND wt.gateEntryTransaction.transactionType='Inbound'")
+    Long countCompletedInboundTareWeights(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("companyId") String companyId, @Param("siteId") String siteId);
+
+    @Query("SELECT count(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.temporaryWeight!=0.0 AND wt.gateEntryTransaction.transactionDate BETWEEN :startDate AND :endDate AND wt.gateEntryTransaction.siteId=:siteId AND wt.gateEntryTransaction.companyId=:companyId AND wt.gateEntryTransaction.transactionType='Outbound'")
+    Long countCompletedOutboundTareWeights(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("companyId") String companyId, @Param("siteId") String siteId);
+
+    @Query("SELECT count(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.grossWeight!=0.0 AND wt.gateEntryTransaction.transactionDate BETWEEN :startDate AND :endDate AND wt.gateEntryTransaction.siteId=:siteId AND wt.gateEntryTransaction.companyId=:companyId AND wt.gateEntryTransaction.transactionType='Outbound'")
+    Long countCompletedGrossWeightsOutbound(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("companyId") String companyId, @Param("siteId") String siteId);
+
+    @Query("SELECT count(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.temporaryWeight!=0.0 AND wt.gateEntryTransaction.transactionDate BETWEEN :startDate AND :endDate AND wt.gateEntryTransaction.siteId=:siteId AND wt.gateEntryTransaction.companyId=:companyId AND wt.gateEntryTransaction.transactionType='Outbound'")
+    Long countCompletedGrossWeightsInbound(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("companyId") String companyId, @Param("siteId") String siteId);
 }

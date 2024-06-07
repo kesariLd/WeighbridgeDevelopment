@@ -1,6 +1,7 @@
 package com.weighbridge.management.services;
 
 import com.weighbridge.management.dtos.WeightResponseForGraph;
+import com.weighbridge.management.payload.AllTransactionResponse;
 import com.weighbridge.management.payload.ManagementPayload;
 import com.weighbridge.management.payload.MaterialProductDataResponse;
 import com.weighbridge.management.payload.MaterialProductQualityResponse;
@@ -19,4 +20,5 @@ public interface ManagementDashboardService {
 
     List<Map<String, Object>> managementGateEntryDashboard(ManagementPayload managementRequest);
 
+    AllTransactionResponse getAllTransactionResponse(ManagementPayload managementPayload,String transactionType);
 }
