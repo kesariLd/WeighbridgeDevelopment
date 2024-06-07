@@ -81,4 +81,5 @@ public class QualityDashboardResponse {
     private String transactionType;
 
     private Boolean qualityParametersPresent;
+    private Boolean isQualityGood;
 }

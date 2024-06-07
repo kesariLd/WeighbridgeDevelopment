@@ -11,7 +11,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface WeighmentTransactionRepository extends JpaRepository<WeighmentTransaction,Integer>, JpaSpecificationExecutor<WeighmentTransaction> {
 
@@ -36,7 +38,7 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
             "LEFT JOIN CustomerMaster c ON c.customerId = g.customerId " +
             "WHERE g.siteId = :siteId AND g.companyId=:companyId AND (w.netWeight IS NULL OR w.netWeight = 0.0) " +
             "ORDER BY g.ticketNo DESC")
-    Page<Object[]> getAllGateEntries(@Param("siteId") String siteId,@Param("companyId") String companyId, Pageable pageable);
+    Page<Object[]> getAllGateEntries(@Param("siteId") String siteId, @Param("companyId") String companyId, Pageable pageable);
 
     @Query("FROM WeighmentTransaction wt WHERE wt.gateEntryTransaction.siteId=:userSite AND wt.gateEntryTransaction.companyId=:userCompany AND wt.netWeight!=0.0")
     Page<WeighmentTransaction> findAllByUserSiteAndUserCompany(String userSite, String userCompany, Pageable pageable);
@@ -49,4 +51,12 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
 
     @Query("SELECT wt FROM WeighmentTransaction wt WHERE wt.gateEntryTransaction.companyId = :companyId AND wt.gateEntryTransaction.siteId = :siteId AND wt.gateEntryTransaction.transactionDate = :transactionDate")
     List<WeighmentTransaction> findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(@Param("companyId") String companyId, @Param("siteId") String siteId, @Param("transactionDate") LocalDate date);
+
+    @Query("SELECT gt.transactionDate, gt.materialId, SUM(wt.netWeight) " +
+            "FROM WeighmentTransaction wt " +
+            "JOIN wt.gateEntryTransaction gt " +
+            "WHERE gt.transactionDate BETWEEN :startDate AND :endDate " +
+            "AND gt.transactionType =:transactionType AND gt.siteId = :siteId AND gt.companyId = :companyId " +
+            "GROUP BY gt.transactionDate, gt.materialId")
+    List<Object[]> findTotalNetWeightByTransactionDateAndMaterialId(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, @Param("companyId") String companyId, @Param("siteId") String siteId,@Param("transactionType")String transactionType);
 }
