@@ -16,6 +16,9 @@ public class GateEntryEditResponse {
         private String material;
         private String materialType;
         private String vehicle;
+        private String vehicleType;
+        private Integer vehicleWheelsNo;
+        private LocalDate vehicleFitnessUpTo;
         private String site;
         private String transactionType;
         private String company;
