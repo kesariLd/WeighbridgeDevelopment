@@ -16,9 +16,5 @@ public class MaterialProductDataResponse {
     public static class MaterialProductData {
         private LocalDate transactionDate;
         private Map<String, Double> materialData;
-//        private double coal;
-//        private double ironOre;
-//        private double dolomite;
-//        private double spongeIron;
     }
 }

@@ -1,6 +1,7 @@
 package com.weighbridge.management.controllers;
 
-
+import com.weighbridge.management.payload.CoalMoisturePercentageRequest;
+import com.weighbridge.management.payload.CoalMoisturePercentageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.management.payload.ManagementGateEntryList;
 import com.weighbridge.management.payload.ManagementGateEntryTransactionResponse;
@@ -31,11 +32,8 @@ public class ManagementDashboardController {
 
     private final ManagementDashboardService managementDashboardService;
 
-
-
     public ManagementDashboardController(ManagementDashboardService managementDashboardService) {
         this.managementDashboardService = managementDashboardService;
-
     }
 
     // bar chart for the material or product received data wise
@@ -53,6 +51,13 @@ public class ManagementDashboardController {
         return ResponseEntity.ok(response);
     }
 
+
+    @PostMapping("/moisture-percentage")
+    public ResponseEntity<CoalMoisturePercentageResponse> getMoisturePercentage(@RequestBody CoalMoisturePercentageRequest coalMoisturePercentageRequest){
+        CoalMoisturePercentageResponse response =managementDashboardService.getMoisturePercentage(coalMoisturePercentageRequest);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/getQtyByGraph")
     public ResponseEntity<List<WeightResponseForGraph>> getQtyResponseAsGraph(@RequestBody ManagementPayload managementPayload,@RequestParam String transactionType){
         List<WeightResponseForGraph> qtyResponseInGraph = managementDashboardService.getQtyResponseInGraph(managementPayload,transactionType);
@@ -63,7 +68,6 @@ public class ManagementDashboardController {
     public ResponseEntity<List<Map<String, Object>>> getManagementGateEntryDashboard(@RequestBody ManagementPayload managementRequest) {
         List<Map<String, Object>> data = managementDashboardService.managementGateEntryDashboard(managementRequest);
         return new ResponseEntity<>(data, HttpStatus.OK);
-
     }
 
     @GetMapping("/transactions/ongoing")
@@ -92,5 +96,4 @@ public class ManagementDashboardController {
         ManagementGateEntryList managementGateEntryList = managementDashboardService.gateEntryList(ticketNo, vehicleNo, date, supplierName, transactionType, pageable, vehicleStatus,companyName, siteName);
         return managementGateEntryList;
     }
-
 }

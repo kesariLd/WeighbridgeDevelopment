@@ -1,5 +1,22 @@
 package com.weighbridge.management.services.impl;
 
+import com.weighbridge.admin.entities.QualityRangeMaster;
+import com.weighbridge.admin.entities.SiteMaster;
+import com.weighbridge.admin.repsitories.CompanyMasterRepository;
+import com.weighbridge.admin.repsitories.MaterialMasterRepository;
+import com.weighbridge.admin.repsitories.ProductMasterRepository;
+import com.weighbridge.admin.repsitories.QualityRangeMasterRepository;
+import com.weighbridge.admin.repsitories.SiteMasterRepository;
+import com.weighbridge.admin.repsitories.SupplierMasterRepository;
+import com.weighbridge.gateuser.entities.GateEntryTransaction;
+import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
+import com.weighbridge.management.payload.CoalMoisturePercentageRequest;
+import com.weighbridge.management.payload.CoalMoisturePercentageResponse;
+import com.weighbridge.management.payload.ManagementPayload;
+import com.weighbridge.management.payload.MaterialProductDataResponse;
+import com.weighbridge.management.services.ManagementDashboardService;
+import com.weighbridge.qualityuser.entites.QualityTransaction;
+import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import ch.qos.logback.classic.Logger;
 import com.weighbridge.admin.entities.SiteMaster;
@@ -25,6 +42,7 @@ import com.weighbridge.management.dtos.WeightResponseForGraph;
 import com.weighbridge.management.payload.ManagementPayload;
 import com.weighbridge.management.payload.MaterialProductDataResponse;
 import com.weighbridge.management.payload.MaterialProductQualityResponse;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,6 +52,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,32 +64,46 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Autowired
     private GateEntryTransactionRepository gateEntryTransactionRepository;
+  
     @Autowired
     private WeighmentTransactionRepository weighmentTransactionRepository;
+  
     @Autowired
     private ModelMapper modelMapper;
+  
     @Autowired
     private SiteMasterRepository siteMasterRepository;
+  
     @Autowired
     private CompanyMasterRepository companyMasterRepository;
+  
     @Autowired
     private MaterialMasterRepository materialMasterRepository;
+  
     @Autowired
     private SupplierMasterRepository supplierMasterRepository;
+  
     @Autowired
     private TransporterMasterRepository transporterMasterRepository;
+  
     @Autowired
     private VehicleMasterRepository vehicleMasterRepository;
+  
     @Autowired
     private VehicleTransactionStatusRepository vehicleTransactionStatusRepository;
+  
     @Autowired
     private StatusCodeMasterRepository statusCodeMasterRepository;
+  
     @Autowired
     private TransactionLogRepository transactionLogRepository;
+  
     @Autowired
     private HttpServletRequest httpServletRequest;
+  
     @Autowired
     private CustomerMasterRepository customerMasterRepository;
+  
     @Autowired
     private ProductMasterRepository productMasterRepository;
 
@@ -83,11 +116,11 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     @Autowired
     private QualityTransactionRepository qualityTransactionRepository;
 
-
     @Autowired
     private ManagementGateEntryTransactionSpecification managementGateEntryTransactionSpecification;
 
-
+    @Autowired
+    private QualityRangeMasterRepository qualityRangeMasterRepository;
 
     @Override
     public MaterialProductDataResponse getMaterialProductBarChartData(ManagementPayload managementRequest) {
@@ -139,6 +172,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         response.setMaterialProductData(materialProductDataList);
         return response;
     }
+  
     @Override
     public List<Map<String, Object>> managementGateEntryDashboard(ManagementPayload managementRequest) {
         // Validate the request
@@ -383,11 +417,72 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         return response;
     }
 
-    private String getMaterialOrProductName(GateEntryTransaction gateEntryTransaction) {
+    @Override
+    public CoalMoisturePercentageResponse getMoisturePercentage(CoalMoisturePercentageRequest coalMoisturePercentageRequest) {
+        LocalDate startDate = coalMoisturePercentageRequest.getFromDate();
+        LocalDate endDate = coalMoisturePercentageRequest.getToDate();
+
+        String companyId = companyMasterRepository.findCompanyIdByCompanyName(coalMoisturePercentageRequest.getCompanyName());
+        String[] site = coalMoisturePercentageRequest.getSiteName().split(",");
+        String siteId = siteMasterRepository.findSiteIdBySiteNameAndSiteAddress(site[0], site[1]);
+
+        String[] supplierAddress = coalMoisturePercentageRequest.getSupplierAddress().split(",");
+        Long supplierId = supplierMasterRepository.findSupplierIdBySupplierNameAndAddressLines(
+                coalMoisturePercentageRequest.getSupplierName(), supplierAddress[0], supplierAddress[1]);
+
+        CoalMoisturePercentageResponse coalMoisturePercentageResponse = new CoalMoisturePercentageResponse();
+        coalMoisturePercentageResponse.setMaterialName(coalMoisturePercentageRequest.getMaterialName());
+        coalMoisturePercentageResponse.setSupplierName(coalMoisturePercentageRequest.getSupplierName());
+        coalMoisturePercentageResponse.setSupplierAddress(coalMoisturePercentageRequest.getSupplierAddress());
+
+        List<CoalMoisturePercentageResponse.MoisturePercentageData> moisturePercentageDataList = new ArrayList<>();
+
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            List<Integer> gateEntryTransactionTicketNos = gateEntryTransactionRepository.findTicketNosByCompanyIdAndSiteIdAndSupplierIdAndTransactionDate(
+                    companyId, siteId, supplierId, date);
+
+            List<QualityTransaction> qualityTransactions = qualityTransactionRepository.findByGateEntryTransactionTicketNoIn(gateEntryTransactionTicketNos);
+
+            double totalMoisturePercentageSum = 0;
+            int count = 0;
+
+            for (QualityTransaction qualityTransaction : qualityTransactions) {
+                if (qualityTransaction != null) {
+                    String[] qualityRangeIds = qualityTransaction.getQualityRangeId().split(",");
+                    String[] qualityValues = qualityTransaction.getQualityValues().split(",");
+                    Map<Long, String> qualityParameters = qualityRangeMasterRepository.findAllById(Arrays.stream(qualityRangeIds)
+                                    .map(Long::valueOf).collect(Collectors.toList()))
+                            .stream().collect(Collectors.toMap(QualityRangeMaster::getQualityRangeId, QualityRangeMaster::getParameterName));
+
+                    for (int i = 0; i < qualityRangeIds.length; i++) {
+                        if ("Moisture%".equals(qualityParameters.get(Long.valueOf(qualityRangeIds[i])))) {
+                            totalMoisturePercentageSum += Double.valueOf(qualityValues[i]);
+                            count++;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (count > 0) {
+                double averageMoisturePercentage = totalMoisturePercentageSum / count;
+                CoalMoisturePercentageResponse.MoisturePercentageData moisturePercentageData = new CoalMoisturePercentageResponse.MoisturePercentageData();
+                moisturePercentageData.setTransactionDate(date);
+                moisturePercentageData.setParameterName("Moisture%");
+                moisturePercentageData.setMoisturePercentage(averageMoisturePercentage);
+                moisturePercentageDataList.add(moisturePercentageData);
+            }
+        }
+
+
+        coalMoisturePercentageResponse.setMoisturePercentageData(moisturePercentageDataList);
+        return coalMoisturePercentageResponse;
+    }
+
+   private String getMaterialOrProductName(GateEntryTransaction gateEntryTransaction) {
         if (gateEntryTransaction == null) {
             return "materialOrProductName is not found";
         }
-
         String materialName;
 
         if ("Inbound".equalsIgnoreCase(gateEntryTransaction.getTransactionType())) {
@@ -401,10 +496,6 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         System.out.println("material name:" + materialName);
         return materialName;
     }
-
-
-
-
 
 
     /*  public Long getInboundCount(ManagementPayload managementPayload){

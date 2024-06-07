@@ -12,11 +12,12 @@ public interface QualityTransactionRepository extends JpaRepository<QualityTrans
 
     @Query("SELECT qt FROM QualityTransaction qt WHERE qt.gateEntryTransaction.ticketNo = :ticketNo")
     QualityTransaction findByTicketNo(@Param("ticketNo") Integer ticketNo);
-  
-    QualityTransaction findByGateEntryTransactionTicketNo(@Param("ticketNo") Integer ticketNo);
 
+    @Query("SELECT qt FROM QualityTransaction qt WHERE qt.gateEntryTransaction.ticketNo IN :ticketNos")
+    List<QualityTransaction> findByGateEntryTransactionTicketNoIn(@Param("ticketNos") List<Integer> gateEntryTransactionTicketNos);
+
+    QualityTransaction findByGateEntryTransactionTicketNo(Integer ticketNo);
 
     @Query("SELECT qt FROM QualityTransaction qt WHERE qt.gateEntryTransaction.companyId = :companyId AND qt.gateEntryTransaction.siteId = :siteId AND qt.gateEntryTransaction.transactionDate = :transactionDate")
     List<QualityTransaction> findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(@Param("companyId") String companyId, @Param("siteId") String siteId, @Param("transactionDate") LocalDate transactionDate);
-
 }

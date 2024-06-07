@@ -84,4 +84,7 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
 
     @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g where g.vehicleOut IS Not null ")
     Long countCompleteGateTransaction();
+
+    @Query("SELECT g.ticketNo FROM GateEntryTransaction g WHERE g.companyId = :companyId AND g.siteId = :siteId AND g.supplierId = :supplierId AND g.transactionDate = :transactionDate")
+    List<Integer> findTicketNosByCompanyIdAndSiteIdAndSupplierIdAndTransactionDate(@Param("companyId") String companyId, @Param("siteId") String siteId, @Param("supplierId") Long supplierId, @Param("transactionDate") LocalDate date);
 }
