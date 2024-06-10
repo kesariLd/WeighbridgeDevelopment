@@ -104,14 +104,8 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
   
     @Autowired
     private MaterialMasterRepository materialMasterRepository;
-  
-    @Autowired
-
-    private ProductMasterRepository productMasterRepository;
 
     @Autowired
-    private HttpServletRequest httpServletRequest;
-
     private SupplierMasterRepository supplierMasterRepository;
   
     @Autowired
@@ -139,9 +133,9 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     private ProductMasterRepository productMasterRepository;
 
     @Autowired
-
     private CustomerMasterRepository customerMasterRepository;
 
+    @Autowired
     private SalesProcessRepository salesProcessRepository;
 
     @Autowired
