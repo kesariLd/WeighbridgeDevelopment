@@ -1,5 +1,6 @@
 package com.weighbridge.management.controllers;
 
+import com.weighbridge.management.payload.ManagementQualityDashboardResponse;
 import com.weighbridge.management.payload.MaterialProductQualityResponse;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.management.dtos.WeightResponseForGraph;
@@ -43,6 +44,16 @@ public class ManagementDashboardController {
         MaterialProductQualityResponse response =managementDashboardService.getMaterialProductQualities(managementRequest);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/completedQualities/GoodOrBad")
+    public ResponseEntity<List<ManagementQualityDashboardResponse>> getGoodOrBadQualities(
+            @RequestBody ManagementPayload managementRequest,
+            @RequestParam(required = false) String transactionType,
+            @RequestParam(required = false) String qualityType) {
+        List<ManagementQualityDashboardResponse> response = managementDashboardService.getGoodOrBadQualities(managementRequest, transactionType, qualityType);
+        return ResponseEntity.ok(response);
+    }
+
 
     @PostMapping("/getQtyByGraph")
     public ResponseEntity<List<WeightResponseForGraph>> getQtyResponseAsGraph(@RequestBody ManagementPayload managementPayload,@RequestParam String transactionType){
