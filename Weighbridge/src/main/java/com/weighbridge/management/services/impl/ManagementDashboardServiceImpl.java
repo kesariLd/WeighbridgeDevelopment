@@ -54,6 +54,7 @@ import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import com.weighbridge.weighbridgeoperator.entities.VehicleTransactionStatus;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
+import com.weighbridge.weighbridgeoperator.repositories.VehicleTransactionStatusRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
 import com.weighbridge.management.dtos.WeightResponseForGraph;
