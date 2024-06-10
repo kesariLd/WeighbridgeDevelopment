@@ -1,6 +1,7 @@
 package com.weighbridge.management.controllers;
 
 
+import com.weighbridge.management.payload.ManagementQualityDashboardResponse;
 import com.weighbridge.management.payload.AllTransactionResponse;
 
 import com.weighbridge.management.payload.CoalMoisturePercentageRequest;
@@ -52,6 +53,15 @@ public class ManagementDashboardController {
     @PostMapping("/material-product/qualities")
     public ResponseEntity<MaterialProductQualityResponse> getMaterialProductQualities(@RequestBody ManagementPayload managementRequest){
         MaterialProductQualityResponse response =managementDashboardService.getMaterialProductQualities(managementRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/completedQualities/GoodOrBad")
+    public ResponseEntity<List<ManagementQualityDashboardResponse>> getGoodOrBadQualities(
+            @RequestBody ManagementPayload managementRequest,
+            @RequestParam(required = false) String transactionType,
+            @RequestParam(required = false) String qualityType) {
+        List<ManagementQualityDashboardResponse> response = managementDashboardService.getGoodOrBadQualities(managementRequest, transactionType, qualityType);
         return ResponseEntity.ok(response);
     }
 
