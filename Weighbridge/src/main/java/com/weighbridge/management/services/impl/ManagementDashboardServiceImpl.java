@@ -93,6 +93,9 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
   
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private VehicleTransactionStatusRepository vehicleTransactionStatusRepository;
   
     @Autowired
     private SiteMasterRepository siteMasterRepository;
