@@ -513,14 +513,12 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                 }
             }
 
-            if (count > 0) {
-                double averageMoisturePercentage = totalMoisturePercentageSum / count;
-                CoalMoisturePercentageResponse.MoisturePercentageData moisturePercentageData = new CoalMoisturePercentageResponse.MoisturePercentageData();
-                moisturePercentageData.setTransactionDate(date);
-                moisturePercentageData.setParameterName("Moisture%");
-                moisturePercentageData.setMoisturePercentage(averageMoisturePercentage);
-                moisturePercentageDataList.add(moisturePercentageData);
-            }
+             double averageMoisturePercentage = (count > 0) ? totalMoisturePercentageSum / count : 0.0;
+            CoalMoisturePercentageResponse.MoisturePercentageData moisturePercentageData = new CoalMoisturePercentageResponse.MoisturePercentageData();
+            moisturePercentageData.setTransactionDate(date);
+            moisturePercentageData.setParameterName("Moisture%");
+            moisturePercentageData.setMoisturePercentage(averageMoisturePercentage);
+            moisturePercentageDataList.add(moisturePercentageData);
         }
 
 
