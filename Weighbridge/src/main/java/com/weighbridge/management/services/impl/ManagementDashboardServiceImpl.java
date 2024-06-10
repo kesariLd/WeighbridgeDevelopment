@@ -643,10 +643,6 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         for (Object[] result : totalNetWeightByTransactionDateAndMaterialId) {
             WeightResponseForGraph weightResponseForGraph = new WeightResponseForGraph();
             LocalDate date = (LocalDate) result[0];
-
-            weightResponseForGraph.setTransactionDate(date != null ? date.format(formatter) : "");
-            String materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId((Long) result[1]);
-
             weightResponseForGraph.setTransactionDate(date!=null?date.format(formatter):"");
             String materialNameByMaterialId;
             if(transactionType.equalsIgnoreCase("Inbound")) {
