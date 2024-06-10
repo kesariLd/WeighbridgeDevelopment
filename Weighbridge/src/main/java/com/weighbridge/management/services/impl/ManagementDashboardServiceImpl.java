@@ -44,8 +44,6 @@ import com.weighbridge.management.payload.MaterialProductQualityResponse;
 import com.weighbridge.management.services.ManagementDashboardService;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
 
-import com.weighbridge.qualityuser.exception.ResourceNotFoundException;
-
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 
 import com.weighbridge.management.payload.*;
