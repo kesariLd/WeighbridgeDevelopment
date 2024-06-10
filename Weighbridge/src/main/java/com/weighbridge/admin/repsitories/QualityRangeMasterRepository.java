@@ -47,5 +47,7 @@ public interface QualityRangeMasterRepository extends JpaRepository<QualityRange
 
     @Query("SELECT q FROM QualityRangeMaster q WHERE q.materialMaster IS NOT NULL")
     List<QualityRangeMaster> findByMaterialMasterIsNotNull();
+
+    boolean existsByParameterNameAndMaterialMasterMaterialIdAndSupplierNameAndSupplierAddress(String parameterName, long materialId, String supplierName, String supplierAddress);
 }
 

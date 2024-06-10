@@ -86,5 +86,14 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     Long countCompleteGateTransaction();
 
 
+    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType=:transactionType AND g.vehicleOut IS NULL AND g.transactionDate BETWEEN :startDate AND :endDate AND g.siteId=:siteId AND g.companyId=:companyId")
+    Long countGateEntryWithDate(@Param("transactionType") String transactionType,@Param("startDate") LocalDate startDate,@Param("endDate") LocalDate endDate,@Param("companyId") String companyId,@Param("siteId") String siteId);
 
+    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType=:transactionType AND g.vehicleOut IS Not NULL AND g.transactionDate BETWEEN :startDate AND :endDate AND g.siteId=:siteId AND g.companyId=:companyId")
+    Long countGateExitWithDate(@Param("transactionType") String transactionType,@Param("startDate") LocalDate startDate,@Param("endDate") LocalDate endDate,@Param("companyId") String companyId,@Param("siteId") String siteId);
+
+
+    @Query("SELECT g.ticketNo FROM GateEntryTransaction g WHERE g.companyId = :companyId AND g.siteId = :siteId AND g.supplierId = :supplierId AND g.transactionDate = :transactionDate")
+    List<Integer> findTicketNosByCompanyIdAndSiteIdAndSupplierIdAndTransactionDate(@Param("companyId") String companyId, @Param("siteId") String siteId, @Param("supplierId") Long supplierId, @Param("transactionDate") LocalDate date);
 }
+

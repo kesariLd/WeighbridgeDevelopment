@@ -56,6 +56,7 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
             newSupplierMaster.setSupplierCreatedDate(LocalDateTime.now());
             newSupplierMaster.setSupplierModifiedBy(userId);
             newSupplierMaster.setSupplierModifiedDate(LocalDateTime.now());
+            newSupplierMaster.setSupplierStatus("ACTIVE");
             SupplierMaster savedSupplier = supplierMasterRepository.save(newSupplierMaster);
             SupplierMasterDto mappedSupplierMasterDto = modelMapper.map(savedSupplier, SupplierMasterDto.class);
             return mappedSupplierMasterDto;
