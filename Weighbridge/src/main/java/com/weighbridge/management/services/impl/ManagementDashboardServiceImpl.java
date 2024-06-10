@@ -133,9 +133,6 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     private ProductMasterRepository productMasterRepository;
 
     @Autowired
-    private CustomerMasterRepository customerMasterRepository;
-
-    @Autowired
     private SalesProcessRepository salesProcessRepository;
 
     @Autowired
