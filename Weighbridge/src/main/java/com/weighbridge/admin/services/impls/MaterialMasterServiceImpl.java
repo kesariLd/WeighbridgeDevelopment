@@ -190,7 +190,7 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
         return parameters.stream()
                 .map(parameter -> {
                     QualityRangeMaster qualityRangeMaster = new QualityRangeMaster();
-                    if(!qualityRangeMasterRepository.existsByParameterNameAndMaterialMasterMaterialId(parameter.getParameterName(),materialMaster.getMaterialId())) {
+                    if(!qualityRangeMasterRepository.existsByParameterNameAndMaterialMasterMaterialIdAndSupplierNameAndSupplierAddress(parameter.getParameterName(),materialMaster.getMaterialId(), supplierName, supplierAddress)) {
                         qualityRangeMaster.setParameterName(parameter.getParameterName());
                         qualityRangeMaster.setRangeFrom(parameter.getRangeFrom());
                         qualityRangeMaster.setRangeTo(parameter.getRangeTo());
