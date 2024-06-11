@@ -151,12 +151,36 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     }
 
     @Override
-    public List<MaterialParameterResponse> getMaterialParameters(String materialName) {
+    public List<MaterialWithParameters> getMaterialParameters(String materialName) {
         List<QualityRangeMaster> qualityRangeMasterList = qualityRangeMasterRepository.findByMaterialMasterMaterialName(materialName);
-        return qualityRangeMasterList.stream()
-                .map(qualityRangeMaster -> modelMapper.map(qualityRangeMaster, MaterialParameterResponse.class))
-                .collect(Collectors.toList());
+        Map<String, MaterialWithParameters> materialMap = new HashMap<>();
+
+        for (QualityRangeMaster qualityRangeMaster : qualityRangeMasterList) {
+            String key = qualityRangeMaster.getMaterialMaster().getMaterialName() + "|" +
+                    qualityRangeMaster.getSupplierName() + "|" +
+                    qualityRangeMaster.getSupplierAddress();
+
+            MaterialWithParameters materialWithParameters = materialMap.get(key);
+            if (materialWithParameters == null) {
+                materialWithParameters = new MaterialWithParameters();
+                materialWithParameters.setMaterialName(qualityRangeMaster.getMaterialMaster().getMaterialName());
+                materialWithParameters.setSupplierName(qualityRangeMaster.getSupplierName());
+                materialWithParameters.setSupplierAddress(qualityRangeMaster.getSupplierAddress());
+                materialWithParameters.setParameters(new ArrayList<>());
+                materialMap.put(key, materialWithParameters);
+            }
+
+            MaterialWithParameters.Parameter parameter = new MaterialWithParameters.Parameter();
+            parameter.setParameterName(qualityRangeMaster.getParameterName());
+            parameter.setRangeFrom(qualityRangeMaster.getRangeFrom());
+            parameter.setRangeTo(qualityRangeMaster.getRangeTo());
+
+            materialWithParameters.getParameters().add(parameter);
+        }
+
+        return new ArrayList<>(materialMap.values());
     }
+
 
     private List<MaterialWithParameters> mapQualityRangesToMaterialWithParameters(List<QualityRangeMaster> qualityRangeMasters, String supplierName, String supplierAddress) {
         Map<String, MaterialWithParameters> materialWithParametersMap = new HashMap<>();

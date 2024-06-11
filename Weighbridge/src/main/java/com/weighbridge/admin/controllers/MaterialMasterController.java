@@ -112,8 +112,8 @@ public class MaterialMasterController {
     }
 
     @GetMapping("/view/{materialName}/parameters")
-    public ResponseEntity<List<MaterialParameterResponse>> getMaterialParameters(@PathVariable String materialName) {
-        List<MaterialParameterResponse> response = materialMasterService.getMaterialParameters(materialName);
+    public ResponseEntity<List<MaterialWithParameters>> getMaterialParameters(@PathVariable String materialName) {
+        List<MaterialWithParameters> response = materialMasterService.getMaterialParameters(materialName);
         return ResponseEntity.ok(response);
     }
 

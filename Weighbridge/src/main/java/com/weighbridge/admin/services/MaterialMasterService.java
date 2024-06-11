@@ -22,5 +22,5 @@ public interface MaterialMasterService {
 
     String saveMaterialAndMaterialType(MaterialAndTypeRequest materialAndTypeRequest);
 
-    List<MaterialParameterResponse> getMaterialParameters(String materialName);
+    List<MaterialWithParameters> getMaterialParameters(String materialName);
 }
