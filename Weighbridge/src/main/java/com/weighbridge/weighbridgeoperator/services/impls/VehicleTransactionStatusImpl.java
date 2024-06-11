@@ -57,7 +57,7 @@ public class VehicleTransactionStatusImpl implements VehicleTransactionStatusSer
      */
     @Override
     public Long countOutBoundPendingGross() {
-        Long pendingGross = vehicleTransactionStatusRepository.countOutboundPendingGrossWeight();
+        Long pendingGross = weighmentTransactionRepository.countOutBoundPendingGrossWeight();
         return pendingGross;
     }
 
