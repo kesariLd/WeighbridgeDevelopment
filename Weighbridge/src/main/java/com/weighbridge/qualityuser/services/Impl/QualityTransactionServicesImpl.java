@@ -19,6 +19,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -80,7 +84,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
      * @throws SessionExpiredException   if the session is null or expired.
      * @throws ResourceNotFoundException if the supplier or customer related to a transaction is not found.
      */
-    public List<QualityDashboardResponse> getAllGateDetails() {
+    public Page<QualityDashboardResponse> getAllGateDetails(Pageable pageable) {
         // Get the session and user information
         HttpSession session = httpServletRequest.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
@@ -156,7 +160,11 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             }
         }
 
-        return qualityDashboardResponses;
+        //create sublist based on request page size
+        int start=(int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), qualityDashboardResponses.size());
+        List<QualityDashboardResponse> subList = qualityDashboardResponses.subList(start, end);
+        return new PageImpl<>(subList, pageable, qualityDashboardResponses.size());
     }
 
 
@@ -261,14 +269,13 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
     @Override
     public int getTotalQCTCompletedSize() {
-        List<QualityDashboardResponse> allResponses = getQCTCompleted();
-        return allResponses.size();
+        Page<QualityDashboardResponse> page = getQCTCompleted(PageRequest.of(0, Integer.MAX_VALUE));
+        return (int) page.getTotalElements();
     }
 
 
-
     @Override
-    public List<QualityDashboardResponse> getQCTCompleted() {
+    public Page<QualityDashboardResponse> getQCTCompleted(Pageable pageable) {
         HttpSession session = httpServletRequest.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
             throw new SessionExpiredException("Session Expired, Login again!");
@@ -300,36 +307,23 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
                     try {
                         if (transaction.getTransactionType().equalsIgnoreCase("Inbound")) {
-                         Object[] supplier = supplierMasterRepository.findSupplierNameAndSupplierAddressesBySupplierId(transaction.getSupplierId());
-                            if (supplier != null && supplier.length == 3) {
-                                qualityDashboardResponse.setSupplierOrCustomerName(supplier[0].toString());
-                                qualityDashboardResponse.setSupplierOrCustomerAddress(supplier[1] + "," + supplier[2]);
-                            } else {
-                                // Handle the case where the returned array has a different length
-                                log.error("Unexpected array length returned from findSupplierNameAndSupplierAddressesBySupplierId");
-                                qualityDashboardResponse.setSupplierOrCustomerName(null);
-                                qualityDashboardResponse.setSupplierOrCustomerAddress(null);
-                            }
+                            SupplierMaster supplierMaster = supplierMasterRepository.findById(transaction.getSupplierId())
+                                    .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", String.valueOf(transaction.getSupplierId())));
+                            qualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
+                            qualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2());
 
                             String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
                             qualityDashboardResponse.setMaterialName(materialName);
                         } else {
+                            CustomerMaster customerMaster = customerMasterRepository.findById(transaction.getCustomerId())
+                                    .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", String.valueOf(transaction.getCustomerId())));
+                            qualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
+                            qualityDashboardResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine1() + "," + customerMaster.getCustomerAddressLine2());
 
-                            Object[] customer = customerMasterRepository.findCustomerNameAndCustomerAddressesByCustomerId(transaction.getCustomerId());
-                            if (customer != null && customer.length == 3) {
-                                qualityDashboardResponse.setSupplierOrCustomerName(customer[0].toString());
-                                qualityDashboardResponse.setSupplierOrCustomerAddress(customer[1] + "," + customer[2]);
-                            } else {
-                                // Handle the case where the returned array has a different length
-                                log.error("Unexpected array length returned from findCustomerNameAndCustomerAddressesByCustomerId");
-                                qualityDashboardResponse.setSupplierOrCustomerName(null);
-                                qualityDashboardResponse.setSupplierOrCustomerAddress(null);
-                            }
                             String productName = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
                             qualityDashboardResponse.setMaterialName(productName);
                         }
                     } catch (ResourceNotFoundException e) {
-                        // Log and continue to the next transaction if supplier/customer or material/product is not found
                         log.error(e.getMessage(), e);
                         continue;
                     }
@@ -349,7 +343,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                         qualityDashboardResponse.setOut(transaction.getVehicleOut().format(formatter));
                     }
                     qualityDashboardResponse.setDate(transaction.getTransactionDate());
-
                     QualityTransaction qualityTransaction = qualityTransactionRepository.findByTicketNo(transaction.getTicketNo());
                     if (qualityTransaction == null) {
                         qualityDashboardResponse.setQualityParametersPresent(false);
@@ -360,8 +353,12 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 }
             }
         }
+        //create sublist request on page size
+        int start=(int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), qualityDashboardResponses.size());
+        List<QualityDashboardResponse> subList = qualityDashboardResponses.subList(start, end);
 
-        return qualityDashboardResponses;
+        return new PageImpl<>(subList, pageable, qualityDashboardResponses.size());
     }
 
 
@@ -472,7 +469,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             return "Failed to add quality to ticket no : \"" + ticketNo + "\". Please try again.";
         }
     }
-
 
 
 //Generate report for quality check

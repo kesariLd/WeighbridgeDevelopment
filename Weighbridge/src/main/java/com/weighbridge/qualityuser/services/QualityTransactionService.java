@@ -4,6 +4,8 @@ import com.weighbridge.qualityuser.exception.ResourceNotFoundException;
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -19,7 +21,7 @@ public interface QualityTransactionService {
      *
      * @return a list of QualityDashboardResponse objects
      */
-    List<QualityDashboardResponse> getAllGateDetails();
+    Page<QualityDashboardResponse> getAllGateDetails(Pageable pageable);
 
     /**
      * Creates a new quality transaction for a given ticket number.
@@ -59,7 +61,7 @@ public interface QualityTransactionService {
 
     List<QualityDashboardResponse> getQCTCompletedOutbound();
 
-    List<QualityDashboardResponse> getQCTCompleted();
+    Page<QualityDashboardResponse> getQCTCompleted(Pageable pageable);
 
     int getInboundQCTCompletedSize();
 

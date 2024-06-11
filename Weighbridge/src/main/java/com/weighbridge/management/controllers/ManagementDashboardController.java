@@ -49,7 +49,6 @@ public class ManagementDashboardController {
     }
 
    //bar chart for good quality
-
     @PostMapping("/material-product/qualities")
     public ResponseEntity<MaterialProductQualityResponse> getMaterialProductQualities(@RequestBody ManagementPayload managementRequest){
         MaterialProductQualityResponse response =managementDashboardService.getMaterialProductQualities(managementRequest);
@@ -64,7 +63,6 @@ public class ManagementDashboardController {
         List<ManagementQualityDashboardResponse> response = managementDashboardService.getGoodOrBadQualities(managementRequest, transactionType, qualityType);
         return ResponseEntity.ok(response);
     }
-
 
     @PostMapping("/moisture-percentage")
     public ResponseEntity<CoalMoisturePercentageResponse> getMoisturePercentage(@RequestBody CoalMoisturePercentageRequest coalMoisturePercentageRequest){
