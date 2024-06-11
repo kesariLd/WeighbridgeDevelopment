@@ -1057,6 +1057,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                     gateEntryPrint.setCustomerAddress(customerAddress);
                 }
             }
+            gateEntryPrint.setCompanyName(companyMasterRepository.findCompanyNameByCompanyId(gateEntryTransaction.getCompanyId()));
+            gateEntryPrint.setSiteName(siteMasterRepository.findSiteNameBySiteId(gateEntryTransaction.getSiteId()));
         }
         return gateEntryPrint;
     }
