@@ -74,7 +74,7 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
             @Param("siteId") String siteId
     );
 
-
+    // TODO Add Company and site
     @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Inbound' AND g.vehicleOut IS NULL")
     Long countPendingGateTransactionsInbound();
 

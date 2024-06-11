@@ -32,7 +32,6 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
 
     @Autowired
     private ModelMapper modelMapper;
-    // todo if address also same than shouldn't create another
     @Override
     public SupplierMasterDto createSupplier(SupplierMasterDto supplierMasterDto) {
         try {

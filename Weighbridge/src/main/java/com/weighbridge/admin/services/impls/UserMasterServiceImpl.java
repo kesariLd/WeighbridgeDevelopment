@@ -141,9 +141,7 @@ public class UserMasterServiceImpl implements UserMasterService {
         // Generate a random password of length 10
         return RandomStringUtils.randomAlphanumeric(8);
     }
-    /* todo
-        if company id is all than handle
-     */
+
 
     public synchronized String generateUserId(String companyId) {
         // Count the number of users for the given company ID
