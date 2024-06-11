@@ -1,5 +1,6 @@
 package com.weighbridge.weighbridgeoperator.services.impls;
 
+import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
@@ -52,6 +53,9 @@ public class WeighbridgeOperatorPrintServiceImpl implements WeighbridgeOperatorP
     @Override
     public WeighbridgeOperatorPrint getPrintResponse(Integer ticketNo) {
         GateEntryTransaction byTicketNo = gateEntryTransactionRepository.findByTicketNo(ticketNo);
+        if (byTicketNo==null){
+            throw new ResourceNotFoundException("Ticket not found");
+        }
         WeighbridgeOperatorPrint weighbridgeOperatorPrint=new WeighbridgeOperatorPrint();
         weighbridgeOperatorPrint.setTicketNo(byTicketNo.getTicketNo());
         weighbridgeOperatorPrint.setVehicleNo(vehicleMasterRepository.findVehicleNoById(byTicketNo.getVehicleId()));
@@ -83,6 +87,7 @@ public class WeighbridgeOperatorPrintServiceImpl implements WeighbridgeOperatorP
         String timeFormat1=twt!=null?twt.getTimestamp().format(timeFormatter):"";
             weighbridgeOperatorPrint.setTareWeightDate(dateFormat1);
             weighbridgeOperatorPrint.setTareWeightTime(timeFormat1);
+            weighbridgeOperatorPrint.setNetWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getNetWeight());
         System.out.println(weighbridgeOperatorPrint);
         return weighbridgeOperatorPrint;
     }
