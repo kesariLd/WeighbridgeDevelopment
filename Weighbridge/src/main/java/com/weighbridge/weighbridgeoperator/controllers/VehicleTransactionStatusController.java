@@ -1,7 +1,6 @@
-package com.weighbridge.gateuser.controllers;
+package com.weighbridge.weighbridgeoperator.controllers;
 
-import com.weighbridge.gateuser.services.VehicleTransactionStatusService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.weighbridge.weighbridgeoperator.services.VehicleTransactionStatusService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,19 +40,6 @@ public class VehicleTransactionStatusController {
     }
 
     /**
-     * Retrieves the number of pending inbound transactions with tare weight.
-     *
-     * Tare weight refers to the weight of the vehicle without cargo.
-     *
-     * @return A ResponseEntity object with status code OK (200) containing the count of pending inbound tare weight transactions.
-     */
-    @GetMapping("/pendingTare/Inbound")
-    public ResponseEntity<Long> noOfInboundTareWeight() {
-        Long pending = vehicleTransactionStatusService.countInboundPendingTare();
-        return ResponseEntity.ok(pending);
-    }
-
-    /**
      * Retrieves the number of pending outbound transactions with gross weight.
      *
      * @return A ResponseEntity object with status code OK (200) containing the count of pending outbound gross weight transactions.
@@ -73,5 +59,19 @@ public class VehicleTransactionStatusController {
     public ResponseEntity<Long> noOfOutboundTareWeight() {
         Long pendingTare = vehicleTransactionStatusService.countOutBoundPendingTare();
         return ResponseEntity.ok(pendingTare);
+    }
+
+
+    /**
+     * Retrieves the number of pending inbound transactions with tare weight.
+     *
+     * Tare weight refers to the weight of the vehicle without cargo.
+     *
+     * @return A ResponseEntity object with status code OK (200) containing the count of pending inbound tare weight transactions.
+     */
+    @GetMapping("/pendingTare/Inbound")
+    public ResponseEntity<Long> noOfInboundTareWeight() {
+        Long pending =vehicleTransactionStatusService.countInboundPendingTare();
+        return ResponseEntity.ok(pending);
     }
 }

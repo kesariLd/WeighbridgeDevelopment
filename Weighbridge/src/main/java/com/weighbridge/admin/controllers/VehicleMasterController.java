@@ -1,5 +1,6 @@
 package com.weighbridge.admin.controllers;
 
+import com.weighbridge.admin.dtos.TransporterDto;
 import com.weighbridge.admin.dtos.VehicleMasterDto;
 import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.payloads.VehicleGateEntryResponse;
@@ -14,7 +15,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Set;
@@ -109,5 +118,44 @@ public class VehicleMasterController {
     public ResponseEntity<String> deleteVehicle(@PathVariable String vehicleNo){
         String deletedVehicle = vehicleMasterService.deleteVehicleByVehicleNo(vehicleNo);
         return ResponseEntity.ok(deletedVehicle);
+    }
+
+//    @GetMapping("/{vehicleId}")
+//    public ResponseEntity<VehicleMasterDto> getVehicleById(@PathVariable Long vehicleId) {
+//        VehicleMasterDto vehicleMasterDto = vehicleMasterService.getVehicleById(vehicleId);
+//        return ResponseEntity.ok(vehicleMasterDto);
+//    }
+
+    /**
+     * Endpoint to update a vehicle by its ID.
+     *
+     * @param vehicleId  The unique identifier of the vehicle.
+     * @param vehicleDto The vehicle details to be updated.
+     * @return ResponseEntity containing a success message with HTTP status OK.
+     */
+    @PutMapping("/{vehicleId}")
+    public ResponseEntity<String> updateVehicleById(@PathVariable Long vehicleId, @RequestBody VehicleMasterDto vehicleDto) {
+        String response = vehicleMasterService.updateVehicleById(vehicleId, vehicleDto);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{vehicleId}/deactivate")
+    public ResponseEntity<Void> deleteTransporterById(@PathVariable Long vehicleId) {
+        boolean deactivated = vehicleMasterService.deactivateVehicleById(vehicleId);
+        if (deactivated) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{vehicleId}/activate")
+    public ResponseEntity<Void> activateTransporterById(@PathVariable Long vehicleId) {
+        boolean activated = vehicleMasterService.activateVehicleById(vehicleId);
+        if (activated) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

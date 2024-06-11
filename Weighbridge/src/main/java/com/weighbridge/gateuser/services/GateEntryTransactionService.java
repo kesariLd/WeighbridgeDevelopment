@@ -1,11 +1,14 @@
 package com.weighbridge.gateuser.services;
 
-import com.weighbridge.gateuser.dtos.GateEntryTransactionDto;
+import com.weighbridge.gateuser.dtos.GateEntryPrint;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
+import com.weighbridge.gateuser.payloads.GateEntryEditResponse;
+import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
+import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -21,6 +24,10 @@ public interface GateEntryTransactionService {
      */
     Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest);
 
+    GateEntryEditResponse editGateEntryByTicketNo(Integer ticketNo);
+
+    Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest,Integer ticketNo);
+
     /**
      * Sets the out time for a vehicle associated with the specified ticket number.
      *
@@ -35,6 +42,21 @@ public interface GateEntryTransactionService {
      * @return A list of gate entry transaction responses containing various details such as ticket number,
      *         transaction type, material, supplier, vehicle information, timestamps, and other related data.
      */
-    List<GateEntryTransactionResponse> getAllGateEntryTransaction();
+    GateEntryTransactionPageResponse getAllGateEntryTransaction(Pageable pageable);
+
+
+    List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate , LocalDate endDate);
+
+    List<String> getAllMaterialAndProductNames();
+
+    GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable);
+
+    GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable,String vehicleStatus);
+
+    GateEntryPrint getPrintTicketWise(Integer ticketNo);
+
+    Long countPendingGateTransactionsInbound();
+    Long countPendingGateTransactionsOutbound();
+    Long countCompleteTransactions();
 }
 

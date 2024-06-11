@@ -12,8 +12,4 @@ public class TransporterDto {
     private String transporterEmailId;
     private String transporterAddress;
     private String status;
-    private String transporterCreatedBy;
-    private LocalDateTime transporterCreatedDate;
-    private String transporterModifiedBy;
-    private LocalDateTime transporterModifiedDate;
 }

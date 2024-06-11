@@ -1,5 +1,6 @@
 package com.weighbridge.admin.repsitories;
 
+import com.weighbridge.admin.dtos.CustomerMasterDto;
 import com.weighbridge.admin.entities.CustomerMaster;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,12 +25,25 @@ public interface CustomerMasterRepository extends JpaRepository<CustomerMaster, 
     @Query("SELECT c.customerName,c.customerAddressLine1 from CustomerMaster c where c.customerId =:customerId")
     Object[] findCustomerNameAndAddressBycustomerId(@Param("customerId") long customerId);
 
+    @Query("SELECT c.customerName,c.customerAddressLine1,c.customerAddressLine2 from CustomerMaster c where c.customerId =:customerId")
+    Object[] findCustomerNameAndAddress1andAddress2ByCustomerId(@Param("customerId") long customerId);
 
-
-    Boolean existsByCustomerNameAndCustomerAddressLine1AndCustomerAddressLine2(String customerName, String addressLine1, String addressLine2);
-
-
-    @Query("SELECT cm FROM CustomerMaster cm WHERE cm.customerId = :customerId")
+    @Query("SELECT cm.customerName FROM CustomerMaster cm WHERE cm.customerId = :customerId")
     String findCustomerNameByCustomerId(@Param("customerId") long customerId);
 
+    CustomerMaster findByCustomerId(long customerId);
+
+    Boolean existsByCustomerEmailAndCustomerIdNot(String emailId,long id);
+
+    @Query("SELECT c.customerName FROM CustomerMaster c WHERE c.customerStatus= 'ACTIVE' ")
+    List<String> findListCustomerName();
+
+
+    @Query("SELECT c.customerId FROM CustomerMaster c WHERE c.customerName= :customerName")
+    List<Long> findListCustomerIdbyCustomerName(@Param("customerName") String customerName);
+    @Query("SELECT c FROM CustomerMaster c WHERE c.customerName LIKE %:customerName% OR c.customerAddressLine1 LIKE %:customerAddressLine1% OR c.customerAddressLine2 LIKE %:customerAddressLine1%")
+    List<CustomerMaster> findByCustomerNameContainingOrCustomerAddressLine1Containing(@Param("customerName") String supplierOrCustomerName, @Param("customerAddressLine1") String supplierOrCustomerAddress);
+
+    @Query("SELECT c.customerName, c.customerAddressLine1, c.customerAddressLine2 FROM CustomerMaster c where c.customerId =:customerId")
+    Object[] findCustomerNameAndCustomerAddressesByCustomerId(@Param("customerId") long customerId);
 }

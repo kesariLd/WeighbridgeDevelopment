@@ -1,8 +1,8 @@
-package com.weighbridge.gateuser.services.impl;
+package com.weighbridge.weighbridgeoperator.services.impls;
 
-import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
-import com.weighbridge.gateuser.services.VehicleTransactionStatusService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.weighbridge.weighbridgeoperator.repositories.VehicleTransactionStatusRepository;
+import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
+import com.weighbridge.weighbridgeoperator.services.VehicleTransactionStatusService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,13 +17,16 @@ public class VehicleTransactionStatusImpl implements VehicleTransactionStatusSer
 
     private final VehicleTransactionStatusRepository vehicleTransactionStatusRepository;
 
+    private final WeighmentTransactionRepository weighmentTransactionRepository;
+
     /**
      * Constructor to inject the `VehicleTransactionStatusRepository` dependency.
      *
      * @param vehicleTransactionStatusRepository - The repository class responsible for accessing vehicle transaction status data.
      */
-    public VehicleTransactionStatusImpl(VehicleTransactionStatusRepository vehicleTransactionStatusRepository) {
+    public VehicleTransactionStatusImpl(VehicleTransactionStatusRepository vehicleTransactionStatusRepository, WeighmentTransactionRepository weighmentTransactionRepository) {
         this.vehicleTransactionStatusRepository = vehicleTransactionStatusRepository;
+        this.weighmentTransactionRepository = weighmentTransactionRepository;
     }
 
     /**
@@ -44,11 +47,8 @@ public class VehicleTransactionStatusImpl implements VehicleTransactionStatusSer
      *
      * @return The number of pending inbound tare weight transactions.
      */
-    @Override
-    public Long countInboundPendingTare() {
-        Long pendingTare = vehicleTransactionStatusRepository.countInboundPendingTareWeight();
-        return pendingTare;
-    }
+
+
 
     /**
      * Retrieves the number of pending outbound transactions with gross weight.
@@ -71,5 +71,17 @@ public class VehicleTransactionStatusImpl implements VehicleTransactionStatusSer
         Long pendingTare = vehicleTransactionStatusRepository.countOutboundPendingTareWeight();
         return pendingTare;
     }
-}
 
+
+    /**
+     * Retrieves the number of pending inbound transactions with tare weight.
+     *
+     * Tare weight refers to the weight of the vehicle without cargo.
+     *
+     * @return A ResponseEntity object with status code OK (200) containing the count of pending inbound tare weight transactions.
+     */
+    public Long countInboundPendingTare() {
+        Long pendingTare = weighmentTransactionRepository.countInboundTransactionsWithZeroNetWeight();
+        return pendingTare;
+    }
+}

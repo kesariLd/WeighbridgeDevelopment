@@ -14,7 +14,6 @@ public interface MaterialTypeMasterRepository extends JpaRepository<MaterialType
     @Query("SELECT mtm.materialTypeName FROM MaterialTypeMaster mtm WHERE mtm.materialMaster.materialName = :materialName")
     List<String> findByMaterialMasterMaterialName(@Param("materialName") String materialName);
 
-
-
-    Boolean existsByMaterialMasterMaterialId(long materialId);
+    @Query("SELECT CASE WHEN COUNT(m) > 0 THEN TRUE ELSE FALSE END FROM MaterialTypeMaster m WHERE m.materialTypeName = :materialTypeName AND m.materialMaster.materialId = :materialId")
+    Boolean existsByMaterialTypeNameAndMaterialMasterMaterialId(@Param("materialTypeName") String materialTypeName, @Param("materialId") long materialId);
 }

@@ -1,4 +1,4 @@
-package com.weighbridge.gateuser.services;
+package com.weighbridge.weighbridgeoperator.services;
 
 
 
@@ -27,7 +27,7 @@ public interface VehicleTransactionStatusService {
      *
      * @return The number of pending inbound tare weight transactions.
      */
-    public Long countInboundPendingTare();
+
 
     /**
      * Retrieves the number of pending outbound transactions with gross weight.
@@ -42,5 +42,6 @@ public interface VehicleTransactionStatusService {
      * @return The number of pending outbound tare weight transactions.
      */
     public Long countOutBoundPendingTare();
-}
 
+    public Long countInboundPendingTare();
+}

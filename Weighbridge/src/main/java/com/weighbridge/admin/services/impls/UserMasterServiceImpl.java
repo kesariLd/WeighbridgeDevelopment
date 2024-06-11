@@ -119,7 +119,6 @@ public class UserMasterServiceImpl implements UserMasterService {
         String hashedPassword = BCrypt.hashpw(defaultPassword, BCrypt.gensalt());
         userAuthentication.setDefaultPassword(hashedPassword);
 
-
         // Convert Set<String> to comma-separated String
         String rolesString = String.join(",", getRoleNames(roles));
 
@@ -142,9 +141,7 @@ public class UserMasterServiceImpl implements UserMasterService {
         // Generate a random password of length 10
         return RandomStringUtils.randomAlphanumeric(8);
     }
-    /* todo
-        if company id is all than handle
-     */
+
 
     public synchronized String generateUserId(String companyId) {
         // Count the number of users for the given company ID
@@ -275,11 +272,11 @@ public class UserMasterServiceImpl implements UserMasterService {
                     .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
 
             // Check if the new email or contact number already exists for other users
-            boolean userExists = userMasterRepository.existsByUserEmailIdAndUserIdNotOrUserContactNoAndUserIdNot(
-                    updateRequest.getEmailId(), userId, updateRequest.getContactNo(), userId
+            boolean userExists = userMasterRepository.existsByUserEmailIdAndUserIdNot(
+                    updateRequest.getEmailId(), userId
             );
             if (userExists) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "EmailId and ContactNo is exists with another user");
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "EmailId is exists with another user");
             }
 
             // Fetch company and site details
@@ -312,7 +309,7 @@ public class UserMasterServiceImpl implements UserMasterService {
                 userHistory.setRoles(roles);
                 System.out.println(roles);
 
-                userHistory.setSite(siteName + ", " + siteAddress);
+                userHistory.setSite(userMaster.getSite().getSiteName() + ", " +userMaster.getSite().getSiteAddress());
                 userHistory.setCompany(userMaster.getCompany().getCompanyName());
                 userHistory.setUserCreatedBy(userMaster.getUserCreatedBy());
                 userHistory.setUserCreatedDate(userMaster.getUserCreatedDate());

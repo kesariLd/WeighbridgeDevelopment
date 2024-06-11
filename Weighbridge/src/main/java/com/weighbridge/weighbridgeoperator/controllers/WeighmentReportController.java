@@ -4,11 +4,13 @@ import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentPrintResponse;
 import com.weighbridge.weighbridgeoperator.services.WeighmentReportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Rest Controller class for handling weighment report related API requests.
@@ -44,6 +46,12 @@ public class WeighmentReportController {
     public ResponseEntity<WeighmentPrintResponse> printWeighmentTransaction(@PathVariable Integer ticketNo) {
         WeighmentPrintResponse  weighmentPrintResponse = weighmentReportService.getAllWeighmentTransactions(ticketNo);
         return ResponseEntity.ok(weighmentPrintResponse);
+    }
+    @GetMapping("/getReport")
+    public ResponseEntity<List<Map<String, Object>>> getDemoData(@RequestBody List<String> selectedFields, @RequestParam(required = false) LocalDate startDate,
+                                                                 @RequestParam(required = false) LocalDate endDate) {
+
+        return new ResponseEntity<>(weighmentReportService.generateCustomizedReport(selectedFields,startDate,endDate), HttpStatus.OK);
     }
 }
 

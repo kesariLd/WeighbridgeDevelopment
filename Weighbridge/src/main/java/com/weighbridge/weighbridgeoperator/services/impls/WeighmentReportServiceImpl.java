@@ -13,6 +13,7 @@ import com.weighbridge.admin.repsitories.SupplierMasterRepository;
 import com.weighbridge.admin.repsitories.TransporterMasterRepository;
 import com.weighbridge.admin.repsitories.UserMasterRepository;
 import com.weighbridge.admin.repsitories.VehicleMasterRepository;
+import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
@@ -23,6 +24,10 @@ import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponseList;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.services.WeighmentReportService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.criteria.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,11 +38,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 public class WeighmentReportServiceImpl implements WeighmentReportService {
@@ -77,6 +80,8 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
 
     @Autowired
     private SiteMasterRepository siteMasterRepository;
+    @PersistenceContext
+    private EntityManager entityManager;
 
 
     @Override
@@ -127,26 +132,30 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         if ("Inbound".equals(weighmentTransaction.getGateEntryTransaction().getTransactionType())) {
             String supplierName = supplierMasterRepository.findSupplierNameBySupplierId(weighmentTransaction.getGateEntryTransaction().getSupplierId());
             weighmentPrintResponse.setSupplierOrCustomerName(supplierName);
+            weighmentPrintResponse.setTareWeight(weighmentTransaction.getTareWeight());
+            weighmentPrintResponse.setGrossWeight(weighmentTransaction.getTemporaryWeight());
         }
 
         if ("Outbound".equals(weighmentTransaction.getGateEntryTransaction().getTransactionType())) {
             String customerName = customerMasterRepository.findCustomerNameByCustomerId(weighmentTransaction.getGateEntryTransaction().getCustomerId());
             weighmentPrintResponse.setSupplierOrCustomerName(customerName);
+            weighmentPrintResponse.setTareWeight(weighmentTransaction.getTemporaryWeight());
+            weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
         }
+        System.out.println(weighmentPrintResponse);
 
         weighmentPrintResponse.setChallanNo(weighmentTransaction.getGateEntryTransaction().getChallanNo());
-        weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
+      //  weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
+    //    weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
         TransactionLog gwt = transactionLogRepository.findByTicketNoAndStatusCode(weighmentTransaction.getGateEntryTransaction().getTicketNo(), "GWT");
         if(gwt != null) {
             LocalDateTime gwtTimestamp = gwt.getTimestamp();
             String formattedGwtTimestamp = gwtTimestamp.format(formatter);
             weighmentPrintResponse.setGrossWeightDateTime(formattedGwtTimestamp);
         }
-
-        weighmentPrintResponse.setTareWeight(weighmentTransaction.getTareWeight());
+       // weighmentPrintResponse.setTareWeight(weighmentTransaction.getTareWeight());
         TransactionLog twt = transactionLogRepository.findByTicketNoAndStatusCode(weighmentTransaction.getGateEntryTransaction().getTicketNo(), "TWT");
         if(twt != null) {
             LocalDateTime twtTimestamp = twt.getTimestamp();
@@ -163,6 +172,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         }
         userName.append(userMaster.getUserLastName());
         weighmentPrintResponse.setOperatorName(String.valueOf(userName));
+        System.out.println(weighmentPrintResponse);
         return weighmentPrintResponse;
     }
 
@@ -193,27 +203,12 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
      * @return
      */
     public List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate) {
-        if (startDate == null && endDate == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date is not provided");
-        }
-        if (startDate == null && endDate != null) {
-            startDate = endDate;
-        }
-        if (startDate != null && endDate == null) {
-            endDate = startDate;
-        }
-        LocalDate finalStartDate = startDate;
-        LocalDate finalEndDate = endDate;
-        List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransaction();
+
+        List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransactionForWeighmentReport(startDate,endDate);
 
         Map<String, Map<String, List<WeighbridgeReportResponseList>>> groupedReports = new HashMap<>();
 
         gateEntryTransactionResponses.stream()
-                .filter(response -> {
-                    LocalDate transactionDate = response.getTransactionDate();
-                    return transactionDate != null && !transactionDate.isBefore(finalStartDate) && !transactionDate.isAfter(finalEndDate);
-                })
-                .filter(response -> isValidTransaction(response, finalStartDate, finalEndDate))
                 .forEach(response -> {
                     String materialName = response.getMaterial();
                     String supplierOrCustomer = response.getTransactionType().equalsIgnoreCase("Inbound") ?
@@ -250,6 +245,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         weighbridgeReportResponseList.setVehicleNo(gateEntryResponse.getVehicleNo());
         weighbridgeReportResponseList.setTpNo(gateEntryResponse.getTpNo());
         weighbridgeReportResponseList.setChallanDate(gateEntryResponse.getChallanDate());
+        weighbridgeReportResponseList.setTicketNo(gateEntryResponse.getTicketNo());
 
         if (weighmentTransaction != null) {
             double supplyConsignmentWeight = gateEntryResponse.getTpNetWeight();
@@ -267,6 +263,108 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         }
 
         return weighbridgeReportResponseList;
+    }
+    @Override
+    public List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields,LocalDate startDate,LocalDate endDate) {
+        HttpSession session = httpServletRequest.getSession();
+        if (session == null || session.getAttribute("userId") == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
+        }
+
+        String userSite = session.getAttribute("userSite").toString();
+        String userCompany = session.getAttribute("userCompany").toString();
+
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
+        Root<GateEntryTransaction> gateEntryTransactionRoot = criteriaQuery.from(GateEntryTransaction.class);
+        Root<WeighmentTransaction> weighmentTransactionRoot = criteriaQuery.from(WeighmentTransaction.class);
+
+        // Build selection criteria based on selectedFields
+        List<Selection<?>> selections = new ArrayList<>();
+        Map<String, Expression<?>> fieldToExpressionMap = new HashMap<>();
+        for (String field : selectedFields) {
+            switch (field) {
+                case "materialId":
+                case "supplierId":
+                case "customerId":
+                case "vehicleId":
+                case "transactionDate":
+                case "challanNo":
+                case "challanDate":
+                case "supplyConsignmentWeight":
+                case "ticketNo":
+                    Selection<?> selection = gateEntryTransactionRoot.get(field);
+                    selections.add(selection.alias(field));
+                    fieldToExpressionMap.put(field, gateEntryTransactionRoot.get(field));
+                    break;
+                case "netWeight":
+                    selections.add(weighmentTransactionRoot.get("netWeight").alias("netWeight"));
+                    fieldToExpressionMap.put(field, weighmentTransactionRoot.get("netWeight"));
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid field name: " + field);
+            }
+        }
+        criteriaQuery.multiselect(selections);
+
+        // Add where clause for siteId and companyId
+        Predicate siteCompanyPredicate = criteriaBuilder.and(
+                criteriaBuilder.equal(gateEntryTransactionRoot.get("siteId"), userSite),
+                criteriaBuilder.equal(gateEntryTransactionRoot.get("companyId"), userCompany),
+                criteriaBuilder.equal(gateEntryTransactionRoot.get("ticketNo"), weighmentTransactionRoot.get("gateEntryTransaction").get("ticketNo"))
+        );
+        // Add date filtering predicates if startDate or endDate are provided
+        if (startDate != null && endDate != null) {
+            siteCompanyPredicate = criteriaBuilder.and(
+                    siteCompanyPredicate,
+                    criteriaBuilder.between(gateEntryTransactionRoot.get("transactionDate"), startDate, endDate)
+            );
+        } else if (startDate != null) {
+            siteCompanyPredicate = criteriaBuilder.and(
+                    siteCompanyPredicate,
+                    criteriaBuilder.greaterThanOrEqualTo(gateEntryTransactionRoot.get("transactionDate"), startDate)
+            );
+        } else if (endDate != null) {
+            siteCompanyPredicate = criteriaBuilder.and(
+                    siteCompanyPredicate,
+                    criteriaBuilder.lessThanOrEqualTo(gateEntryTransactionRoot.get("transactionDate"), endDate)
+            );
+        }
+        criteriaQuery.where(siteCompanyPredicate);
+
+        // Order by transactionDate descending
+        criteriaQuery.orderBy(criteriaBuilder.desc(gateEntryTransactionRoot.get("transactionDate")));
+
+        List<Tuple> resultList = entityManager.createQuery(criteriaQuery).getResultList();
+        System.out.println("result list tuple "+resultList);
+        List<Map<String, Object>> mappedResultList = new ArrayList<>();
+        for (Tuple tuple : resultList) {
+            Map<String, Object> mappedResult = new HashMap<>();
+            for (String field : selectedFields) {
+                Object value = tuple.get(fieldToExpressionMap.get(field));
+                if ("materialId".equals(field) && value != null) {
+                    long materialId = (long) value;
+                    value = Optional.ofNullable(materialMasterRepository.findMaterialNameByMaterialId(materialId))
+                            .orElse("Unknown Material");
+                } else if ("supplierId".equals(field) && value != null) {
+                    long supplierId = (long) value;
+                    value = Optional.ofNullable(supplierMasterRepository.findSupplierNameBySupplierId(supplierId))
+                            .orElse("");
+                } else if ("customerId".equals(field) && value != null) {
+                    long customerId = (long) value;
+                    value = Optional.ofNullable(customerMasterRepository.findCustomerNameByCustomerId(customerId))
+                            .orElse("");
+                } else if ("vehicleId".equals(field) && value != null) {
+                    long vehicleId = (long) value;
+                    value = Optional.ofNullable(vehicleMasterRepository.findVehicleNoById(vehicleId))
+                            .orElse("");
+                }
+                mappedResult.put(field, value);
+            }
+            mappedResultList.add(mappedResult);
+        }
+
+        return mappedResultList;
     }
 
 }

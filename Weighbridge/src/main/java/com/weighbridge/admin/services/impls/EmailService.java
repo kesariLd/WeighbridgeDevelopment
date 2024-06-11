@@ -43,26 +43,27 @@ public class EmailService {
 
         try {
             // Create a default MimeMessage object
-            MimeMessage message = new MimeMessage(session);
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
             // Set From: header field
-            message.setFrom(new InternetAddress(properties.getProperty("spring.mail.username")));
+            helper.setFrom(new InternetAddress(properties.getProperty("spring.mail.username")));
 
             // Set To: header field
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(userEmail));
+            helper.setTo(userEmail);
+
 
             // Set Subject: header field
-            message.setSubject("Your Credentials");
-
+            helper.setSubject("Your Credentials");
+            String content="<p>Dear user,</p>"+"<p>You have successfully resgistered.Please use your userId and password to reset password</p>"+"<p>userId: <strong>"+username+"</strong></p>"+"<p>password: <strong>"+password+"</strong></p>";
             // Set the message content
-            message.setText("Your userId: " + username + "\nYour password: " + password);
-
+            helper.setText(content,true);
             // Send the message
           javaMailSender.send(message);
 
             System.out.println("Email sent successfully!");
 
-        } catch (MessagingException e) {
+        } catch (MessagingException|MailException e) {
             // Log the exception details
             log.error("Failed to send email: " + e.getMessage(), e);
             throw new RuntimeException("Failed to send email: " + e.getMessage(), e);
@@ -79,7 +80,9 @@ public class EmailService {
             helper.setFrom(new InternetAddress(fromEmail));
             helper.setTo(toEmail);
             helper.setSubject("Password Reset Request");
-            helper.setText("Dear user,\n\nPlease use the following token to reset your password: " + resetToken + "For RegeneratePassword");
+            String content="<p>Dear user,</p>" +
+                    "<p>Please use the following otp to reset your password to RegeneratePassword</p>"+"<p>OTP :<strong>"+resetToken+"</strong></p>";
+            helper.setText(content, true);
             javaMailSender.send(message);
             return true;
         } catch (MessagingException | MailException e) {

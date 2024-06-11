@@ -1,22 +1,25 @@
 package com.weighbridge.qualityuser.controller;
 
+import com.weighbridge.admin.services.MaterialMasterService;
+import com.weighbridge.admin.services.ProductMasterService;
 import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
-import com.weighbridge.qualityuser.payloads.QualityRequest;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Controller for handling quality transaction related operations.
@@ -25,14 +28,18 @@ import java.util.Map;
 @RequestMapping("api/v1/qualities")
 public class QualityTransactionController {
     private final QualityTransactionService qualityTransactionService;
+    private final ProductMasterService productMasterService;
+    private final MaterialMasterService materialMasterService;
 
     /**
      * Constructor for QualityTransactionController
      *
      * @param qualityTransactionService the  service to handle quality transaction related operations
      */
-    public QualityTransactionController(QualityTransactionService qualityTransactionService) {
+    public QualityTransactionController(QualityTransactionService qualityTransactionService, ProductMasterService productMasterService, MaterialMasterService materialMasterService) {
         this.qualityTransactionService = qualityTransactionService;
+        this.productMasterService = productMasterService;
+        this.materialMasterService = materialMasterService;
     }
 
     /**
@@ -41,23 +48,52 @@ public class QualityTransactionController {
      * @return a ResponseEntity containing a list of all gate entry transaction details
      */
     @GetMapping("/getAllTransaction")
-    public ResponseEntity<List<QualityDashboardResponse>> getAllTickets() {
-        List<QualityDashboardResponse> response = qualityTransactionService.getAllGateDetails();
+    public ResponseEntity<Page<QualityDashboardResponse>> getAllTickets(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<QualityDashboardResponse> response = qualityTransactionService.getAllGateDetails(pageable);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/qct-completed")
+    public ResponseEntity<Page<QualityDashboardResponse>>getQCTCompleted(
+            @RequestParam(value = "page",defaultValue = "0") int page,
+            @RequestParam(value = "size",defaultValue = "5") int size){
+        Pageable pageable=PageRequest.of(page, size);
+        Page<QualityDashboardResponse> responses=qualityTransactionService.getQCTCompleted(pageable);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/inbound-qct-completed")
+    public List<QualityDashboardResponse> getInboundQCTCompleted() {
+        return qualityTransactionService.getQCTCompletedInbound();
+    }
+
+    @GetMapping("/outbound-qct-completed")
+    public List<QualityDashboardResponse> getOutboundQCTCompleted() {
+        return qualityTransactionService.getQCTCompletedOutbound();
     }
 
     /**
      * Add quality checks to the transaction.
      *
      * @param ticketNo the ticket number for the quality wil be checked
-     * @param qualityRequest the request object containing quality information for the transaction
+     * @param transactionRequest the request object containing quality information for the transaction
      * @return a ResponseEntity containing the success message with HTTP status code 201(CREATED)
      */
     @PostMapping("/{ticketNo}")
-    public ResponseEntity<String> createQualityTransaction(@PathVariable Integer ticketNo, @RequestBody QualityRequest qualityRequest) {
-        String response = qualityTransactionService.createQualityTransaction(ticketNo, qualityRequest);
+    public ResponseEntity<String> createQualityTransaction(@PathVariable Integer ticketNo, @RequestBody Map<String, Double> transactionRequest) {
+        String response = qualityTransactionService.createQualityTransaction(ticketNo, transactionRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+    @PutMapping("{ticketNo}")
+    public ResponseEntity<Void>passQualityTransaction(@PathVariable Integer ticketNo){
+        qualityTransactionService.passQualityTransaction(ticketNo);
+        return ResponseEntity.noContent().build();
+    }
+
 
     /**
      * Generates a quality report for the given ticket number.
@@ -72,37 +108,8 @@ public class QualityTransactionController {
         if (reportResponse == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-
-//        String productType= reportResponse.getMaterialTypeOrProductType();
-//        Map<String,Object> response=new HashMap<>();
-//        switch(productType.toLowerCase()){
-//            case "Coal":
-//                response.put("moisture",reportResponse.getMoisture());
-//                response.put("vm",reportResponse.getVm());
-//                response.put("ash",reportResponse.getVm());
-//                response.put("fc",reportResponse.getFc());
-//                break;
-//            case "Sponge Iron":
-//                response.put("size",reportResponse.getSize());
-//                response.put("fe(M)",reportResponse.getFe_m());
-//                response.put("fe(t)",reportResponse.getFe_t());
-//                response.put("mtz",reportResponse.getMtz());
-//                response.put("carbon",reportResponse.getCarbon());
-//                response.put("sulphur",reportResponse.getSulphur());
-//                response.put("Non-mag",reportResponse.getNon_mag());
-//                break;
-//            case "Iron":
-//                response.put("size",reportResponse.getSize());
-//                response.put("fe(t)",reportResponse.getFe_t());
-//                response.put("loi",reportResponse.getLoi());
-//                break;
-//            default:
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-//
-//        }
         return ResponseEntity.ok(reportResponse);
     }
-
 
     /**
      * Rerieves a quality details for the given ticket number.
@@ -110,9 +117,8 @@ public class QualityTransactionController {
      * @param ticketNo the ticket number for the quality transaction details
      * @return a ResponseEntity containing the quality details
      */
-    @GetMapping("/{ticketNo}")
-    public ResponseEntity<QualityCreationResponse> getDetailsForQualityTransactions(@PathVariable Integer ticketNo) {
-        QualityCreationResponse qualityCreationResponse = qualityTransactionService.getDetailsForQualityTransaction(ticketNo);
-        return ResponseEntity.ok(qualityCreationResponse);
-    }
+
+
 }
+
+

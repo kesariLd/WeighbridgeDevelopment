@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -17,6 +18,10 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
+@Table(name = "gate_entry_transaction", indexes = {
+        @Index(name = "idx_gate_entry_transaction", columnList = "siteId, companyId, transactionDate DESC")
+})
 public class GateEntryTransaction {
 
     @Id
@@ -38,12 +43,12 @@ public class GateEntryTransaction {
     private String driverName;
     private Double supplyConsignmentWeight;
     private String poNo;
+    @Column(unique = true)
     private String tpNo;
+    @Column(unique = true)
     private String challanNo;
     private String ewaybillNo;
     private String transactionType;
     private LocalDate challanDate;
-    //todo add challan date at the time of gate entry
-
 
 }

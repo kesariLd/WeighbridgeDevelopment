@@ -2,8 +2,10 @@ package com.weighbridge.SalesManagement.service.serviceImpl;
 
 import com.weighbridge.SalesManagement.entities.SalesOrder;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
+import com.weighbridge.SalesManagement.payloads.SalesDetailBySalePassNo;
 import com.weighbridge.SalesManagement.payloads.SalesDetailResponse;
 import com.weighbridge.SalesManagement.payloads.SalesProcessRequest;
+import com.weighbridge.SalesManagement.payloads.VehicleAndTransporterDetail;
 import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.SalesManagement.service.SalesProcessService;
@@ -19,7 +21,9 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -117,13 +121,35 @@ public class SalesProcessServiceImpl implements SalesProcessService {
         return "Sales data added successfully";
     }
 
+    /**
+     * @param saleOrderNo
+     * @return
+     */
+    @Override
+    public List<SalesDetailBySalePassNo> getBySaleOrderNo(String saleOrderNo) {
+        List<SalesProcess> byPurchaseSaleSaleOrderNo = salesProcessRepository.findByPurchaseSaleSaleOrderNo(saleOrderNo);
+        List<SalesDetailBySalePassNo> salesList=new ArrayList<>();
+        for(SalesProcess salesProcess:byPurchaseSaleSaleOrderNo){
+            SalesDetailBySalePassNo salesDetailBySalePassNo=new SalesDetailBySalePassNo();
+            salesDetailBySalePassNo.setSalePassNo(salesProcess.getSalePassNo());
+            salesDetailBySalePassNo.setProductName(salesProcess.getProductName());
+            salesDetailBySalePassNo.setVehicleNo(salesProcess.getVehicleNo());
+            salesDetailBySalePassNo.setTransporterName(salesProcess.getTransporterName());
+            salesDetailBySalePassNo.setConsignmentWeight(salesProcess.getConsignmentWeight());
+            salesDetailBySalePassNo.setProductType(salesProcess.getProductType());
+            salesList.add(salesDetailBySalePassNo);
+        }
+        return salesList;
+    }
+
+
     private String generateSalePassNo(String saleOrderNo) {
         Long count = salesProcessRepository.countByPurchaseSaleSaleOrderNo(saleOrderNo);
 
         // Increment the count for the current purchase order and format it as a 2-digit string
         String incrementedNumber = String.format("%02d", count + 1);
 
-        String salePassNo = saleOrderNo + "/" + incrementedNumber;
+        String salePassNo = saleOrderNo + "-" + incrementedNumber;
         return salePassNo;
     }
 }

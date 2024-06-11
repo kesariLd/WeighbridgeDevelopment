@@ -1,17 +1,15 @@
 package com.weighbridge.qualityuser.entites;
 
+import com.weighbridge.admin.entities.QualityRangeMaster;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class represents a Quality Transaction entity.
@@ -30,52 +28,11 @@ public class QualityTransaction {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long qualityId;
+    private long Id;
 
-    /**
-     * Moisture content of the product.
-     */
-    private Double moisture;
-
-    /**
-     * Viscosity measurement fo the product
-     */
-    private Double vm;
-
-    /**
-     * Ash content of the product.
-     */
-    private Double ash;
-
-    /**
-     * Fixed carbon content of the product.
-     */
-    private Double fc;
-
-    /**
-     * Size of the product in 20mm category.
-     */
-    private Double size;
-
-    /**
-     * Size of the product in 0.3mm category.
-     */
-    private Double fe_m;
-
-    /**
-     * Iron content of the product.
-     */
-    private Double fe_t;
-
-    /**
-     * Loss of Ignition of the product.
-     */
-    private Double mtz;
-    private Double carbon;
-    private Double sulphur;
-    private Double non_mag;
-    private Double loi;
-
+    private String qualityRangeId;
+    private String qualityValues;
+    private Boolean isQualityGood;
     /**
      * The associated Gate Entry Transaction.
      *
@@ -84,4 +41,5 @@ public class QualityTransaction {
     @OneToOne
     @JoinColumn(name = "ticket_no", referencedColumnName = "ticketNo")
     private GateEntryTransaction gateEntryTransaction;
+
 }

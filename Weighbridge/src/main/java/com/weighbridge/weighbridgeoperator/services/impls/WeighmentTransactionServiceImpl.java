@@ -10,27 +10,31 @@ import com.weighbridge.admin.exceptions.SessionExpiredException;
 import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
-import com.weighbridge.gateuser.entities.VehicleTransactionStatus;
+import com.weighbridge.weighbridgeoperator.entities.VehicleTransactionStatus;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
-import com.weighbridge.gateuser.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
 
 
 import com.weighbridge.weighbridgeoperator.payloads.TicketResponse;
+import com.weighbridge.weighbridgeoperator.payloads.WeighbridgePageResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentRequest;
 import com.weighbridge.weighbridgeoperator.payloads.WeighmentTransactionResponse;
+import com.weighbridge.weighbridgeoperator.repositories.VehicleTransactionStatusRepository;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.services.WeighmentTransactionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +75,9 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
     private CustomerMasterRepository customerMasterRepository;
     @Autowired
     private SalesOrderRespository salesOrderRespository;
+
+    @Autowired
+    private ProductMasterRepository productMasterRepository;
 
 
     @Override
@@ -166,7 +173,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
     }
 
     @Override
-    public List<WeighmentTransactionResponse> getAllGateDetails() {
+    public WeighbridgePageResponse getAllGateDetails(Pageable pageable) {
         HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompany;
@@ -180,7 +187,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             throw new SessionExpiredException("Session Expired, Login again !");
         }
         System.out.println(userSite);
-        List<Object[]> allUsers = weighmentTransactionRepository.getAllGateEntries(userSite);
+        Page<Object[]> pageResult = weighmentTransactionRepository.getAllGateEntries(userSite,userCompany,pageable);
+        List<Object[]> allUsers = pageResult.getContent();
         System.out.println(allUsers);
         List<WeighmentTransactionResponse> responses = new ArrayList<>();
         if (allUsers == null) {
@@ -192,24 +200,27 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     response.setTicketNo(String.valueOf(row[0]));
                     TransactionLog byTicketNo = transactionLogRepository.findByTicketNoAndStatusCode((Integer) row[0], "GWT");
                     TransactionLog byTicketNo2 = transactionLogRepository.findByTicketNoAndStatusCode((Integer) row[0], "TWT");
-                    LocalDateTime timestamp = null, timestamp1 = null, resTimeStamp = null, resTimeStamp1 = null;
+                    LocalDateTime timestamp = null, timestamp1 = null;
+                    String restTimeStamp=null,restTimeStamp1=null;
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
                     if (byTicketNo != null) {
                         timestamp = byTicketNo.getTimestamp();
-                        resTimeStamp = timestamp.withSecond(0).withNano(0);
+                        restTimeStamp = timestamp != null ? timestamp.format(formatter) : "";
                     }
                     if (byTicketNo2 != null) {
                         timestamp1 = byTicketNo2.getTimestamp();
-                        resTimeStamp1 = timestamp1.withSecond(0).withNano(0);
+                        restTimeStamp1 = timestamp1 != null ? timestamp1.format(formatter) : "";
                     }
                     String weighmentNo = row[1]!=null ? String.valueOf(row[1]):" ";
                     response.setWeighmentNo(weighmentNo);
                     response.setTransactionType((String) row[2]);
-                    response.setTransactionDate((LocalDate) row[3]);
-                    response.setVehicleIn((LocalDateTime) row[4]);
+                    response.setTransactionDate((LocalDate)row[3]);
+                    LocalDateTime vehicleInDateTime = (LocalDateTime) row[4];
+                    response.setVehicleIn(vehicleInDateTime.format(formatter));
                     if (((String) row[2]).equalsIgnoreCase("Inbound")) {
                         if(row[8]!=null&&row[6]!=null) {
-                            response.setGrossWeight(String.valueOf(row[8]) + "/" + resTimeStamp);
-                            response.setTareWeight(row[6] + "/" + resTimeStamp1);
+                            response.setGrossWeight(row[8] + "/" + restTimeStamp);
+                            response.setTareWeight(row[6] + "/" + restTimeStamp1);
                         }
                         else{
                             response.setGrossWeight("");
@@ -217,8 +228,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                         }
                     } else {
                         if(row[8]!=null&&row[5]!=null) {
-                            response.setTareWeight(String.valueOf(row[8]) + "/" + resTimeStamp1);
-                            response.setGrossWeight(row[5] + "/" + resTimeStamp);
+                            response.setTareWeight(String.valueOf(row[8]) + "/" + restTimeStamp1);
+                            response.setGrossWeight(row[5] + "/" + restTimeStamp);
                         }
                         else{
                             response.setGrossWeight("");
@@ -231,32 +242,36 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     if (((String) row[2]).equalsIgnoreCase("Inbound")) {
                         response.setSupplierName((String) row[11]);
                         response.setCustomerName("");
+                        response.setMaterialName((String) row[13]);
                     } else {
                         response.setCustomerName((String) row[11]);
                         response.setSupplierName("");
+                        response.setMaterialName((String) row[13]);
                     }
 
                     response.setTransporterName((String) row[12]);
-                    response.setMaterialName((String) row[13]);
                     // Set other fields similarly
                     responses.add(response);
                 }
-
             } catch (Exception e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
             System.out.println(responses);
-            return responses;
+            WeighbridgePageResponse weighbridgePageResponse=new WeighbridgePageResponse();
+            weighbridgePageResponse.setWeighmentTransactionResponses(responses);
+            weighbridgePageResponse.setTotalPages((long) pageResult.getTotalPages());
+            weighbridgePageResponse.setTotalElements(pageResult.getTotalElements());
+            return weighbridgePageResponse;
         }
     }
 
-    // todo NWT status insert
     @Override
     public TicketResponse getResponseByTicket(Integer ticketNo) {
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo).get();
         if (gateEntryTransaction == null) {
             throw new ResourceNotFoundException("ticket", "ticketNo", ticketNo.toString());
-        } else {
+        }
+        else {
             System.out.println("site id" + gateEntryTransaction.getSupplierId());
             TicketResponse ticketResponse = new TicketResponse();
             ticketResponse.setPoNo(gateEntryTransaction.getPoNo());
@@ -275,15 +290,23 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             LocalDateTime grossWeightTime = byTicketNoGWT.map(TransactionLog::getTimestamp).map(t -> t.withSecond(0).withNano(0)).orElse(null);
             LocalDateTime tareWeightTime = byTicketNoTWT.map(TransactionLog::getTimestamp).map(t -> t.withSecond(0).withNano(0)).orElse(null);
 
-            ticketResponse.setGrossWeightTime(grossWeightTime);
-            ticketResponse.setTareWeightTime(tareWeightTime);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            if (grossWeightTime != null) {
+                ticketResponse.setGrossWeightTime(grossWeightTime.format(formatter));
+            }
+
+            if (tareWeightTime != null) {
+                ticketResponse.setTareWeightTime(tareWeightTime.format(formatter));
+            }
 
             String transactionType = gateEntryTransaction.getTransactionType();
             WeighmentTransaction byGateEntryTransactionTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(ticketNo);
-            if (byGateEntryTransactionTicketNo != null) {
+
                 if (transactionType.equalsIgnoreCase("Inbound")) {
-                    ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
-                    ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight());
+                    if (byGateEntryTransactionTicketNo != null) {
+                        ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
+                        ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight());
+                    }
                     Object[] supplierInfo = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(gateEntryTransaction.getSupplierId());
                     Object[] supplierData = (Object[]) supplierInfo[0];
                     if (supplierData != null && supplierData.length >= 2) {
@@ -293,25 +316,93 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                         ticketResponse.setSupplierName(supplierName);
                         ticketResponse.setSupplierAddress(supplierAddress);
                     }
-                } else {
-                    ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
-                    ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight());
+                }
+                if (transactionType.equalsIgnoreCase("Outbound")) {
+                    if (byGateEntryTransactionTicketNo != null) {
+                        ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
+                        ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight());
+                    }
                     Object[] customerInfo = customerMasterRepository.findCustomerNameAndAddressBycustomerId(gateEntryTransaction.getCustomerId());
                     Object[] customerData = (Object[]) customerInfo[0];
                     if (customerData != null && customerData.length >= 2) {
                         String customerName = (String) customerData[0];
                         String customerAddress = (String) customerData[1];
                         System.out.println(customerName + " " + customerAddress);
-                        ticketResponse.setSupplierName(customerName);
-                        ticketResponse.setSupplierAddress(customerAddress);
+                        ticketResponse.setCustomerName(customerName);
+                        ticketResponse.setCustomerAdress(customerAddress);
                     }
                 }
+            if (byGateEntryTransactionTicketNo != null) {
                 ticketResponse.setNetWeight(byGateEntryTransactionTicketNo.getGrossWeight() - byGateEntryTransactionTicketNo.getTareWeight());
             }
-//            ticketResponse.setSupplierName(supplierName);
             ticketResponse.setDriverDlNo(gateEntryTransaction.getDlNo());
-//            ticketResponse.setSupplierAddress(supplierAddress);
+            Double supplyConsignmentWeight = gateEntryTransaction.getSupplyConsignmentWeight();
+            if(supplyConsignmentWeight!=null) {
+                ticketResponse.setConsignmentWeight(gateEntryTransaction.getSupplyConsignmentWeight());
+            }
+            else{
+                ticketResponse.setConsignmentWeight(0.0);
+            }
             return ticketResponse;
         }
+    }
+
+    /**
+     * @param pageable
+     * @return
+     */
+    @Override
+    public WeighbridgePageResponse getAllCompletedTickets(Pageable pageable) {
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompany;
+        String userSite;
+
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSite = session.getAttribute("userSite").toString();
+            userCompany = session.getAttribute("userCompany").toString();
+        } else {
+            throw new SessionExpiredException("Session Expired, Login again !");
+        }
+        Page<WeighmentTransaction> all = weighmentTransactionRepository.findAllByUserSiteAndUserCompany(userSite,userCompany,pageable);
+        List<WeighmentTransaction> allUsers = all.getContent();
+        if(allUsers==null){
+            throw new ResourceNotFoundException("No response found.");
+        }
+        List<WeighmentTransactionResponse> weighmentTransactionResponses=new ArrayList<>();
+        for(WeighmentTransaction weighmentTransaction:allUsers){
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+                WeighmentTransactionResponse weighmentTransactionResponse = new WeighmentTransactionResponse();
+                weighmentTransactionResponse.setTransactionDate(weighmentTransaction.getGateEntryTransaction().getTransactionDate());
+                weighmentTransactionResponse.setTransactionType(weighmentTransaction.getGateEntryTransaction().getTransactionType());
+                weighmentTransactionResponse.setWeighmentNo(String.valueOf(weighmentTransaction.getWeighmentNo()));
+                weighmentTransactionResponse.setTicketNo(String.valueOf(weighmentTransaction.getGateEntryTransaction().getTicketNo()));
+                weighmentTransactionResponse.setVehicleIn(weighmentTransaction.getGateEntryTransaction().getVehicleIn().format(formatter));
+                weighmentTransactionResponse.setNetWeight(String.valueOf(weighmentTransaction.getNetWeight()));
+                weighmentTransactionResponse.setGrossWeight(String.valueOf(weighmentTransaction.getGrossWeight()));
+                weighmentTransactionResponse.setTareWeight(String.valueOf(weighmentTransaction.getTareWeight()));
+                weighmentTransactionResponse.setVehicleNo(vehicleMasterRepository.findVehicleNoById(weighmentTransaction.getGateEntryTransaction().getVehicleId()));
+                weighmentTransactionResponse.setVehicleFitnessUpTo(vehicleMasterRepository.findVehicleFitnessById(weighmentTransaction.getGateEntryTransaction().getVehicleId()));
+                if(weighmentTransaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")){
+                    weighmentTransactionResponse.setMaterialName(materialMasterRepository.findMaterialNameByMaterialId(weighmentTransaction.getGateEntryTransaction().getMaterialId()));
+                    weighmentTransactionResponse.setSupplierName(supplierMasterRepository.findSupplierNameBySupplierId(weighmentTransaction.getGateEntryTransaction().getSupplierId()));
+                }
+                else{
+                    weighmentTransactionResponse.setMaterialName(productMasterRepository.findProductNameByProductId(weighmentTransaction.getGateEntryTransaction().getMaterialId()));
+                    weighmentTransactionResponse.setCustomerName(customerMasterRepository.findCustomerNameByCustomerId(weighmentTransaction.getGateEntryTransaction().getCustomerId()));
+                }
+
+                weighmentTransactionResponse.setTransporterName(transporterMasterRepository.findTransporterNameByTransporterId(weighmentTransaction.getGateEntryTransaction().getTransporterId()));
+                weighmentTransactionResponses.add(weighmentTransactionResponse);
+
+
+        }
+        long count = weighmentTransactionRepository.countCompletedTransactions();
+        WeighbridgePageResponse weighbridgePageResponse=new WeighbridgePageResponse();
+        weighbridgePageResponse.setWeighmentTransactionResponses(weighmentTransactionResponses);
+        weighbridgePageResponse.setTotalPages(count/ all.getSize());
+        weighbridgePageResponse.setTotalElements(count);
+        return weighbridgePageResponse;
     }
 }

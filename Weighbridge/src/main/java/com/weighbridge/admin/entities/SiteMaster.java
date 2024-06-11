@@ -1,5 +1,7 @@
 package com.weighbridge.admin.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,9 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "site_master")
 public class SiteMaster {
-
     @Id
     @Column(name = "site_id")
     private String siteId;
@@ -29,6 +28,9 @@ public class SiteMaster {
     private String siteName;
 
     @ManyToOne
+    @JsonManagedReference
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     @JoinColumn(name = "company_id", referencedColumnName = "company_id")
     private CompanyMaster company;
 

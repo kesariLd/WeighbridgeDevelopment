@@ -1,17 +1,13 @@
 package com.weighbridge.admin.controllers;
 
 import com.weighbridge.admin.dtos.MaterialMasterDto;
+import com.weighbridge.admin.payloads.MaterialAndTypeRequest;
+import com.weighbridge.admin.payloads.MaterialParameterResponse;
 import com.weighbridge.admin.payloads.MaterialWithParameters;
 import com.weighbridge.admin.services.MaterialMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -43,7 +39,6 @@ public class MaterialMasterController {
      * @param materialWithParameters - A payload object encapsulating the material data, material type,
      *                                       and its parameters with quality ranges to be saved.
      * @return A ResponseEntity containing message material added successfully with HTTP status CREATED(201).
-     * @throws Exception - If any unexpected error occurs during material creation.
      */
     @PostMapping
     public ResponseEntity<String> createMaterialWithParameterAndRange(@RequestBody MaterialWithParameters materialWithParameters) {
@@ -54,10 +49,9 @@ public class MaterialMasterController {
     /**
      * Retrieves all material records.0
      * @return A ResponseEntity object with status code OK (200) containing a list of all material DTOs.
-     * @throws Exception - If any unexpected error occurs during material retrieval.
      */
     @GetMapping
-    public ResponseEntity<List<MaterialMasterDto>> getAllMaterials() throws Exception {
+    public ResponseEntity<List<MaterialMasterDto>> getAllMaterials() {
         List<MaterialMasterDto> allMaterials = materialMasterService.getAllMaterials();
         return ResponseEntity.ok(allMaterials);
     }
@@ -66,10 +60,9 @@ public class MaterialMasterController {
      * Retrieves a list of all material names.
      *
      * @return A ResponseEntity object with status code OK (200) containing a list of all material names.
-     * @throws Exception - If any unexpected error occurs during material name retrieval.
      */
     @GetMapping("/names")
-    public ResponseEntity<List<String>> getAllMaterialNames() throws Exception {
+    public ResponseEntity<List<String>> getAllMaterialNames() {
         List<String> allMaterialNames = materialMasterService.getAllMaterialNames();
         return ResponseEntity.ok(allMaterialNames);
     }
@@ -82,10 +75,9 @@ public class MaterialMasterController {
      * @return A ResponseEntity object with status code OK (200) containing a list of
      *         material types associated with the specified material. An empty list is returned
      *         if the material is not found.
-     * @throws Exception - If any unexpected error occurs during material type retrieval.
      */
     @GetMapping("/{materialName}/types")
-    public ResponseEntity<List<String>> getTypeWithMaterial(@PathVariable String materialName) throws Exception {
+    public ResponseEntity<List<String>> getTypeWithMaterial(@PathVariable String materialName) {
         List<String> allMaterialTypeNames = materialMasterService.getTypeWithMaterial(materialName);
         return ResponseEntity.ok(allMaterialTypeNames);
     }
@@ -97,16 +89,32 @@ public class MaterialMasterController {
      *                      This value is extracted from the path variable "{materialName}".
      * @return A ResponseEntity object with status code OK (200) containing a success message
      *         upon successful deletion, or an appropriate error response otherwise.
-     * @throws Exception - If any unexpected error occurs during material deletion.
      */
     @DeleteMapping("/{materialName}")
     public ResponseEntity<String> deleteMaterial(@PathVariable String materialName){
         materialMasterService.deleteMaterial(materialName);
         return ResponseEntity.ok("Material is deleted successfully");
     }
-    @GetMapping("/{materialName}/parameters")
-    public ResponseEntity<List<MaterialWithParameters>> getQualityRangesByMaterialName(@PathVariable String materialName) {
-        List<MaterialWithParameters> acceptableQualityRanges = materialMasterService.getQualityRangesByMaterialName(materialName);
+
+    // https:localhost:8080/api/v1/materials/parameters?materialName=Coal&supplierName=MCL&supplierAddress=MCL Bhubaneswari
+    @GetMapping("/parameters")
+    public ResponseEntity<List<MaterialWithParameters>> getQualityRangesByMaterialName(@RequestParam String materialName,
+                                                                                       @RequestParam(required = false) String supplierName,
+                                                                                       @RequestParam(required = false) String supplierAddress) {
+        List<MaterialWithParameters> acceptableQualityRanges = materialMasterService.getQualityRangesByMaterialNameAndSupplierNameAndAddress(materialName, supplierName, supplierAddress);
         return ResponseEntity.ok(acceptableQualityRanges);
     }
+
+    @PostMapping("/withType")
+    public ResponseEntity<String> saveMaterialAndMaterialType(@RequestBody MaterialAndTypeRequest materialAndTypeRequest) {
+        String response = materialMasterService.saveMaterialAndMaterialType(materialAndTypeRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/view/{materialName}/parameters")
+    public ResponseEntity<List<MaterialWithParameters>> getMaterialParameters(@PathVariable String materialName) {
+        List<MaterialWithParameters> response = materialMasterService.getMaterialParameters(materialName);
+        return ResponseEntity.ok(response);
+    }
+
 }

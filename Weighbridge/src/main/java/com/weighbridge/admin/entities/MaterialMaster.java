@@ -1,12 +1,6 @@
 package com.weighbridge.admin.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -45,8 +39,9 @@ public class MaterialMaster {
     @Column(name = "material_modified_date")
     private LocalDateTime materialModifiedDate;
 
-    @OneToMany(mappedBy = "materialMaster")
+    @OneToMany(mappedBy = "materialMaster", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MaterialTypeMaster> materialTypes;
 
-
+    @OneToMany(mappedBy = "materialMaster", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QualityRangeMaster> qualityRanges;
 }

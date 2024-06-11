@@ -1,13 +1,13 @@
 package com.weighbridge.SalesManagement.controller;
 
+import com.weighbridge.SalesManagement.payloads.SalesDetailBySalePassNo;
 import com.weighbridge.SalesManagement.payloads.SalesProcessRequest;
 import com.weighbridge.SalesManagement.service.SalesProcessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/salesProcess")
@@ -20,4 +20,11 @@ public class SalesProcessController {
         String sales = salesProcessService.addSalesProcess(salesProcessRequest);
         return ResponseEntity.ok(sales);
     }
+
+    @GetMapping("/bySaleOrderNo/View")
+    public ResponseEntity<List<SalesDetailBySalePassNo>> getBySaleOrderNo(@RequestParam String saleOrderNo){
+        List<SalesDetailBySalePassNo> bySalePassNo = salesProcessService.getBySaleOrderNo(saleOrderNo);
+        return ResponseEntity.ok(bySalePassNo);
+    }
+
 }

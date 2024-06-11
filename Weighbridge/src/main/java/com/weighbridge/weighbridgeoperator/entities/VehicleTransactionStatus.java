@@ -1,4 +1,4 @@
-package com.weighbridge.gateuser.entities;
+package com.weighbridge.weighbridgeoperator.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -17,6 +17,6 @@ import lombok.NoArgsConstructor;
 public class VehicleTransactionStatus {
     @Id
     private Integer ticketNo;
-
     private String statusCode;
+
 }

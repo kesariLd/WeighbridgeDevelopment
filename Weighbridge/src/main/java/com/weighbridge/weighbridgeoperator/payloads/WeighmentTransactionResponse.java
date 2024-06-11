@@ -8,12 +8,11 @@ import java.util.Date;
 
 @Data
 public class WeighmentTransactionResponse {
-
         private String ticketNo;
         private String weighmentNo;
         private String transactionType;
         private LocalDate transactionDate;
-        private LocalDateTime vehicleIn;
+        private String vehicleIn;
         private String grossWeight;
         private String tareWeight;
         private String netWeight;

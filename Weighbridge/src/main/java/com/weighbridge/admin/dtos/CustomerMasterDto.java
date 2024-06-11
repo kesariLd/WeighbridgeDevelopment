@@ -12,6 +12,7 @@ public class CustomerMasterDto {
     private String customerEmail;
     @NotBlank(message = "Contact no is required")
     private String customerContactNo;
+    private String customerStatus;
     private String customerAddressLine1;
     private String customerAddressLine2;
     private String city;

@@ -1,5 +1,6 @@
 package com.weighbridge.admin.services.impls;
 
+import com.weighbridge.admin.dtos.VehicleMasterDto;
 import com.weighbridge.admin.entities.TransporterMaster;
 import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
@@ -11,8 +12,11 @@ import com.weighbridge.admin.repsitories.VehicleMasterRepository;
 import com.weighbridge.admin.services.VehicleMasterService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -21,8 +25,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+@Slf4j
 @Service
 public class VehicleMasterServiceImpl implements VehicleMasterService {
 
@@ -33,60 +41,10 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
     private TransporterMasterRepository transporterMasterRepository;
 
     @Autowired
-    private ModelMapper mapper;
+    private ModelMapper modelMapper;
 
     @Autowired
     private HttpServletRequest httpServletRequest;
-
-//    @Override
-//    public String addVehicle(VehicleMasterDto vehicleMasterDto) {
-//        VehicleMaster vehicleMaster=vehicleMasterRepository.findByVehicleNo(vehicleMasterDto.getVehicleNo());
-//        HttpSession session = request.getSession();
-//        LocalDateTime currentDateTime = LocalDateTime.now();
-//        if(vehicleMaster==null) {
-//            VehicleMaster vehicleMasters = new VehicleMaster();
-//            vehicleMasters.setCreatedDate(currentDateTime);
-//            vehicleMasters.setModifiedDate(currentDateTime);
-//            vehicleMasters.setCreatedBy(session.getAttribute("userId").toString());
-//            vehicleMasters.setModifiedBy(session.getAttribute("userId").toString());
-//            vehicleMasters.setVehicleNo(vehicleMasterDto.getVehicleNo());
-//
-//            //assigning transporter to vehicle
-//            List<TransporterMaster> transporterMasterList = new ArrayList<>();
-//            transporterMasterList.addAll(getAllTransportMaster(vehicleMasterDto.getVehicleNo()));
-//            //  System.out.println("--------"+getAllTransportMaster(vehicleMasterDto.getVehicleNo()));
-//            TransporterMaster byTransporterName = transporterMasterRepository.findByTransporterName(vehicleMasterDto.getTransporterMaster());
-//            transporterMasterList.add(byTransporterName);
-//            vehicleMasters.setTransporter(transporterMasterList);
-////        transporterMasterList.add(transporterMasterRepository.findByTransporterName("Maa tarini transporter"));
-//
-//            vehicleMasters.setVehicleManufacturer(vehicleMasterDto.getVehicleManufacturer());
-//            vehicleMasters.setVehicleType(vehicleMasterDto.getVehicleType());
-//            vehicleMasters.setLoadCapacity(vehicleMasterDto.getLoadCapacity());
-//            vehicleMasters.setFitnessUpto(vehicleMasterDto.getFitnessUpto());
-//            vehicleMasters.setWheelsNo(vehicleMasterDto.getWheelsNo());
-//            vehicleMasters.setTareWeight(vehicleMasterDto.getTareWeight());
-//            vehicleMasterRepository.save(vehicleMasters);
-//            return "Vehicle added successfully";
-//        }
-//        else{
-//            //assigning only transporter
-//            List<TransporterMaster> transporterMasterList = new ArrayList<>();
-//            transporterMasterList.addAll(getAllTransportMaster(vehicleMasterDto.getVehicleNo()));
-//            //  System.out.println("--------"+getAllTransportMaster(vehicleMasterDto.getVehicleNo()));
-//            TransporterMaster byTransporterName = transporterMasterRepository.findByTransporterName(vehicleMasterDto.getTransporterMaster());
-//            transporterMasterList.add(byTransporterName);
-//            vehicleMaster.setTransporter(transporterMasterList);
-//            vehicleMaster.setModifiedBy(session.getAttribute("userId").toString());
-//            vehicleMaster.setModifiedDate(currentDateTime);
-//            vehicleMasterRepository.save(vehicleMaster);
-//            return "transporter updated";
-//        }
-//    }
-
-    private List<TransporterMaster> getAllTransportMaster(String vehicleNo) {
-        return vehicleMasterRepository.findTransportersByVehicleId(vehicleNo);
-    }
 
     @Override
     public String addVehicle(VehicleRequest vehicleRequest, String transporterName) {
@@ -224,14 +182,80 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
 
     }
 
+    @Override
+    public VehicleMasterDto getVehicleById(Long vehicleId) {
+        VehicleMaster vehicleMaster = vehicleMasterRepository.findById(vehicleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle", "id", vehicleId.toString()));
+        return modelMapper.map(vehicleMaster, VehicleMasterDto.class);
+    }
+
+    @Transactional
+    @Override
+    public String updateVehicleById(Long vehicleId, VehicleMasterDto vehicleMasterDto) {
+        log.info("Updating vehicle wit ID: {}", vehicleId);
+        VehicleMaster vehicleMaster = vehicleMasterRepository.findById(vehicleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle", "id", vehicleId.toString()));
+
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
+        }
+        vehicleMaster.setVehicleType(vehicleMasterDto.getVehicleType());
+        vehicleMaster.setVehicleManufacturer(vehicleMasterDto.getVehicleManufacturer());
+        vehicleMaster.setVehicleWheelsNo(vehicleMasterDto.getVehicleWheelsNo());
+        vehicleMaster.setVehicleTareWeight(vehicleMasterDto.getVehicleTareWeight());
+        vehicleMaster.setVehicleLoadCapacity(vehicleMasterDto.getVehicleLoadCapacity());
+        vehicleMaster.setVehicleFitnessUpTo(vehicleMasterDto.getVehicleFitnessUpTo());
+        try {
+            vehicleMasterRepository.save(vehicleMaster);
+        } catch (DataAccessException e) {
+            log.error("Error updating vehicle details for ID: {}", vehicleId, e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error: Failed to update vehicle details", e);
+        }
+        log.info("Vehicle details updated successfully for ID: {}", vehicleId);
+        return "Vehicle details updated successfully";
+    }
+
+    @Override
+    public boolean deactivateVehicleById(Long vehicleId) {
+        VehicleMaster vehicleMaster = getVehicleMasterById(vehicleId);
+
+        if (vehicleMaster.getVehicleStatus().equals("ACTIVE")) {
+            vehicleMaster.setVehicleStatus("INACTIVE");
+            vehicleMasterRepository.save(vehicleMaster);
+            return true;
+        }
+        return false;
+    }
+
+    private VehicleMaster getVehicleMasterById(Long vehicleId) {
+        return vehicleMasterRepository.findById(vehicleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Transporter", "id", vehicleId.toString()));
+    }
+
+    @Override
+    public boolean activateVehicleById(Long vehicleId) {
+        VehicleMaster vehicleMaster = getVehicleMasterById(vehicleId);
+
+        if (vehicleMaster.getVehicleStatus().equals("INACTIVE")) {
+            vehicleMaster.setVehicleStatus("ACTIVE");
+            vehicleMasterRepository.save(vehicleMaster);
+            return true;
+        }
+        return false;
+    }
 
 
     private VehicleResponse getVehicleResponse(VehicleMaster vehicleMaster) {
         VehicleResponse vehicleResponse = new VehicleResponse();
+        vehicleResponse.setId(vehicleMaster.getId());
         vehicleResponse.setVehicleNo(vehicleMaster.getVehicleNo());
         vehicleResponse.setVehicleType(vehicleMaster.getVehicleType());
         vehicleResponse.setVehicleManufacturer(vehicleMaster.getVehicleManufacturer());
-
+        vehicleResponse.setVehicleStatus(vehicleMaster.getVehicleStatus());
 
         Set<TransporterMaster> transporter = vehicleMaster.getTransporter();
         Set<String> strOfTransporter = new HashSet<>();

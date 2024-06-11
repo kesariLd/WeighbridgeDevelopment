@@ -29,4 +29,5 @@ public class SalesOrderRequest {
     private String brokerName;
 
     private String brokerAddress;
+    private String userId;
 }

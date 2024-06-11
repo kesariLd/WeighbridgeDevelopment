@@ -13,8 +13,8 @@ public class GateEntryTransactionResponse {
 
     private Integer ticketNo;
     private String vehicleNo;
-    private LocalDateTime vehicleIn;
-    private LocalDateTime vehicleOut;
+    private String vehicleIn;
+    private String vehicleOut;
     private String vehicleType;
     private Integer vehicleWheelsNo;
     private String transporter;
@@ -31,4 +31,7 @@ public class GateEntryTransactionResponse {
     private LocalDate transactionDate;
     private LocalDate challanDate;
     private String transactionType;
+
+    //Required to enable and disable quality report button
+    private Boolean quality;
 }

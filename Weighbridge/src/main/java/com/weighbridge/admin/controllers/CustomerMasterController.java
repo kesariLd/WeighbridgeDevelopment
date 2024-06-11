@@ -1,12 +1,19 @@
 package com.weighbridge.admin.controllers;
 
-
 import com.weighbridge.admin.dtos.CustomerMasterDto;
-import com.weighbridge.admin.dtos.SupplierMasterDto;
+import com.weighbridge.admin.payloads.CustomerRequest;
 import com.weighbridge.admin.services.CustomerMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -40,10 +47,9 @@ public class CustomerMasterController {
      *                           from the underlying data model.
      * @return A ResponseEntity object with status code CREATED (201) and a success message
      *         upon successful creation, or an appropriate error response otherwise.
-     * @throws Exception - If any unexpected error occurs during customer creation.
      */
     @PostMapping
-    public ResponseEntity<String> createCustomer(@RequestBody CustomerMasterDto customerMasterDto) throws Exception {
+    public ResponseEntity<String> createCustomer(@RequestBody CustomerMasterDto customerMasterDto) {
         String response = customerMasterService.createCustomer(customerMasterDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -52,10 +58,9 @@ public class CustomerMasterController {
      * Retrieves all customer records.
      *
      * @return A ResponseEntity object with status code OK (200) containing a list of all customer DTOs.
-     * @throws Exception - If any unexpected error occurs during customer retrieval.
      */
     @GetMapping
-    public ResponseEntity<List<CustomerMasterDto>> getAllCustomers() throws Exception {
+    public ResponseEntity<List<CustomerMasterDto>> getAllCustomers() {
         List<CustomerMasterDto> allCustomer = customerMasterService.getAllCustomers();
         return ResponseEntity.ok(allCustomer);
     }
@@ -64,10 +69,9 @@ public class CustomerMasterController {
      * Retrieves a list of all customer names.
      *
      * @return A ResponseEntity object with status code OK (200) containing a list of all customer names.
-     * @throws Exception - If any unexpected error occurs during customer name retrieval.
      */
     @GetMapping("/names")
-    public ResponseEntity<List<String>> getAllCustomerNames() throws Exception {
+    public ResponseEntity<List<String>> getAllCustomerNames() {
         List<String> allCustomerNames = customerMasterService.getAllCustomerNames();
         return ResponseEntity.ok(allCustomerNames);
     }
@@ -79,11 +83,32 @@ public class CustomerMasterController {
      *                      This is retrieved from the path variable "{customerName}".
      * @return A ResponseEntity object with status code OK (200) containing a list of the customer's addresses.
      *         An empty list is returned if the customer is not found.
-     * @throws Exception - If any unexpected error occurs during customer address retrieval.
      */
     @GetMapping("/get/{customerName}")
-    public ResponseEntity<List<String>> getCustsomerAddressByCustomerName(@PathVariable String customerName) throws Exception {
+    public ResponseEntity<List<String>> getCustsomerAddressByCustomerName(@PathVariable String customerName) {
         List<String> addressOfSupplier = customerMasterService.getAddressOfCustomer(customerName);
         return new ResponseEntity<>(addressOfSupplier, HttpStatus.OK);
+    }
+    @GetMapping("/get/id/{customerId}")
+    public ResponseEntity<CustomerMasterDto> getCustsomerDetailsByCustomerId(@PathVariable long customerId) {
+        CustomerMasterDto customer= customerMasterService.getCustomerById(customerId);
+        return new ResponseEntity<>(customer, HttpStatus.OK);
+    }
+    
+    @PutMapping("/update/{customerId}")
+    public ResponseEntity<String> updateCustomerByCustomerId(@Validated @RequestBody CustomerRequest customerRequest, @PathVariable long customerId){
+        String customerResponse = customerMasterService.updateCustomerById(customerRequest, customerId);
+        return new ResponseEntity<>(customerResponse,HttpStatus.OK);
+    }
+
+    @DeleteMapping("/delete/{customerId}")
+    public ResponseEntity<String> deleteCustomerByCustomerId(@PathVariable long customerId){
+        String response = customerMasterService.deleteCustomerById(customerId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
+    }
+    @PutMapping("/active/{customerId}")
+    public ResponseEntity<String> activeCustomerByCustomerId(@PathVariable long customerId){
+        String response = customerMasterService.activeCustomerId(customerId);
+        return new ResponseEntity<>(response,HttpStatus.OK);
     }
 }
