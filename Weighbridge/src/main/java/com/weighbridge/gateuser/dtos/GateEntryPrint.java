@@ -6,6 +6,8 @@ import java.time.LocalDate;
 
 @Data
 public class GateEntryPrint {
+    private String companyName;
+    private String siteName;
     private Integer ticketNo;
     private String vehicleNo;
     private String vehicleIn;
