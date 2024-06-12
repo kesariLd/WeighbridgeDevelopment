@@ -203,27 +203,28 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
      * @return
      */
     @Override
-    public AllTransactionResponse getAllTransactionResponse(ManagementPayload managementPayload,String transactionType) {
-        if(managementPayload.getCompanyName()==null&&managementPayload.getSiteName()==null){
+    public AllTransactionResponse getAllTransactionResponse(ManagementPayload managementPayload, String transactionType) {
+        if (managementPayload.getCompanyName() == null && managementPayload.getSiteName() == null) {
             throw new ResourceNotFoundException("Select proper site And Company.");
         }
         String companyIdByCompanyName = companyMasterRepository.findCompanyIdByCompanyName(managementPayload.getCompanyName());
         String[] site = managementPayload.getSiteName().split(",");
         String siteIdBySiteName = siteMasterRepository.findSiteIdBySiteName(site[0], site[1]);
-        Long gateEntry,gateExit,tareWeight,grossWeight,quality;
-        if(transactionType.equalsIgnoreCase("Inbound")) {
+        Long gateEntry, gateExit, tareWeight, grossWeight, quality;
+        if (transactionType.equalsIgnoreCase("Inbound")) {
+
             gateEntry = gateEntryTransactionRepository.countGateEntryWithDate("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
             gateExit = gateEntryTransactionRepository.countGateExitWithDate("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
             tareWeight = weighmentTransactionRepository.countCompletedInboundTareWeights(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
             grossWeight = weighmentTransactionRepository.countCompletedGrossWeightsInbound(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
             quality = qualityTransactionRepository.countInboundQuality("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), siteIdBySiteName, companyIdByCompanyName);
-        }
-        else{
-            gateEntry=gateEntryTransactionRepository.countGateEntryWithDate("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
-            gateExit=gateEntryTransactionRepository.countGateExitWithDate("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
-            tareWeight=weighmentTransactionRepository.countCompletedOutboundTareWeights(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
-            grossWeight=weighmentTransactionRepository.countCompletedGrossWeightsOutbound(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
-            quality=qualityTransactionRepository.countInboundQuality("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), siteIdBySiteName, companyIdByCompanyName);
+        } else {
+            gateEntry = gateEntryTransactionRepository.countGateEntryWithDate("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            gateExit = gateEntryTransactionRepository.countGateExitWithDate("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            tareWeight = weighmentTransactionRepository.countCompletedOutboundTareWeights(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            grossWeight = weighmentTransactionRepository.countCompletedGrossWeightsOutbound(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            quality = qualityTransactionRepository.countInboundQuality("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), siteIdBySiteName, companyIdByCompanyName);
+
         }
         AllTransactionResponse allTransactionResponse = new AllTransactionResponse();
         allTransactionResponse.setNoOfQualityTransaction(quality);
@@ -235,7 +236,6 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     }
 
     @Override
-
     public List<ManagementQualityDashboardResponse> getGoodOrBadQualities(ManagementPayload managementRequest, String transactionType, String qualityType) {
         LocalDate startDate = managementRequest.getFromDate();
         LocalDate endDate = managementRequest.getToDate();
@@ -249,20 +249,11 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             List<QualityTransaction> qualityTransactions = qualityTransactionRepository.findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(companyId, siteMaster.getSiteId(), date);
             for (QualityTransaction transaction : qualityTransactions) {
+
                 ManagementQualityDashboardResponse managementQualityDashboardResponse = new ManagementQualityDashboardResponse();
                 managementQualityDashboardResponse.setTicketNo(transaction.getGateEntryTransaction().getTicketNo());
                 managementQualityDashboardResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
-//                managementQualityDashboardResponse.setSupplierOrCustomerName(getSupplierOrCustomerNameAndAddress(transaction.getGateEntryTransaction()));
-//                Object[] supplier = getSupplierOrCustomerName(transaction.getGateEntryTransaction());
-//                if (supplier != null && supplier.length == 3) {
-//                    managementQualityDashboardResponse.setSupplierOrCustomerName(supplier[0].toString());
-//                    managementQualityDashboardResponse.setSupplierOrCustomerAddress(supplier[1] + "," + supplier[2]);
-//                } else {
-//                    // Handle the case where the returned array has a different length
-//                    log.error("Unexpected array length returned from findSupplierNameAndSupplierAddressesBySupplierId");
-//                    managementQualityDashboardResponse.setSupplierOrCustomerName(null);
-//                    managementQualityDashboardResponse.setSupplierOrCustomerAddress(null);
-//                }
+
                 if (transaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")) {
                     SupplierMaster supplierMaster = supplierMasterRepository
                             .findBySupplierId(transaction.getGateEntryTransaction().getSupplierId());
@@ -286,9 +277,70 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                 responseList.add(managementQualityDashboardResponse);
             }
         }
+        System.out.println("total responses:" + responseList.size());
         return responseList;
     }
 
+    @Override
+    public List<ManagementQualityDashboardResponse> getGoodQualities(ManagementPayload managementRequest, String transactionType) {
+        return getQualitiesByType(managementRequest, transactionType, true);
+    }
+
+    @Override
+    public List<ManagementQualityDashboardResponse> getBadQualities(ManagementPayload managementRequest, String transactionType) {
+        return getQualitiesByType(managementRequest, transactionType, false);
+    }
+
+    private List<ManagementQualityDashboardResponse> getQualitiesByType(ManagementPayload managementRequest, String transactionType, boolean isGoodQuality) {
+        LocalDate startDate = managementRequest.getFromDate();
+        LocalDate endDate = managementRequest.getToDate();
+
+        String companyId = companyMasterRepository.findCompanyIdByCompanyName(managementRequest.getCompanyName());
+        String[] site = managementRequest.getSiteName().split(",");
+        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(site[0], site[1]);
+        System.out.println(site[0] + "," + site[1]);
+
+        List<ManagementQualityDashboardResponse> responseList = new ArrayList<>();
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            System.out.println("date==============================" + date);
+            List<QualityTransaction> qualityTransactions = qualityTransactionRepository.findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(companyId, siteMaster.getSiteId(), date);
+            for (QualityTransaction transaction : qualityTransactions) {
+                ManagementQualityDashboardResponse managementQualityDashboardResponse = new ManagementQualityDashboardResponse();
+                System.out.println("--------------------------------------------------------------------");
+                if (transaction.getIsQualityGood() != null && transaction.getIsQualityGood() == isGoodQuality) {
+                    System.out.println("quality transaction :" + transaction.getIsQualityGood());
+
+                    managementQualityDashboardResponse.setTicketNo(transaction.getGateEntryTransaction().getTicketNo());
+                    managementQualityDashboardResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
+
+                    if (transaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")) {
+                        SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(transaction.getGateEntryTransaction().getSupplierId());
+                        if (supplierMaster != null) {
+                            managementQualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
+                            managementQualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2());
+                        }
+                    } else {
+                        CustomerMaster customerMaster = customerMasterRepository.findByCustomerId(transaction.getGateEntryTransaction().getCustomerId());
+                        if (customerMaster != null) {
+                            managementQualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
+                            managementQualityDashboardResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine2());
+                        }
+                    }
+                    managementQualityDashboardResponse.setVehicleNo(vehicleMasterRepository.findVehicleNoById(transaction.getGateEntryTransaction().getVehicleId()));
+                    managementQualityDashboardResponse.setProductOrMaterialType(transaction.getGateEntryTransaction().getMaterialType());
+                    managementQualityDashboardResponse.setProductOrMaterialName(getMaterialOrProductName(transaction.getGateEntryTransaction()));
+                    managementQualityDashboardResponse.setQualityType(isGoodQuality ? "Good" : "Bad");
+                    System.out.println("Quality Type: " + managementQualityDashboardResponse.getQualityType());
+
+                    System.out.println("Response added to the list.");
+                }
+                responseList.add(managementQualityDashboardResponse);
+            }
+
+        }
+        System.out.println("Total responses: " + responseList.size());
+        return responseList;
+    }
 
     @Override
 
@@ -332,6 +384,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
         return managementGateEntryList;
     }
+
 
     // This method maps a single GateEntryTransaction to ManagementGateEntryTransactionResponse
     private void mapGateEntryTransactionToResponse(GateEntryTransaction transaction, ManagementGateEntryTransactionResponse response) {
@@ -602,13 +655,12 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         for (Object[] result : totalNetWeightByTransactionDateAndMaterialId) {
             WeightResponseForGraph weightResponseForGraph = new WeightResponseForGraph();
             LocalDate date = (LocalDate) result[0];
-            weightResponseForGraph.setTransactionDate(date!=null?date.format(formatter):"");
+            weightResponseForGraph.setTransactionDate(date != null ? date.format(formatter) : "");
             String materialNameByMaterialId;
-            if(transactionType.equalsIgnoreCase("Inbound")) {
+            if (transactionType.equalsIgnoreCase("Inbound")) {
                 materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId((Long) result[1]);
-            }
-            else {
-                materialNameByMaterialId=productMasterRepository.findProductNameByProductId((Long) result[1]);
+            } else {
+                materialNameByMaterialId = productMasterRepository.findProductNameByProductId((Long) result[1]);
             }
 
             weightResponseForGraph.setMaterialName(materialNameByMaterialId);

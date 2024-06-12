@@ -84,7 +84,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
      * @throws SessionExpiredException   if the session is null or expired.
      * @throws ResourceNotFoundException if the supplier or customer related to a transaction is not found.
      */
-    public Page<QualityDashboardResponse> getAllGateDetails(Pageable pageable) {
+    public List<QualityDashboardResponse> getAllGateDetails() {
         // Get the session and user information
         HttpSession session = httpServletRequest.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
@@ -160,11 +160,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             }
         }
 
-        //create sublist based on request page size
-        int start=(int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), qualityDashboardResponses.size());
-        List<QualityDashboardResponse> subList = qualityDashboardResponses.subList(start, end);
-        return new PageImpl<>(subList, pageable, qualityDashboardResponses.size());
+          return qualityDashboardResponses;
     }
 
 
@@ -269,13 +265,13 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
     @Override
     public int getTotalQCTCompletedSize() {
-        Page<QualityDashboardResponse> page = getQCTCompleted(PageRequest.of(0, Integer.MAX_VALUE));
-        return (int) page.getTotalElements();
+        List<QualityDashboardResponse> completedList = getQCTCompleted();
+        return completedList.size();
     }
 
 
     @Override
-    public Page<QualityDashboardResponse> getQCTCompleted(Pageable pageable) {
+    public List<QualityDashboardResponse> getQCTCompleted() {
         HttpSession session = httpServletRequest.getSession(false);
         if (session == null || session.getAttribute("userId") == null) {
             throw new SessionExpiredException("Session Expired, Login again!");
@@ -353,12 +349,8 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 }
             }
         }
-        //create sublist request on page size
-        int start=(int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), qualityDashboardResponses.size());
-        List<QualityDashboardResponse> subList = qualityDashboardResponses.subList(start, end);
 
-        return new PageImpl<>(subList, pageable, qualityDashboardResponses.size());
+       return qualityDashboardResponses;
     }
 
 
@@ -381,7 +373,6 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     public List<String> getAllMaterialNames() {
         return materialMasterRepository.findAllMaterialNameByMaterialStatus("ACTIVE");
     }
-
 
     @Transactional
     @Override
@@ -415,6 +406,9 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 QualityRangeMaster qualityRangeMaster=qualityRangeMasterRepository.findById(qualityId).orElseThrow(()->new ResourceNotFoundException("Range not found for qualityId:"+qualityId));
 
                 if(value < qualityRangeMaster.getRangeFrom() || value > qualityRangeMaster.getRangeTo()){
+                    if(value==null){
+                        continue;
+                    }
                     isQualityGood=false;
                 }
                 qualityRangeIds.append(qualityId).append(",");
@@ -436,6 +430,9 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 QualityRangeMaster qualityRangeMaster=qualityRangeMasterRepository.findById(qualityId).orElseThrow(()->new ResourceNotFoundException("Range not found for qualityId:"+qualityId));
 
                 if(value < qualityRangeMaster.getRangeFrom() || value > qualityRangeMaster.getRangeTo()){
+                    if(value==null){
+                        continue;
+                    }
                     isQualityGood=false;
                 }
                 qualityRangeIds.append(qualityId).append(",");

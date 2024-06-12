@@ -40,5 +40,9 @@ public interface ManagementDashboardService {
 
     ManagementGateEntryList gateEntryList(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable, String vehicleStatus,String company,String site);
 
+
+    List<ManagementQualityDashboardResponse> getGoodQualities(ManagementPayload managementRequest, String transactionType);
+
+    List<ManagementQualityDashboardResponse> getBadQualities(ManagementPayload managementRequest, String transactionType);
 }
 

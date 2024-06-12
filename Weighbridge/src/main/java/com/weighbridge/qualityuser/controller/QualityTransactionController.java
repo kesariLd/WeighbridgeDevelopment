@@ -48,20 +48,14 @@ public class QualityTransactionController {
      * @return a ResponseEntity containing a list of all gate entry transaction details
      */
     @GetMapping("/getAllTransaction")
-    public ResponseEntity<Page<QualityDashboardResponse>> getAllTickets(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "5") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<QualityDashboardResponse> response = qualityTransactionService.getAllGateDetails(pageable);
+    public ResponseEntity<List<QualityDashboardResponse>> getAllTickets() {
+        List<QualityDashboardResponse> response = qualityTransactionService.getAllGateDetails();
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/qct-completed")
-    public ResponseEntity<Page<QualityDashboardResponse>>getQCTCompleted(
-            @RequestParam(value = "page",defaultValue = "0") int page,
-            @RequestParam(value = "size",defaultValue = "5") int size){
-        Pageable pageable=PageRequest.of(page, size);
-        Page<QualityDashboardResponse> responses=qualityTransactionService.getQCTCompleted(pageable);
+    public ResponseEntity<List<QualityDashboardResponse>>getQCTCompleted(){
+        List<QualityDashboardResponse> responses=qualityTransactionService.getQCTCompleted();
         return ResponseEntity.ok(responses);
     }
 

@@ -21,7 +21,7 @@ public interface QualityTransactionService {
      *
      * @return a list of QualityDashboardResponse objects
      */
-    Page<QualityDashboardResponse> getAllGateDetails(Pageable pageable);
+    List<QualityDashboardResponse> getAllGateDetails();
 
     /**
      * Creates a new quality transaction for a given ticket number.
@@ -61,7 +61,7 @@ public interface QualityTransactionService {
 
     List<QualityDashboardResponse> getQCTCompletedOutbound();
 
-    Page<QualityDashboardResponse> getQCTCompleted(Pageable pageable);
+    List<QualityDashboardResponse> getQCTCompleted();
 
     int getInboundQCTCompletedSize();
 
