@@ -94,14 +94,13 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
             userId = session.getAttribute("userId").toString();
             userSite = session.getAttribute("userSite").toString();
             userCompany = session.getAttribute("userCompany").toString();
-        }
-        else {
+        } else {
             throw new SessionExpiredException("Session Expired, Login again !");
         }
 
         // Check transaction exists with ticketNo or not
         WeighmentTransaction weighmentTransaction = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(ticketNo);
-        if(weighmentTransaction == null) {
+        if (weighmentTransaction == null) {
             throw new ResourceNotFoundException("Ticket is not found with ticket no" + ticketNo);
         }
 
@@ -145,29 +144,29 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         System.out.println(weighmentPrintResponse);
 
         weighmentPrintResponse.setChallanNo(weighmentTransaction.getGateEntryTransaction().getChallanNo());
-      //  weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
+        //  weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    //    weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
+        //    weighmentPrintResponse.setGrossWeight(weighmentTransaction.getGrossWeight());
         TransactionLog gwt = transactionLogRepository.findByTicketNoAndStatusCode(weighmentTransaction.getGateEntryTransaction().getTicketNo(), "GWT");
-        if(gwt != null) {
+        if (gwt != null) {
             LocalDateTime gwtTimestamp = gwt.getTimestamp();
             String formattedGwtTimestamp = gwtTimestamp.format(formatter);
             weighmentPrintResponse.setGrossWeightDateTime(formattedGwtTimestamp);
         }
-       // weighmentPrintResponse.setTareWeight(weighmentTransaction.getTareWeight());
+        // weighmentPrintResponse.setTareWeight(weighmentTransaction.getTareWeight());
         TransactionLog twt = transactionLogRepository.findByTicketNoAndStatusCode(weighmentTransaction.getGateEntryTransaction().getTicketNo(), "TWT");
-        if(twt != null) {
+        if (twt != null) {
             LocalDateTime twtTimestamp = twt.getTimestamp();
             String formattedTwtTimestamp = twtTimestamp.format(formatter);
             weighmentPrintResponse.setTareWeightDateTime(formattedTwtTimestamp);
         }
-            weighmentPrintResponse.setNetWeight(weighmentTransaction.getNetWeight());
+        weighmentPrintResponse.setNetWeight(weighmentTransaction.getNetWeight());
 
         UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "user id", userId));
         StringBuilder userName = new StringBuilder();
         userName.append(userMaster.getUserFirstName()).append(" ");
-        if (userMaster.getUserMiddleName() != null){
+        if (userMaster.getUserMiddleName() != null) {
             userName.append(userMaster.getUserMiddleName()).append(" ");
         }
         userName.append(userMaster.getUserLastName());
@@ -195,16 +194,15 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
     }
 
     /**
-     *
      * @param startDate The starting date for the report (format: YYYY-MM-DD), optional.
      *                  If not provided, end Date will considered as startDate.
-     * @param endDate The ending date for the report (format: YYYY-MM-DD), optional.
-                        If not provided, start Date will considered as endDate.
+     * @param endDate   The ending date for the report (format: YYYY-MM-DD), optional.
+     *                  If not provided, start Date will considered as endDate.
      * @return
      */
     public List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate) {
 
-        List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransactionForWeighmentReport(startDate,endDate);
+        List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransactionForWeighmentReport(startDate, endDate);
 
         Map<String, Map<String, List<WeighbridgeReportResponseList>>> groupedReports = new HashMap<>();
 
@@ -235,6 +233,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
 
     /**
      * simply it'll return the WeighbridgeReportResponseList to called method so that report can be generated
+     *
      * @param gateEntryResponse
      * @return
      */
@@ -248,7 +247,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         weighbridgeReportResponseList.setTicketNo(gateEntryResponse.getTicketNo());
 
         if (weighmentTransaction != null) {
-            double supplyConsignmentWeight = gateEntryResponse.getTpNetWeight();
+            double supplyConsignmentWeight = gateEntryResponse.getTpNetWeight() != null ? gateEntryResponse.getTpNetWeight() : 0.0;
             weighbridgeReportResponseList.setSupplyConsignmentWeight(supplyConsignmentWeight);
             /*
             SupplyConsignmentWeight is what it'll given at the time of gate entry, it means provided by supplier or Own Company Sales team
@@ -264,8 +263,9 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
 
         return weighbridgeReportResponseList;
     }
+
     @Override
-    public List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields,LocalDate startDate,LocalDate endDate) {
+    public List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields, LocalDate startDate, LocalDate endDate) {
         HttpSession session = httpServletRequest.getSession();
         if (session == null || session.getAttribute("userId") == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
@@ -336,7 +336,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         criteriaQuery.orderBy(criteriaBuilder.desc(gateEntryTransactionRoot.get("transactionDate")));
 
         List<Tuple> resultList = entityManager.createQuery(criteriaQuery).getResultList();
-        System.out.println("result list tuple "+resultList);
+        System.out.println("result list tuple " + resultList);
         List<Map<String, Object>> mappedResultList = new ArrayList<>();
         for (Tuple tuple : resultList) {
             Map<String, Object> mappedResult = new HashMap<>();

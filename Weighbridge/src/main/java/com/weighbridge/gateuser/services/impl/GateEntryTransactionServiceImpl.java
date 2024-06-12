@@ -1,4 +1,5 @@
 package com.weighbridge.gateuser.services.impl;
+
 import com.weighbridge.SalesManagement.entities.SalesProcess;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.admin.entities.CustomerMaster;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -219,7 +221,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     }
 
     @Override
-    public Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest,Integer ticketNo) {
+    public Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest, Integer ticketNo) {
         try {
 
             // Set user session details
@@ -236,8 +238,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             }
 
             GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
-            if(gateEntryTransaction==null){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"GateEntry transaction is not available with given ticket No "+ticketNo);
+            if (gateEntryTransaction == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GateEntry transaction is not available with given ticket No " + ticketNo);
             }
 
             //getting the name and details of request data
@@ -374,7 +376,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
             }
-            GateEntryTransaction transaction = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo,userCompany,userSite);
+            GateEntryTransaction transaction = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userCompany, userSite);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             GateEntryEditResponse response = new GateEntryEditResponse();
             // Fetching associated entity names
@@ -682,10 +684,12 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             List<GateEntryTransactionResponse> responseList = new ArrayList<>();
             for (GateEntryTransaction transaction : allTransactions) {
                 // Fetch status code for the current transaction ticket number
-                String statusCode = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo()).getStatusCode();
-                // Skip processing and printing the transaction if its status code is "GXT"
-                if ("GXT".equals(statusCode)) {
-                    continue;
+                VehicleTransactionStatus vehicleTransactionStatus = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
+                if (vehicleTransactionStatus != null) {
+                    String statusCode = vehicleTransactionStatus.getStatusCode();
+                    if ("GXT".equals(statusCode)) {
+                        continue;
+                    }
                 }
 
                 GateEntryTransactionResponse response = new GateEntryTransactionResponse();
@@ -893,7 +897,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
 
     @Override
-    public GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierNameC, String transactionType, Pageable pageable,String vehicleStatus) {
+    public GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierNameC, String transactionType, Pageable pageable, String vehicleStatus) {
         try {
             // Set user session details
             HttpSession session = httpServletRequest.getSession();
@@ -907,7 +911,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
             }
-            Page<GateEntryTransaction> gateEntryTransactionPage = gateEntryTransactionRepository.findAll(gateEntryTransactionSpecification.getTransactions(ticketNo, vehicleNo, date, supplierNameC, transactionType,vehicleStatus)
+            Page<GateEntryTransaction> gateEntryTransactionPage = gateEntryTransactionRepository.findAll(gateEntryTransactionSpecification.getTransactions(ticketNo, vehicleNo, date, supplierNameC, transactionType, vehicleStatus)
                     .and(gateEntryTransactionSpecification.filterBySiteAndCompany(userSite, userCompany)), pageable);
             // Convert Page content to List
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
@@ -1064,11 +1068,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     }
 
 
-
     @Override
     public Long countPendingGateTransactionsInbound() {
         Long count = gateEntryTransactionRepository.countPendingGateTransactionsInbound();
-        if(count!=null) {
+        if (count != null) {
             return count;
         }
         return 0L;
@@ -1077,7 +1080,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     @Override
     public Long countPendingGateTransactionsOutbound() {
         Long count = gateEntryTransactionRepository.countPendingGateTransactionsOutbound();
-        if(count!=null) {
+        if (count != null) {
             return count;
         }
         return 0L;
@@ -1086,7 +1089,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     @Override
     public Long countCompleteTransactions() {
         Long count = gateEntryTransactionRepository.countCompleteGateTransaction();
-        if(count!=null) {
+        if (count != null) {
             return count;
         }
         return 0L;
