@@ -242,6 +242,13 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                         }
                         qualityDashboardResponse.setDate(transaction.getTransactionDate());
 
+                        QualityTransaction qualityTransaction = qualityTransactionRepository.findByTicketNo(transaction.getTicketNo());
+                        if (qualityTransaction == null) {
+                            qualityDashboardResponse.setQualityParametersPresent(false);
+                        } else {
+                            qualityDashboardResponse.setQualityParametersPresent(true);
+                        }
+
                         qualityDashboardResponses.add(qualityDashboardResponse);
                     }
                 }
@@ -533,30 +540,29 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     @Override
     public void passQualityTransaction(Integer ticketNo) {
         HttpSession session = httpServletRequest.getSession();
-        String userId;
-        String userCompany;
-        String userSite;
-        if (session != null && session.getAttribute("userId") != null) {
-            userId = session.getAttribute("userId").toString();
-            userSite = session.getAttribute("userSite").toString();
-            userCompany = session.getAttribute("userCompany").toString();
-        } else {
+        if (session == null || session.getAttribute("userId") == null) {
             throw new SessionExpiredException("Session Expired, Login again!");
         }
+
+        String userId = session.getAttribute("userId").toString();
+        String userCompany = session.getAttribute("userCompany").toString();
+        String userSite = session.getAttribute("userSite").toString();
+
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo)
                 .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with " + ticketNo));
+
         VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(gateEntryTransaction.getTicketNo());
         if (transactionStatus == null) {
             throw new ResourceNotFoundException("Vehicle transaction status is not found Ticket no:" + ticketNo);
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime currentTime = now.withSecond(0).withNano(0);
+        LocalDateTime currentTime = LocalDateTime.now().withSecond(0).withNano(0);
 
         try {
-            // set qualityCheck in TransactionLog
+            // Check if the transaction log exists
             Optional<TransactionLog> isExist = Optional.ofNullable(transactionLogRepository.findByTicketNoAndStatusCode(gateEntryTransaction.getTicketNo(), "QCT"));
-            if (isExist == null) {
+            if (!isExist.isPresent()) {
+                // Create a new transaction log if it doesn't exist
                 TransactionLog transactionLog = new TransactionLog();
                 transactionLog.setUserId(userId);
                 transactionLog.setTicketNo(ticketNo);
@@ -565,13 +571,16 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                 transactionLogRepository.save(transactionLog);
             }
         } catch (Exception e) {
+            // Handle the exception gracefully
             e.printStackTrace();
+            throw new RuntimeException("Error occurred while saving transaction log", e);
         }
-        // set qualityCheck in VehicleTransactionStatus
-        VehicleTransactionStatus vehicleTransactionStatus = new VehicleTransactionStatus();
-        vehicleTransactionStatus.setTicketNo(ticketNo);
-        vehicleTransactionStatus.setStatusCode("QCT");
-        vehicleTransactionStatusRepository.save(vehicleTransactionStatus);
+
+        transactionStatus.setStatusCode("QCT");
+        vehicleTransactionStatusRepository.save(transactionStatus);
+
+        // Show success message
+        System.out.println("Quality updated successfully.");
     }
 
     @Override
