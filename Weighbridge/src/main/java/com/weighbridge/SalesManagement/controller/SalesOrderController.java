@@ -53,8 +53,8 @@ public class SalesOrderController {
         return ResponseEntity.ok(allSalesDetails);
     }
 
-    @GetMapping("/getSoDetails/{saleOrderNo}")
-    public ResponseEntity<SalesDetailResponse> getSalesDetail(@PathVariable String saleOrderNo){
+    @GetMapping("/getSoDetails")
+    public ResponseEntity<SalesDetailResponse> getSalesDetail(@RequestParam String saleOrderNo){
         SalesDetailResponse salesDetails = salesOrderService.getSalesDetails(saleOrderNo);
         return ResponseEntity.ok(salesDetails);
     }
