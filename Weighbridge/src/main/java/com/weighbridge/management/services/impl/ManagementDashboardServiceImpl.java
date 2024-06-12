@@ -6,61 +6,44 @@ import com.weighbridge.admin.entities.SiteMaster;
 import com.weighbridge.admin.entities.SupplierMaster;
 
 import com.weighbridge.admin.entities.QualityRangeMaster;
-import com.weighbridge.admin.entities.SiteMaster;
 import com.weighbridge.admin.repsitories.CompanyMasterRepository;
+import com.weighbridge.admin.repsitories.CustomerMasterRepository;
 import com.weighbridge.admin.repsitories.MaterialMasterRepository;
 import com.weighbridge.admin.repsitories.ProductMasterRepository;
 import com.weighbridge.admin.repsitories.QualityRangeMasterRepository;
 import com.weighbridge.admin.repsitories.SiteMasterRepository;
+import com.weighbridge.admin.repsitories.StatusCodeMasterRepository;
 import com.weighbridge.admin.repsitories.SupplierMasterRepository;
+import com.weighbridge.admin.repsitories.TransporterMasterRepository;
+import com.weighbridge.admin.repsitories.VehicleMasterRepository;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
+import com.weighbridge.management.payload.AllTransactionResponse;
 import com.weighbridge.management.payload.CoalMoisturePercentageRequest;
 import com.weighbridge.management.payload.CoalMoisturePercentageResponse;
+import com.weighbridge.management.payload.ManagementGateEntryList;
+import com.weighbridge.management.payload.ManagementGateEntryTransactionResponse;
+import com.weighbridge.management.payload.ManagementGateEntryTransactionSpecification;
 import com.weighbridge.management.payload.ManagementPayload;
+import com.weighbridge.management.payload.ManagementQualityDashboardResponse;
 import com.weighbridge.management.payload.MaterialProductDataResponse;
+import com.weighbridge.management.dtos.WeightResponseForGraph;
+import com.weighbridge.management.payload.MaterialProductQualityResponse;
 import com.weighbridge.management.services.ManagementDashboardService;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
-import ch.qos.logback.classic.Logger;
-import com.weighbridge.admin.entities.SiteMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
-import com.weighbridge.admin.exceptions.SessionExpiredException;
-
-import com.weighbridge.gateuser.entities.GateEntryTransaction;
-import com.weighbridge.admin.repsitories.*;
-import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionSpecification;
-import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 
-import com.weighbridge.management.dtos.WeightResponseForGraph;
-import com.weighbridge.management.payload.AllTransactionResponse;
-import com.weighbridge.management.payload.ManagementPayload;
-import com.weighbridge.management.payload.ManagementQualityDashboardResponse;
-import com.weighbridge.management.payload.MaterialProductDataResponse;
-import com.weighbridge.management.payload.MaterialProductQualityResponse;
-import com.weighbridge.management.services.ManagementDashboardService;
-import com.weighbridge.qualityuser.entites.QualityTransaction;
 
-import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
-
-import com.weighbridge.management.payload.*;
-import com.weighbridge.management.services.ManagementDashboardService;
-import com.weighbridge.qualityuser.entites.QualityTransaction;
-
-import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import com.weighbridge.weighbridgeoperator.entities.VehicleTransactionStatus;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.repositories.VehicleTransactionStatusRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
-import com.weighbridge.management.dtos.WeightResponseForGraph;
-import com.weighbridge.management.payload.ManagementPayload;
-import com.weighbridge.management.payload.MaterialProductDataResponse;
-import com.weighbridge.management.payload.MaterialProductQualityResponse;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,54 +71,36 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     @Autowired
     private GateEntryTransactionRepository gateEntryTransactionRepository;
-  
+
     @Autowired
     private WeighmentTransactionRepository weighmentTransactionRepository;
-  
-    @Autowired
-    private ModelMapper modelMapper;
 
     @Autowired
     private VehicleTransactionStatusRepository vehicleTransactionStatusRepository;
-  
+
     @Autowired
     private SiteMasterRepository siteMasterRepository;
-  
+
     @Autowired
     private CompanyMasterRepository companyMasterRepository;
-  
+
     @Autowired
     private MaterialMasterRepository materialMasterRepository;
 
     @Autowired
     private SupplierMasterRepository supplierMasterRepository;
-  
+
     @Autowired
     private TransporterMasterRepository transporterMasterRepository;
-  
+
     @Autowired
     private VehicleMasterRepository vehicleMasterRepository;
-  
-    @Autowired
-    private StatusCodeMasterRepository statusCodeMasterRepository;
-  
-    @Autowired
-    private TransactionLogRepository transactionLogRepository;
-  
-    @Autowired
-    private HttpServletRequest httpServletRequest;
 
     @Autowired
     private CustomerMasterRepository customerMasterRepository;
-  
+
     @Autowired
     private ProductMasterRepository productMasterRepository;
-
-    @Autowired
-    private SalesProcessRepository salesProcessRepository;
-
-    @Autowired
-    private GateEntryTransactionSpecification gateEntryTransactionSpecification;
 
     @Autowired
     private QualityTransactionRepository qualityTransactionRepository;
@@ -247,11 +212,11 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         String siteIdBySiteName = siteMasterRepository.findSiteIdBySiteName(site[0], site[1]);
         Long gateEntry,gateExit,tareWeight,grossWeight,quality;
         if(transactionType.equalsIgnoreCase("Inbound")) {
-             gateEntry = gateEntryTransactionRepository.countGateEntryWithDate("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
-             gateExit = gateEntryTransactionRepository.countGateExitWithDate("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
-             tareWeight = weighmentTransactionRepository.countCompletedInboundTareWeights(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
-             grossWeight = weighmentTransactionRepository.countCompletedGrossWeightsInbound(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
-           quality = qualityTransactionRepository.countInboundQuality("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), siteIdBySiteName, companyIdByCompanyName);
+            gateEntry = gateEntryTransactionRepository.countGateEntryWithDate("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            gateExit = gateEntryTransactionRepository.countGateExitWithDate("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            tareWeight = weighmentTransactionRepository.countCompletedInboundTareWeights(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            grossWeight = weighmentTransactionRepository.countCompletedGrossWeightsInbound(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
+            quality = qualityTransactionRepository.countInboundQuality("Inbound", managementPayload.getFromDate(), managementPayload.getToDate(), siteIdBySiteName, companyIdByCompanyName);
         }
         else{
             gateEntry=gateEntryTransactionRepository.countGateEntryWithDate("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
@@ -260,13 +225,13 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
             grossWeight=weighmentTransactionRepository.countCompletedGrossWeightsOutbound(managementPayload.getFromDate(), managementPayload.getToDate(), companyIdByCompanyName, siteIdBySiteName);
             quality=qualityTransactionRepository.countInboundQuality("Outbound", managementPayload.getFromDate(), managementPayload.getToDate(), siteIdBySiteName, companyIdByCompanyName);
         }
-            AllTransactionResponse allTransactionResponse = new AllTransactionResponse();
-            allTransactionResponse.setNoOfQualityTransaction(quality);
-            allTransactionResponse.setNoOfGateExit(gateExit);
-            allTransactionResponse.setNoOfGateEntry(gateEntry);
-            allTransactionResponse.setNoOfTareWeight(tareWeight);
-            allTransactionResponse.setNoOfGrossWeight(grossWeight);
-            return allTransactionResponse;
+        AllTransactionResponse allTransactionResponse = new AllTransactionResponse();
+        allTransactionResponse.setNoOfQualityTransaction(quality);
+        allTransactionResponse.setNoOfGateExit(gateExit);
+        allTransactionResponse.setNoOfGateEntry(gateEntry);
+        allTransactionResponse.setNoOfTareWeight(tareWeight);
+        allTransactionResponse.setNoOfGrossWeight(grossWeight);
+        return allTransactionResponse;
     }
 
     @Override
@@ -579,7 +544,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                 }
             }
 
-             double averageMoisturePercentage = (count > 0) ? totalMoisturePercentageSum / count : 0.0;
+            double averageMoisturePercentage = (count > 0) ? totalMoisturePercentageSum / count : 0.0;
             CoalMoisturePercentageResponse.MoisturePercentageData moisturePercentageData = new CoalMoisturePercentageResponse.MoisturePercentageData();
             moisturePercentageData.setTransactionDate(date);
             moisturePercentageData.setParameterName("Moisture%");
@@ -592,7 +557,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         return coalMoisturePercentageResponse;
     }
 
-   private String getMaterialOrProductName(GateEntryTransaction gateEntryTransaction) {
+    private String getMaterialOrProductName(GateEntryTransaction gateEntryTransaction) {
         if (gateEntryTransaction == null) {
             return "materialOrProductName is not found";
         }
@@ -619,12 +584,6 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
             return customerMasterRepository.findCustomerNameAndCustomerAddressesByCustomerId(gateEntryTransaction.getCustomerId());
         }
     }
-
-
-    /*  public Long getInboundCount(ManagementPayload managementPayload){
-        gateEntryTransactionRepository.countInbounddetails
-        return null;
-    }*/
 
     @Override
     public List<WeightResponseForGraph> getQtyResponseInGraph(ManagementPayload managementPayload, String transactionType) {
