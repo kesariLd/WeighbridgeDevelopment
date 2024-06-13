@@ -87,138 +87,194 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         try {
             // Set user session details
             HttpSession session = httpServletRequest.getSession();
-            String userId;
-            String userCompany;
-            String userSite;
-            if (session != null && session.getAttribute("userId") != null) {
-                userId = session.getAttribute("userId").toString();
-                userSite = session.getAttribute("userSite").toString();
-                userCompany = session.getAttribute("userCompany").toString();
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            String userId = (String) Optional.ofNullable(session.getAttribute("userId"))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again!"));
+            String userSite = (String) Optional.ofNullable(session.getAttribute("userSite"))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again!"));
+            String userCompany = (String) Optional.ofNullable(session.getAttribute("userCompany"))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again!"));
 
-            //getting the name and details of request data
-            String materialName = gateEntryTransactionRequest.getMaterial();
-            String materialType = gateEntryTransactionRequest.getMaterialType();
-            String vehicleNo = gateEntryTransactionRequest.getVehicle();
-            String transporterName = gateEntryTransactionRequest.getTransporter();
+            // Validate and extract data from the request
+            String materialName = Optional.ofNullable(gateEntryTransactionRequest.getMaterial())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material name is required."));
+            String materialType = Optional.ofNullable(gateEntryTransactionRequest.getMaterialType())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material type is required."));
+            String vehicleNo = Optional.ofNullable(gateEntryTransactionRequest.getVehicle())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle number is required."));
+            String transporterName = Optional.ofNullable(gateEntryTransactionRequest.getTransporter())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transporter name is required."));
+
             String supplierName = gateEntryTransactionRequest.getSupplier();
             String supplierAddress = gateEntryTransactionRequest.getSupplierAddressLine1();
             String customerName = gateEntryTransactionRequest.getCustomer();
             String customerAddress = gateEntryTransactionRequest.getCustomerAddressLine();
-            String addressLine1;
-            String addressLine2;
+
+            // Default address lines to empty strings
+            String addressLine1 = "";
+            String addressLine2 = "";
+
             long supplierId = 0;
             long customerId = 0;
             long materialId = 0;
 
-            if (gateEntryTransactionRequest.getTransactionType().equals("Inbound")) {
+            // Process Inbound transactions
+            if ("Inbound".equalsIgnoreCase(gateEntryTransactionRequest.getTransactionType())) {
                 if (supplierAddress != null && supplierAddress.contains(",")) {
-                    String[] parts = supplierAddress.split(",", 2); // Split into two parts
-                    addressLine1 = parts[0].trim(); // Trim to remove leading/trailing spaces
+                    String[] parts = supplierAddress.split(",", 2);
+                    addressLine1 = parts[0].trim();
                     addressLine2 = parts[1].trim();
                 } else {
-                    // If there's no comma, store everything in supplierAddressLine1
                     addressLine1 = supplierAddress;
-                    addressLine2 = null; // Set supplierAddressLine2 to null
                 }
+
                 supplierId = supplierMasterRepository.findSupplierIdBySupplierNameAndAddressLines(
                         supplierName, addressLine1, addressLine2);
-
                 if (supplierId == 0) {
-                    throw new ResourceNotFoundException("Supplier not exist");
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Supplier does not exist.");
                 }
-                materialId = materialMasterRepository.findByMaterialIdByMaterialName(materialName);
 
+                materialId = materialMasterRepository.findByMaterialIdByMaterialName(materialName);
+                if (materialId == 0) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
+                }
             }
-            if (gateEntryTransactionRequest.getTransactionType().equals("Outbound")) {
-                // Outbound transaction
+
+            // Process Outbound transactions
+            if ("Outbound".equalsIgnoreCase(gateEntryTransactionRequest.getTransactionType())) {
                 if (customerAddress != null && customerAddress.contains(",")) {
-                    System.out.println("customer " + customerName);
-                    String[] parts = customerAddress.split(",", 2); // Split into two parts
-                    addressLine1 = parts[0].trim(); // Trim to remove leading/trailing spaces
+                    String[] parts = customerAddress.split(",", 2);
+                    addressLine1 = parts[0].trim();
                     addressLine2 = parts[1].trim();
                 } else {
-                    // If there's no comma, store everything in customerAddressLine1
                     addressLine1 = customerAddress;
-                    addressLine2 = null; // Set customerAddressLine2 to null
-                    System.out.println("================================================================");
                 }
-                customerId = customerMasterRepository.findCustomerIdByCustomerNameAndAddressLines(customerName, addressLine1, addressLine2);
-                System.out.println("custom" + customerId);
-                materialId = productMasterRepository.findProductIdByProductName(materialName);
-                System.out.println("material" + materialId);
+
+                customerId = customerMasterRepository.findCustomerIdByCustomerNameAndAddressLines(
+                        customerName, addressLine1, addressLine2);
                 if (customerId == 0) {
-                    throw new ResourceNotFoundException("Customer not exist");
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer does not exist.");
                 }
-                SalesProcess bySalePassNo = salesProcessRepository.findBySalePassNo(gateEntryTransactionRequest.getTpNo());
-                bySalePassNo.setStatus(false);
+
+                materialId = productMasterRepository.findProductIdByProductName(materialName);
+                if (materialId == 0) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
+                }
+
+                SalesProcess salesProcess = salesProcessRepository.findBySalePassNo(gateEntryTransactionRequest.getTpNo());
+                if (salesProcess != null) {
+                    salesProcess.setStatus(false);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sale process not found for TP No: " + gateEntryTransactionRequest.getTpNo());
+                }
             }
 
-            //finding the entities by names from database
-            long vehicleId = vehicleMasterRepository.findVehicleIdByVehicleNo(vehicleNo);
-            long transporterId = transporterMasterRepository.findTransporterIdByTransporterName(transporterName);
-            String dlNo = gateEntryTransactionRequest.getDlNo();
-            String driverName = gateEntryTransactionRequest.getDriverName();
-            Double supplyConsignment = gateEntryTransactionRequest.getSupplyConsignmentWeight();
-            String poNo = gateEntryTransactionRequest.getPoNo();
-            String tpNo = gateEntryTransactionRequest.getTpNo();
-            String challanNo = gateEntryTransactionRequest.getChallanNo();
-            String ewaybillNo = gateEntryTransactionRequest.getEwayBillNo();
-            //assigin to gateentrytransaction master table
+            // Validate vehicle and transporter details
+            long vehicleId = Optional.ofNullable(vehicleMasterRepository.findVehicleIdByVehicleNo(vehicleNo))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle does not exist."));
+            long transporterId = Optional.ofNullable(transporterMasterRepository.findTransporterIdByTransporterName(transporterName))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transporter does not exist."));
+
+            // Assign to GateEntryTransaction
             GateEntryTransaction gateEntryTransaction = new GateEntryTransaction();
+
+            // Set transaction date to current date
             gateEntryTransaction.setTransactionDate(LocalDate.now());
-            gateEntryTransaction.setChallanDate(gateEntryTransactionRequest.getChallanDate());
-            gateEntryTransaction.setCompanyId(userCompany);
-            gateEntryTransaction.setTransporterId(transporterId);
-            gateEntryTransaction.setVehicleId(vehicleId);
-            gateEntryTransaction.setMaterialId(materialId);
-            gateEntryTransaction.setMaterialType(materialType);
-            gateEntryTransaction.setSupplierId(supplierId);
-            gateEntryTransaction.setSiteId(userSite);
-            gateEntryTransaction.setDlNo(dlNo);
-            gateEntryTransaction.setDriverName(driverName);
-            gateEntryTransaction.setSupplyConsignmentWeight(supplyConsignment);
-            gateEntryTransaction.setPoNo(poNo);
-            gateEntryTransaction.setTpNo(tpNo);
-            gateEntryTransaction.setChallanNo(challanNo);
-            gateEntryTransaction.setEwaybillNo(ewaybillNo);
-            gateEntryTransaction.setTransactionType(gateEntryTransactionRequest.getTransactionType());
-            gateEntryTransaction.setCustomerId(customerId);
-            LocalDateTime now = LocalDateTime.now();
-            // Round up the seconds
-            LocalDateTime vehicleInTime = now.withSecond(0).withNano(0);
+
+            // Handle null for challan date
+            LocalDate challanDate = Optional.ofNullable(gateEntryTransactionRequest.getChallanDate())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Challan date is required."));
+            gateEntryTransaction.setChallanDate(challanDate);
+
+            // Handle null for company ID
+            gateEntryTransaction.setCompanyId(Optional.ofNullable(userCompany)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Company ID is required.")));
+
+            // Handle null for transporter ID
+            gateEntryTransaction.setTransporterId(Optional.ofNullable(transporterId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transporter ID is required.")));
+
+            // Handle null for vehicle ID
+            gateEntryTransaction.setVehicleId(Optional.ofNullable(vehicleId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle ID is required.")));
+
+            // Handle null for material ID
+            gateEntryTransaction.setMaterialId(Optional.ofNullable(materialId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material ID is required.")));
+
+            // Handle null for material type
+            gateEntryTransaction.setMaterialType(Optional.ofNullable(materialType)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material type is required.")));
+
+            // Set supplier ID with a default value of 0
+            gateEntryTransaction.setSupplierId(Optional.ofNullable(supplierId).orElse(0L));
+
+            // Handle null for site ID
+            gateEntryTransaction.setSiteId(Optional.ofNullable(userSite)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Site ID is required.")));
+
+            // Handle null for DL No
+            gateEntryTransaction.setDlNo(Optional.ofNullable(gateEntryTransactionRequest.getDlNo()).orElse("N/A"));
+
+            // Handle null for driver name
+            gateEntryTransaction.setDriverName(Optional.ofNullable(gateEntryTransactionRequest.getDriverName()).orElse("Unknown"));
+
+            // Handle null for supply consignment weight with default value 0.0
+            gateEntryTransaction.setSupplyConsignmentWeight(Optional.ofNullable(gateEntryTransactionRequest.getSupplyConsignmentWeight()).orElse(0.0));
+
+            // Handle null for PO No
+            gateEntryTransaction.setPoNo(Optional.ofNullable(gateEntryTransactionRequest.getPoNo()).orElse("N/A"));
+
+            // Handle null for TP No
+            gateEntryTransaction.setTpNo(Optional.ofNullable(gateEntryTransactionRequest.getTpNo()).orElse("N/A"));
+
+            // Handle null for challan no
+            gateEntryTransaction.setChallanNo(Optional.ofNullable(gateEntryTransactionRequest.getChallanNo()).orElse("N/A"));
+
+            // Handle null for eway bill no
+            gateEntryTransaction.setEwaybillNo(Optional.ofNullable(gateEntryTransactionRequest.getEwayBillNo()).orElse("N/A"));
+
+            // Handle null for transaction type
+            gateEntryTransaction.setTransactionType(Optional.ofNullable(gateEntryTransactionRequest.getTransactionType())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transaction type is required.")));
+
+            // Set customer ID with a default value of 0
+            gateEntryTransaction.setCustomerId(Optional.ofNullable(customerId).orElse(0L));
+
+
+            // Set vehicle in time with seconds rounded
+            LocalDateTime vehicleInTime = LocalDateTime.now().withSecond(0).withNano(0);
             gateEntryTransaction.setVehicleIn(vehicleInTime);
-            //save gate entry transaction
+
+            // Save GateEntryTransaction
             GateEntryTransaction savedGateEntryTransaction = gateEntryTransactionRepository.save(gateEntryTransaction);
-            //vehicle transaction status to know where the vehicle is
+
+            // Vehicle transaction status update
             VehicleTransactionStatus vehicleTransactionStatus = new VehicleTransactionStatus();
             Integer ticketNo = savedGateEntryTransaction.getTicketNo();
             vehicleTransactionStatus.setTicketNo(ticketNo);
             vehicleTransactionStatus.setStatusCode("GNT");
             vehicleTransactionStatusRepository.save(vehicleTransactionStatus);
-            //History save with vehicle intime and vehicle out time
+
+            // Log transaction
             TransactionLog transactionLog = new TransactionLog();
             transactionLog.setUserId(userId);
             transactionLog.setTicketNo(ticketNo);
             transactionLog.setTimestamp(vehicleInTime);
             transactionLog.setStatusCode("GNT");
             transactionLogRepository.save(transactionLog);
+
             return ticketNo;
 
         } catch (ResponseStatusException ex) {
-            // Handle ResponseStatusException
+            // Handle specific HTTP response status exceptions
             throw ex;
-        } catch (ResourceNotFoundException ex) {
-            // Handle ResourceNotFoundException
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage(), ex);
         } catch (Exception ex) {
-            // Handle other exceptions
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while saving gate entry transaction", ex);
+            // Log unexpected errors and provide a generic message
+            // Consider adding logging here for unexpected exceptions
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred: " + ex.getMessage(), ex);
         }
-
     }
+
 
     @Override
     public Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest, Integer ticketNo) {
