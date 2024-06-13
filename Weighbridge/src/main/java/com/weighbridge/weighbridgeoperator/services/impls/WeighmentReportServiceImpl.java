@@ -5,23 +5,16 @@ import com.weighbridge.admin.entities.SiteMaster;
 import com.weighbridge.admin.entities.UserMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
-import com.weighbridge.admin.repsitories.CompanyMasterRepository;
-import com.weighbridge.admin.repsitories.CustomerMasterRepository;
-import com.weighbridge.admin.repsitories.MaterialMasterRepository;
-import com.weighbridge.admin.repsitories.SiteMasterRepository;
-import com.weighbridge.admin.repsitories.SupplierMasterRepository;
-import com.weighbridge.admin.repsitories.TransporterMasterRepository;
-import com.weighbridge.admin.repsitories.UserMasterRepository;
-import com.weighbridge.admin.repsitories.VehicleMasterRepository;
+import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
 import com.weighbridge.gateuser.repositories.TransactionLogRepository;
 import com.weighbridge.gateuser.services.GateEntryTransactionService;
 import com.weighbridge.weighbridgeoperator.entities.WeighmentTransaction;
-import com.weighbridge.weighbridgeoperator.payloads.WeighmentPrintResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponse;
 import com.weighbridge.weighbridgeoperator.payloads.WeighbridgeReportResponseList;
+import com.weighbridge.weighbridgeoperator.payloads.WeighmentPrintResponse;
 import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import com.weighbridge.weighbridgeoperator.services.WeighmentReportService;
 import jakarta.persistence.EntityManager;
@@ -40,7 +33,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 public class WeighmentReportServiceImpl implements WeighmentReportService {
@@ -82,6 +74,10 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
     private SiteMasterRepository siteMasterRepository;
     @PersistenceContext
     private EntityManager entityManager;
+
+    private final Double ch_SumQtyC = 0.0;
+    private final Double weight_SumQtyC = 0.0;
+    private final Double shtExcess_SumQtyc = 0.0;
 
 
     @Override
@@ -201,71 +197,122 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
      * @return
      */
     public List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate) {
-
         List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransactionForWeighmentReport(startDate, endDate);
 
-        Map<String, Map<String, List<WeighbridgeReportResponseList>>> groupedReports = new HashMap<>();
+
+//        Map<String, Map<String, List<WeighbridgeReportResponseList>>> groupedReports = new HashMap<>();
+
+        Map<String, List<WeighbridgeReportResponseList>> groupedReports = new HashMap<>();
 
         gateEntryTransactionResponses.stream()
                 .forEach(response -> {
+                    // Determine the key for grouping
                     String materialName = response.getMaterial();
                     String supplierOrCustomer = response.getTransactionType().equalsIgnoreCase("Inbound") ?
                             response.getSupplier() : response.getCustomer();
-                    String key = materialName + "-" + supplierOrCustomer;
+                    String key = materialName + "-" + (supplierOrCustomer != null ? supplierOrCustomer : "Unknown");
 
-                    WeighbridgeReportResponseList weighbridgeResponse2 = mapToWeighbridgeReportResponse(response);
-                    groupedReports.computeIfAbsent(key, k -> new HashMap<>())
-                            .computeIfAbsent(supplierOrCustomer, k -> new ArrayList<>())
-                            .add(weighbridgeResponse2);
+                    // Map to weighbridge report response
+                    WeighbridgeReportResponseList weighbridgeResponse = mapToWeighbridgeReportResponse(response);
+
+                    // Add to group only if weighbridgeResponse is not null
+                    if (weighbridgeResponse != null) {
+                        groupedReports.computeIfAbsent(key, k -> new ArrayList<>()).add(weighbridgeResponse);
+                    }
                 });
 
-        return groupedReports.entrySet().stream()
+        // Transform the map to a list of WeighbridgeReportResponse
+        List<WeighbridgeReportResponse> reportList = groupedReports.entrySet().stream()
                 .map(entry -> {
                     WeighbridgeReportResponse report = new WeighbridgeReportResponse();
-                    String[] keys = entry.getKey().split("-");
+                    String[] keys = entry.getKey().split("-", 2);
+
                     report.setMaterialName(keys[0]);
-                    report.setSupplierOrCustomer(keys[1]);
-                    report.setWeighbridgeResponse2List(new ArrayList<>(entry.getValue().values()).get(0));
+                    System.out.println("Material Name: " + keys[0]);
+
+                    report.setSupplierOrCustomer(keys.length > 1 ? keys[1] : "Unknown");
+                    System.out.println("Supplier or Customer: " + keys[1]);
+
+                    // Get the list of weighbridge responses
+                    List<WeighbridgeReportResponseList> weighbridgeResponseList = entry.getValue();
+                    System.out.println("Weighbridge Responses: " + weighbridgeResponseList);
+
+                    // Calculate sums with null safety checks
+                    double ch_SumQty = weighbridgeResponseList.stream().filter(response -> response.getSupplyConsignmentWeight() != null).mapToDouble(WeighbridgeReportResponseList::getSupplyConsignmentWeight).sum();
+
+                    double weight_SumQty = weighbridgeResponseList.stream().filter(response -> response.getWeighQuantity() != null).mapToDouble(WeighbridgeReportResponseList::getWeighQuantity).sum();
+
+                    double shtExcess_SumQty = weighbridgeResponseList.stream().filter(response -> response.getExcessQty() != null).mapToDouble(WeighbridgeReportResponseList::getExcessQty).sum();
+
+                    // Set the list and sums in the report
+                    report.setWeighbridgeResponse2List(weighbridgeResponseList);
+                    report.setCh_SumQty(ch_SumQty);
+                    report.setWeight_SumQty(weight_SumQty);
+                    report.setShtExcess_SumQty(shtExcess_SumQty);
+
                     return report;
                 })
                 .collect(Collectors.toList());
+
+        return reportList;
+
     }
 
     /**
      * simply it'll return the WeighbridgeReportResponseList to called method so that report can be generated
-     *
+     * Utility method to map GateEntryTransactionResponse to WeighbridgeReportResponseList
      * @param gateEntryResponse
-     * @return
+     * @return WeighbridgeReportResponseList or null if weighmentTransaction is not found
      */
     private WeighbridgeReportResponseList mapToWeighbridgeReportResponse(GateEntryTransactionResponse gateEntryResponse) {
         WeighmentTransaction weighmentTransaction = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(gateEntryResponse.getTicketNo());
+        // Define the formatter for the desired date format
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        if (weighmentTransaction == null) {
+            return null;
+        }
         WeighbridgeReportResponseList weighbridgeReportResponseList = new WeighbridgeReportResponseList();
-        weighbridgeReportResponseList.setTransactionDate(gateEntryResponse.getTransactionDate());
+        String formatTransactionDate = gateEntryResponse.getTransactionDate().format(dateFormatter);
+        weighbridgeReportResponseList.setTransactionDate(formatTransactionDate);
         weighbridgeReportResponseList.setVehicleNo(gateEntryResponse.getVehicleNo());
         weighbridgeReportResponseList.setTpNo(gateEntryResponse.getTpNo());
-        weighbridgeReportResponseList.setChallanDate(gateEntryResponse.getChallanDate());
+
+
+        // Get the LocalDate from gateEntryResponse
+        LocalDate challanDate = gateEntryResponse.getChallanDate();
+
+        if (challanDate != null) {
+            // Format the LocalDate to a string with the desired format
+            String formattedDate = challanDate.format(dateFormatter);
+            weighbridgeReportResponseList.setFormattedChallanDate(formattedDate);
+        }
+        weighbridgeReportResponseList.setChallanDate(challanDate);
         weighbridgeReportResponseList.setTicketNo(gateEntryResponse.getTicketNo());
 
         if (weighmentTransaction != null) {
-            double supplyConsignmentWeight = gateEntryResponse.getTpNetWeight() != null ? gateEntryResponse.getTpNetWeight() : 0.0;
-            weighbridgeReportResponseList.setSupplyConsignmentWeight(supplyConsignmentWeight);
-            /*
-            SupplyConsignmentWeight is what it'll given at the time of gate entry, it means provided by supplier or Own Company Sales team
-             */
+
+            // Calculate weights with null checks
+            Double supplyConsignmentWeight = gateEntryResponse.getTpNetWeight();
+            if (supplyConsignmentWeight != null) {
+
+                weighbridgeReportResponseList.setSupplyConsignmentWeight(supplyConsignmentWeight);
+            } else {
+                supplyConsignmentWeight = 0.0;
+            }
+
             Double netWeight = (Double) weighmentTransaction.getNetWeight() != null ? weighmentTransaction.getNetWeight() : 0.0;
             weighbridgeReportResponseList.setWeighQuantity(netWeight);
-            weighbridgeReportResponseList.setExcessQty(supplyConsignmentWeight - netWeight);
-        } else {
-            weighbridgeReportResponseList.setSupplyConsignmentWeight(0.0);
-            weighbridgeReportResponseList.setWeighQuantity(0.0);
-            weighbridgeReportResponseList.setExcessQty(0.0);
-        }
+            double excessQty = supplyConsignmentWeight - netWeight;
+            weighbridgeReportResponseList.setExcessQty(excessQty);
 
+
+        }
         return weighbridgeReportResponseList;
     }
 
     @Override
-    public List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields, LocalDate startDate, LocalDate endDate) {
+    public List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields, LocalDate
+            startDate, LocalDate endDate) {
         HttpSession session = httpServletRequest.getSession();
         if (session == null || session.getAttribute("userId") == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
@@ -308,27 +355,14 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         criteriaQuery.multiselect(selections);
 
         // Add where clause for siteId and companyId
-        Predicate siteCompanyPredicate = criteriaBuilder.and(
-                criteriaBuilder.equal(gateEntryTransactionRoot.get("siteId"), userSite),
-                criteriaBuilder.equal(gateEntryTransactionRoot.get("companyId"), userCompany),
-                criteriaBuilder.equal(gateEntryTransactionRoot.get("ticketNo"), weighmentTransactionRoot.get("gateEntryTransaction").get("ticketNo"))
-        );
+        Predicate siteCompanyPredicate = criteriaBuilder.and(criteriaBuilder.equal(gateEntryTransactionRoot.get("siteId"), userSite), criteriaBuilder.equal(gateEntryTransactionRoot.get("companyId"), userCompany), criteriaBuilder.equal(gateEntryTransactionRoot.get("ticketNo"), weighmentTransactionRoot.get("gateEntryTransaction").get("ticketNo")));
         // Add date filtering predicates if startDate or endDate are provided
         if (startDate != null && endDate != null) {
-            siteCompanyPredicate = criteriaBuilder.and(
-                    siteCompanyPredicate,
-                    criteriaBuilder.between(gateEntryTransactionRoot.get("transactionDate"), startDate, endDate)
-            );
+            siteCompanyPredicate = criteriaBuilder.and(siteCompanyPredicate, criteriaBuilder.between(gateEntryTransactionRoot.get("transactionDate"), startDate, endDate));
         } else if (startDate != null) {
-            siteCompanyPredicate = criteriaBuilder.and(
-                    siteCompanyPredicate,
-                    criteriaBuilder.greaterThanOrEqualTo(gateEntryTransactionRoot.get("transactionDate"), startDate)
-            );
+            siteCompanyPredicate = criteriaBuilder.and(siteCompanyPredicate, criteriaBuilder.greaterThanOrEqualTo(gateEntryTransactionRoot.get("transactionDate"), startDate));
         } else if (endDate != null) {
-            siteCompanyPredicate = criteriaBuilder.and(
-                    siteCompanyPredicate,
-                    criteriaBuilder.lessThanOrEqualTo(gateEntryTransactionRoot.get("transactionDate"), endDate)
-            );
+            siteCompanyPredicate = criteriaBuilder.and(siteCompanyPredicate, criteriaBuilder.lessThanOrEqualTo(gateEntryTransactionRoot.get("transactionDate"), endDate));
         }
         criteriaQuery.where(siteCompanyPredicate);
 
@@ -344,27 +378,21 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
                 Object value = tuple.get(fieldToExpressionMap.get(field));
                 if ("materialId".equals(field) && value != null) {
                     long materialId = (long) value;
-                    value = Optional.ofNullable(materialMasterRepository.findMaterialNameByMaterialId(materialId))
-                            .orElse("Unknown Material");
+                    value = Optional.ofNullable(materialMasterRepository.findMaterialNameByMaterialId(materialId)).orElse("Unknown Material");
                 } else if ("supplierId".equals(field) && value != null) {
                     long supplierId = (long) value;
-                    value = Optional.ofNullable(supplierMasterRepository.findSupplierNameBySupplierId(supplierId))
-                            .orElse("");
+                    value = Optional.ofNullable(supplierMasterRepository.findSupplierNameBySupplierId(supplierId)).orElse("");
                 } else if ("customerId".equals(field) && value != null) {
                     long customerId = (long) value;
-                    value = Optional.ofNullable(customerMasterRepository.findCustomerNameByCustomerId(customerId))
-                            .orElse("");
+                    value = Optional.ofNullable(customerMasterRepository.findCustomerNameByCustomerId(customerId)).orElse("");
                 } else if ("vehicleId".equals(field) && value != null) {
                     long vehicleId = (long) value;
-                    value = Optional.ofNullable(vehicleMasterRepository.findVehicleNoById(vehicleId))
-                            .orElse("");
+                    value = Optional.ofNullable(vehicleMasterRepository.findVehicleNoById(vehicleId)).orElse("");
                 }
                 mappedResult.put(field, value);
             }
             mappedResultList.add(mappedResult);
         }
-
         return mappedResultList;
     }
-
 }

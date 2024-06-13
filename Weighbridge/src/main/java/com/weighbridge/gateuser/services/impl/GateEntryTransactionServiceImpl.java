@@ -684,12 +684,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             List<GateEntryTransactionResponse> responseList = new ArrayList<>();
             for (GateEntryTransaction transaction : allTransactions) {
                 // Fetch status code for the current transaction ticket number
-                VehicleTransactionStatus vehicleTransactionStatus = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo());
-                if (vehicleTransactionStatus != null) {
-                    String statusCode = vehicleTransactionStatus.getStatusCode();
-                    if ("GXT".equals(statusCode)) {
-                        continue;
-                    }
+                String statusCode = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo()).getStatusCode();
+                // Skip processing and printing the transaction if its status code is "GXT"
+                if ("GXT".equals(statusCode)) {
+                    continue;
                 }
 
                 GateEntryTransactionResponse response = new GateEntryTransactionResponse();
@@ -778,7 +776,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while retrieving gate entry transactions. Please try again later.");
         }
     }
-
     @Override
     public GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable) {
         HttpSession session = httpServletRequest.getSession();
