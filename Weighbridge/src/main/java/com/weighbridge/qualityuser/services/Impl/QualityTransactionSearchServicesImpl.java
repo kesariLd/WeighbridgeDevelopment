@@ -91,7 +91,6 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
 //        if (qctTransactionLog == null) {
 //            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Quality is not completed for the ticket no: " + ticketNo);
 //        }
-
         QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
         setQualityDashboardResponseDetails(qualityDashboardResponse, transactionByTicketNo);
         return qualityDashboardResponse;

@@ -393,89 +393,112 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
             userSite = session.getAttribute("userSite").toString();
             userCompany = session.getAttribute("userCompany").toString();
         } else {
-            throw new SessionExpiredException("Session Expired, Login again !");
+            throw new SessionExpiredException("Session Expired, Login again!");
         }
+
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo)
-                .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with " + ticketNo));
+                .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with ticketNo: " + ticketNo));
 
         QualityTransaction qualityTransaction = new QualityTransaction();
         StringBuilder qualityRangeIds = new StringBuilder();
         StringBuilder qualityValues = new StringBuilder();
-        boolean isQualityGood=true;
-        if (gateEntryTransaction.getTransactionType().equals("Inbound")) {
-            String materialName = materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId());
-            SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(gateEntryTransaction.getSupplierId());
-            String supplierAddress = supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2();
-            for (Map.Entry<String, Double> entry : transactionRequest.entrySet()) {
-                String key = entry.getKey();
-                Double value = entry.getValue();
-                Long qualityId = qualityRangeMasterRepository.findQualityRangeIdByParameterNameAndMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(key, materialName, supplierMaster.getSupplierName(), supplierAddress);
-                QualityRangeMaster qualityRangeMaster=qualityRangeMasterRepository.findById(qualityId).orElseThrow(()->new ResourceNotFoundException("Range not found for qualityId:"+qualityId));
+        boolean isQualityGood = true;
 
-                if(value < qualityRangeMaster.getRangeFrom() || value > qualityRangeMaster.getRangeTo()){
-                    if(value==null){
-                        continue;
-                    }
-                    isQualityGood=false;
-                }
-                qualityRangeIds.append(qualityId).append(",");
-                qualityValues.append(value).append(",");
+        if (gateEntryTransaction.getTransactionType().equalsIgnoreCase("Inbound")) {
+            handleInboundTransaction(gateEntryTransaction, transactionRequest, qualityRangeIds, qualityValues, isQualityGood);
+        } else if (gateEntryTransaction.getTransactionType().equalsIgnoreCase("Outbound")) {
+            handleOutboundTransaction(gateEntryTransaction, transactionRequest, qualityRangeIds, qualityValues, isQualityGood);
+        }
 
-            }
+        // Check if there are any quality range IDs and values before saving
+        if (qualityRangeIds.length() > 0 && qualityValues.length() > 0) {
             qualityTransaction.setGateEntryTransaction(gateEntryTransaction);
             qualityTransaction.setQualityRangeId(qualityRangeIds.toString().replaceAll(",$", "").trim());
             qualityTransaction.setQualityValues(qualityValues.toString().replaceAll(",$", "").trim());
             qualityTransaction.setIsQualityGood(isQualityGood);
             qualityTransactionRepository.save(qualityTransaction);
-        }
-        if (gateEntryTransaction.getTransactionType().equals("Outbound")) {
-            String productName = productMasterRepository.findProductNameByProductId(gateEntryTransaction.getMaterialId());
-            for (Map.Entry<String, Double> entry : transactionRequest.entrySet()) {
-                String key = entry.getKey();
-                Double value = entry.getValue();
-                Long qualityId = qualityRangeMasterRepository.findQualityRangeIdByParameterNameAndProductMasterProductName(key, productName);
-                QualityRangeMaster qualityRangeMaster=qualityRangeMasterRepository.findById(qualityId).orElseThrow(()->new ResourceNotFoundException("Range not found for qualityId:"+qualityId));
 
-                if(value < qualityRangeMaster.getRangeFrom() || value > qualityRangeMaster.getRangeTo()){
-                    if(value==null){
-                        continue;
-                    }
-                    isQualityGood=false;
-                }
-                qualityRangeIds.append(qualityId).append(",");
-                qualityValues.append(value).append(",");
+            return logTransactionAndStatus(ticketNo, userId);
+        } else {
+            // Handle the case where no valid quality data was found
+            return "No valid quality data found for ticket no: \"" + ticketNo + "\".";
+        }
+    }
+
+    private void handleInboundTransaction(GateEntryTransaction gateEntryTransaction, Map<String, Double> transactionRequest, StringBuilder qualityRangeIds, StringBuilder qualityValues, boolean isQualityGood) {
+        String materialName = materialMasterRepository.findMaterialNameByMaterialId(gateEntryTransaction.getMaterialId());
+        SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(gateEntryTransaction.getSupplierId());
+        String supplierAddress = supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2();
+
+        for (Map.Entry<String, Double> entry : transactionRequest.entrySet()) {
+            String key = entry.getKey();
+            Double value = entry.getValue();
+
+            if (value == null) {
+                throw new IllegalArgumentException("Quality value for " + key + " cannot be null");
             }
-            qualityTransaction.setGateEntryTransaction(gateEntryTransaction);
-            qualityTransaction.setQualityRangeId(qualityRangeIds.toString().replaceAll(",$", "").trim());
-            qualityTransaction.setQualityValues(qualityValues.toString().replaceAll(",$", "").trim());
-            qualityTransaction.setIsQualityGood(isQualityGood);
-            qualityTransactionRepository.save(qualityTransaction);
-        }
 
+            Long qualityId = qualityRangeMasterRepository.findQualityRangeIdByParameterNameAndMaterialMasterMaterialNameAndSupplierNameAndSupplierAddress(key, materialName, supplierMaster.getSupplierName(), supplierAddress);
+            QualityRangeMaster qualityRangeMaster = qualityRangeMasterRepository.findById(qualityId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Range not found for qualityId: " + qualityId));
+
+            if (value < qualityRangeMaster.getRangeFrom() || value > qualityRangeMaster.getRangeTo()) {
+                isQualityGood = false;
+            }
+            qualityRangeIds.append(qualityId).append(",");
+            qualityValues.append(value).append(",");
+        }
+    }
+
+    private void handleOutboundTransaction(GateEntryTransaction gateEntryTransaction, Map<String, Double> transactionRequest, StringBuilder qualityRangeIds, StringBuilder qualityValues, boolean isQualityGood) {
+        String productName = productMasterRepository.findProductNameByProductId(gateEntryTransaction.getMaterialId());
+
+        for (Map.Entry<String, Double> entry : transactionRequest.entrySet()) {
+            String key = entry.getKey();
+            Double value = entry.getValue();
+
+            if (value == null) {
+                throw new IllegalArgumentException("Quality value for " + key + " cannot be null");
+            }
+
+            Long qualityId = qualityRangeMasterRepository.findQualityRangeIdByParameterNameAndProductMasterProductName(key, productName);
+            QualityRangeMaster qualityRangeMaster = qualityRangeMasterRepository.findById(qualityId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Range not found for qualityId: " + qualityId));
+
+            if (value < qualityRangeMaster.getRangeFrom() || value > qualityRangeMaster.getRangeTo()) {
+                isQualityGood = false;
+            }
+            qualityRangeIds.append(qualityId).append(",");
+            qualityValues.append(value).append(",");
+        }
+    }
+
+    private String logTransactionAndStatus(Integer ticketNo, String userId) {
         try {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime currentTime = now.withSecond(0).withNano(0);
-            // set qualityCheck in TransactionLog
+            LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
+
+            // Set qualityCheck in TransactionLog
             TransactionLog transactionLog = new TransactionLog();
             transactionLog.setUserId(userId);
             transactionLog.setTicketNo(ticketNo);
-            transactionLog.setTimestamp(currentTime);
+            transactionLog.setTimestamp(now);
             transactionLog.setStatusCode("QCT");
             transactionLogRepository.save(transactionLog);
-            // set qualityCheck in VehicleTransactionStatus
+
+            // Set qualityCheck in VehicleTransactionStatus
             VehicleTransactionStatus vehicleTransactionStatus = new VehicleTransactionStatus();
             vehicleTransactionStatus.setTicketNo(ticketNo);
             vehicleTransactionStatus.setStatusCode("QCT");
             vehicleTransactionStatusRepository.save(vehicleTransactionStatus);
-            return "Quality added to ticket no : \"" + ticketNo + "\" successfully";
+
+            return "Quality added to ticket no: \"" + ticketNo + "\" successfully";
         } catch (Exception e) {
-            log.error("Error occurred while at : ", e);
-            return "Failed to add quality to ticket no : \"" + ticketNo + "\". Please try again.";
+            log.error("Error occurred while logging transaction and status: ", e);
+            return "Failed to add quality to ticket no: \"" + ticketNo + "\". Please try again.";
         }
     }
 
-
-//Generate report for quality check
+    //Generate report for quality check
     @Override
     public ReportResponse getReportResponse(Integer ticketNo) {
         GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
