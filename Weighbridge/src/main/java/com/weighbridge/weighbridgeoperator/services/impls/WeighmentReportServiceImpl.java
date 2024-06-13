@@ -199,7 +199,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
     public List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate) {
         List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransactionForWeighmentReport(startDate, endDate);
 
-
+        System.out.println("  asdf"+gateEntryTransactionResponses);
 //        Map<String, Map<String, List<WeighbridgeReportResponseList>>> groupedReports = new HashMap<>();
 
         Map<String, List<WeighbridgeReportResponseList>> groupedReports = new HashMap<>();

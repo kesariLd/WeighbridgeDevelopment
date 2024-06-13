@@ -740,27 +740,27 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             List<GateEntryTransactionResponse> responseList = new ArrayList<>();
             for (GateEntryTransaction transaction : allTransactions) {
                 // Fetch status code for the current transaction ticket number
-                String statusCode = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo()).getStatusCode();
+//                String statusCode = vehicleTransactionStatusRepository.findByTicketNo(transaction.getTicketNo()).getStatusCode();
                 // Skip processing and printing the transaction if its status code is "GXT"
-                if ("GXT".equals(statusCode)) {
+               /* if ("GXT".equals(statusCode)) {
+                    continue;
+                }*/
+                if (transaction.getVehicleOut() == null) {
                     continue;
                 }
 
                 GateEntryTransactionResponse response = new GateEntryTransactionResponse();
-                // Fetching associated entity names
-                String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
+                // Fetching associated entity name
                 System.out.println("vehicle id" + transaction.getVehicleId());
-                System.out.println(" hasg" + vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId()));
                 Object[] vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId = vehicleMasterRepository.findDistinctVehicleInfoByVehicleId(transaction.getVehicleId());
                 System.out.println("vehicle " + vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId[0]);
                 String transporterName = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getTransporterId());
                 // Setting values to response object
                 response.setTicketNo(transaction.getTicketNo());
                 response.setTransactionType(transaction.getTransactionType());
-                response.setMaterial(materialName);
-                response.setMaterialType(transaction.getMaterialType());
 
-                // Check the transaction type and set the appropriate entity
+                response.setMaterialType(transaction.getMaterialType());
+                System.out.println("ticket no "+transaction.getTicketNo()+" type "+transaction.getTransactionType() );                // Check the transaction type and set the appropriate entity
                 if ("Inbound".equals(transaction.getTransactionType())) {
                     Object[] supplierNameBySupplierId = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(transaction.getSupplierId());
                     // Inbound transaction
@@ -771,9 +771,11 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                         response.setSupplier(supplierName);
                         response.setSupplierAddress(supplierAddress);
                     }
+                    String materialName = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
+                    response.setMaterial(materialName);
                 } else if ("Outbound".equals(transaction.getTransactionType())) {
                     Object[] customerNameByCustomerId = customerMasterRepository.findCustomerNameAndAddressBycustomerId(transaction.getCustomerId());
-
+                    System.out.println("customer ////////"+customerNameByCustomerId);
                     // Outbound transaction
                     Object[] customerInfo = (Object[]) customerNameByCustomerId[0];
                     if (customerInfo != null && customerInfo.length >= 2) {
@@ -782,6 +784,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                         response.setCustomer(customerName);
                         response.setCustomerAddress(customerAddress);
                     }
+                    String materialName = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
+                    response.setMaterial(materialName);
                 }
 
                 Object[] vehicleInfo = (Object[]) vehicleNoAndVehicleTypeAndAndvehicleWheelsNoByVehicleId[0];
