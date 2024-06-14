@@ -32,7 +32,7 @@ public interface WeighmentReportService {
          * @return A list of {@link WeighbridgeReportResponse} objects containing
          *         the weighment report data.
          */
-        List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate);
+        List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate, String companyName, String siteName);
 
     List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields,LocalDate startDate,LocalDate endDate);
 

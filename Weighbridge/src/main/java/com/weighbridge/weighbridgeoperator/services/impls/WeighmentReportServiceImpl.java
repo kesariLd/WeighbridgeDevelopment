@@ -196,8 +196,8 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
      *                  If not provided, start Date will considered as endDate.
      * @return
      */
-    public List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate) {
-        List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransactionForWeighmentReport(startDate, endDate);
+    public List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate,String companyName, String siteName) {
+        List<GateEntryTransactionResponse> gateEntryTransactionResponses = gateEntryTransactionService.getAllGateEntryTransactionForWeighmentReport(startDate, endDate,companyName,siteName);
 
         System.out.println("  asdf"+gateEntryTransactionResponses);
 //        Map<String, Map<String, List<WeighbridgeReportResponseList>>> groupedReports = new HashMap<>();

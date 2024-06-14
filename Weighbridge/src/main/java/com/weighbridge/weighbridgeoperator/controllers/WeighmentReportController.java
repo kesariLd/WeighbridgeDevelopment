@@ -36,10 +36,14 @@ public class WeighmentReportController {
     @GetMapping("/report")
     public ResponseEntity<List<WeighbridgeReportResponse>> generateWeighmentReport2(
             @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate) {
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String companyName,
+            @RequestParam(required = false) String siteName
+            
+    ) {
         System.out.println("startDate" + startDate + " endDate " + endDate);
 
-        return ResponseEntity.ok(weighmentReportService.generateWeighmentReport(startDate, endDate));
+        return ResponseEntity.ok(weighmentReportService.generateWeighmentReport(startDate, endDate,companyName,siteName));
     }
 
     @GetMapping("/transactions/print/{ticketNo}")

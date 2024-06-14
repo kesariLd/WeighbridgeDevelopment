@@ -93,7 +93,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again!"));
             String userCompany = (String) Optional.ofNullable(session.getAttribute("userCompany"))
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again!"));
-
+// Assign to GateEntryTransaction
+            GateEntryTransaction gateEntryTransaction = new GateEntryTransaction();
             // Validate and extract data from the request
             String materialName = Optional.ofNullable(gateEntryTransactionRequest.getMaterial())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material name is required."));
@@ -137,6 +138,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 if (materialId == 0) {
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Material does not exist.");
                 }
+                // Handle null for challan date
+                LocalDate challanDate = Optional.ofNullable(gateEntryTransactionRequest.getChallanDate())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Challan date is required."));
+                gateEntryTransaction.setChallanDate(challanDate);
             }
 
             // Process Outbound transactions
@@ -165,7 +170,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                     salesProcess.setStatus(false);
                 } else {
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sale process not found for TP No: " + gateEntryTransactionRequest.getTpNo());
-                }
+                } // Handle null for challan date
+                LocalDate purchaseDate = Optional.ofNullable(salesProcess.getPurchaseProcessDate())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Purchase  date is required."));
+                gateEntryTransaction.setChallanDate(purchaseDate);
             }
 
             // Validate vehicle and transporter details
@@ -174,16 +182,12 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             long transporterId = Optional.ofNullable(transporterMasterRepository.findTransporterIdByTransporterName(transporterName))
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transporter does not exist."));
 
-            // Assign to GateEntryTransaction
-            GateEntryTransaction gateEntryTransaction = new GateEntryTransaction();
+
 
             // Set transaction date to current date
             gateEntryTransaction.setTransactionDate(LocalDate.now());
 
-            // Handle null for challan date
-            LocalDate challanDate = Optional.ofNullable(gateEntryTransactionRequest.getChallanDate())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Challan date is required."));
-            gateEntryTransaction.setChallanDate(challanDate);
+
 
             // Handle null for company ID
             gateEntryTransaction.setCompanyId(Optional.ofNullable(userCompany)
@@ -710,19 +714,47 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
 
     @Override
-    public List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate, LocalDate endDate) {
+    public List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate, LocalDate endDate, String companyName, String siteName) {
         try {
-            // Set user session details
-            HttpSession session = httpServletRequest.getSession();
             String userId;
             String userCompany;
             String userSite;
-            if (session != null && session.getAttribute("userId") != null) {
-                userId = session.getAttribute("userId").toString();
-                userSite = session.getAttribute("userSite").toString();
-                userCompany = session.getAttribute("userCompany").toString();
+            String userSiteAddress;
+            // Set user session details
+            if (companyName == null && siteName == null) {
+                HttpSession session = httpServletRequest.getSession();
+                if (session != null && session.getAttribute("userId") != null) {
+                    userId = session.getAttribute("userId").toString();
+                    userSite = session.getAttribute("userSite").toString();
+                    userCompany = session.getAttribute("userCompany").toString();
+                } else {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
+                }
+            } else if (companyName != null && !companyName.trim().isEmpty() && siteName != null && !siteName.trim().isEmpty()) {
+
+                // Retrieve company ID
+                userCompany = companyMasterRepository.findCompanyIdByCompanyName(companyName.trim());
+                if (userCompany == null) {
+                    throw new IllegalArgumentException("No company found with the given name: " + companyName);
+                }
+                // Split siteName into name and address
+                String[] requestSite = siteName.split(",", 2);
+                if (requestSite.length < 2) {
+                    throw new IllegalArgumentException("siteName format is incorrect. Expected format: 'SiteName,SiteAddress'");
+                }
+                // Trim to remove leading/trailing spaces
+                String siteNamePart = requestSite[0].trim();
+                String siteAddressPart = requestSite[1].trim();
+                // Retrieve site ID
+                userSite = siteMasterRepository.findSiteIdBySiteName(siteNamePart, siteAddressPart);
+
+                if (userSite == null) {
+                    throw new IllegalArgumentException("No site found with the given name and address: " + siteName);
+                }
+
             } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
+                // Handle the case where siteName is invalid or not as expected
+                throw new IllegalArgumentException("Invalid Company or siteName format. Expected format: 'Company Name,SiteName,SiteAddress'");
             }
             if (startDate == null && endDate != null) {
                 startDate = endDate;
@@ -829,6 +861,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         } catch (ResponseStatusException ex) {
             // Re-throw ResponseStatusException
             throw ex;
+        } catch (IllegalArgumentException e) {
+            // Log and rethrow the exception with a clear message
+            System.err.println("Error in site name format: " + e.getMessage());
+            throw e;
         } catch (Exception ex) {
             // Log the error
             ex.printStackTrace();
