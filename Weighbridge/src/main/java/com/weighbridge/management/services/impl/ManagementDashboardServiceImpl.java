@@ -298,18 +298,13 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         String companyId = companyMasterRepository.findCompanyIdByCompanyName(managementRequest.getCompanyName());
         String[] site = managementRequest.getSiteName().split(",");
         SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(site[0], site[1]);
-        System.out.println(site[0] + "," + site[1]);
 
         List<ManagementQualityDashboardResponse> responseList = new ArrayList<>();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-            System.out.println("date==============================" + date);
             List<QualityTransaction> qualityTransactions = qualityTransactionRepository.findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(companyId, siteMaster.getSiteId(), date);
             for (QualityTransaction transaction : qualityTransactions) {
-                ManagementQualityDashboardResponse managementQualityDashboardResponse = new ManagementQualityDashboardResponse();
-                System.out.println("--------------------------------------------------------------------");
                 if (transaction.getIsQualityGood() != null && transaction.getIsQualityGood() == isGoodQuality) {
-                    System.out.println("quality transaction :" + transaction.getIsQualityGood());
-
+                    ManagementQualityDashboardResponse managementQualityDashboardResponse = new ManagementQualityDashboardResponse();
                     managementQualityDashboardResponse.setTicketNo(transaction.getGateEntryTransaction().getTicketNo());
                     managementQualityDashboardResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
 
@@ -330,15 +325,11 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
                     managementQualityDashboardResponse.setProductOrMaterialType(transaction.getGateEntryTransaction().getMaterialType());
                     managementQualityDashboardResponse.setProductOrMaterialName(getMaterialOrProductName(transaction.getGateEntryTransaction()));
                     managementQualityDashboardResponse.setQualityType(isGoodQuality ? "Good" : "Bad");
-                    System.out.println("Quality Type: " + managementQualityDashboardResponse.getQualityType());
 
-                    System.out.println("Response added to the list.");
+                    responseList.add(managementQualityDashboardResponse);
                 }
-                responseList.add(managementQualityDashboardResponse);
             }
-
         }
-        System.out.println("Total responses: " + responseList.size());
         return responseList;
     }
 

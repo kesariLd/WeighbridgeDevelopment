@@ -17,7 +17,6 @@ import java.util.List;
 @RequestMapping("api/v1/qualities")
 public class QualitySearchController {
 
-
     private final QualityTransactionSearchService qualityTransactionSearchService;
 
     public QualitySearchController(QualityTransactionSearchService qualityTransactionSearchService) {
