@@ -171,6 +171,80 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
         return responses;
     }
 
+    @Override
+    public List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddressQctCompleted(String supplierOrCustomerName, String supplierOrCustomerAddress) {
+        List<QualityDashboardResponse> responses = new ArrayList<>();
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompanyId;
+        String userSiteId;
+
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSiteId = session.getAttribute("userSite").toString();
+            userCompanyId = session.getAttribute("userCompany").toString();
+        } else {
+            throw new SessionExpiredException("Session Expired, Login again!");
+        }
+
+        // Search for supplierName and supplierAddress
+        if (supplierOrCustomerName != null || supplierOrCustomerAddress != null) {
+            System.out.println("supplierOrCustomer Name:" + supplierOrCustomerName);
+            System.out.println("supplierOrCustomer address :" + supplierOrCustomerAddress);
+
+            List<SupplierMaster> supplierMasters = supplierMasterRepository.findBySupplierNameContainingOrSupplierAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
+            List<CustomerMaster> customerMasters = new ArrayList<>();
+            log.info("Supplier master is null", supplierMasters.isEmpty());
+            if (supplierMasters.isEmpty()) {
+                customerMasters = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
+                System.out.println("number of customers :" + customerMasters.size());
+            }
+
+            List<GateEntryTransaction> transactions = new ArrayList<>();
+
+            if (!supplierMasters.isEmpty()) {
+                for (SupplierMaster supplierMaster : supplierMasters) {
+                    List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findBySupplierIdOrderByTicketNoDesc(supplierMaster.getSupplierId());
+                    transactions.addAll(gateEntryTransaction);
+                    System.out.println("Number of transactions for supplier " + supplierMaster.getSupplierId() + ": " + gateEntryTransaction.size());
+                }
+            }
+
+            if (!customerMasters.isEmpty()) {
+                for (CustomerMaster customerMaster : customerMasters) {
+                    List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findByCustomerIdOrderByTicketNoDesc(customerMaster.getCustomerId());
+                    transactions.addAll(gateEntryTransaction);
+                    System.out.println("Number of transactions for customer " + customerMaster.getCustomerId() + ": " + gateEntryTransaction.size());
+                }
+            }
+
+            for (GateEntryTransaction transaction : transactions) {
+                System.out.println("Transaction with ticket no: " + transaction.getTicketNo() + ", CompanyId: " + userCompanyId + ", SiteId: " + userSiteId);
+
+                // Check if the transaction is valid based on the current user context
+                GateEntryTransaction transactionBySupplierOrCustomerNameAndAddress = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(transaction.getTicketNo(), userCompanyId, userSiteId);
+                if (transactionBySupplierOrCustomerNameAndAddress != null) {
+                    System.out.println("Found transaction: " + transactionBySupplierOrCustomerNameAndAddress.getTicketNo());
+
+                    TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), "QCT");
+                    if (qctTransactionLog != null) {
+                        QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+                        setQualityDashboardResponseDetails(qualityDashboardResponse, transactionBySupplierOrCustomerNameAndAddress);
+                        responses.add(qualityDashboardResponse);
+                        System.out.println("Added quality response for ticket no: " + transaction.getTicketNo());
+                    } else {
+                        System.out.println("QCT log already exists for ticket no: " + transaction.getTicketNo());
+                    }
+                } else {
+                    System.out.println("No transaction found for ticket no: " + transaction.getTicketNo() + ", CompanyId: " + userCompanyId + ", SiteId: " + userSiteId);
+                }
+            }
+        } else {
+            System.out.println("Supplier/Customer name and address are both null.");
+        }
+        return responses;
+    }
+
 
     @Override
     public List<QualityDashboardResponse> searchByDate(String date) {
@@ -252,6 +326,46 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
         }
         return responses;
     }
+
+    @Override
+    public List<QualityDashboardResponse> searchByQCTCompletedVehicleNo(String vehicleNo) {
+        List<QualityDashboardResponse> responses = new ArrayList<>();
+        HttpSession session = httpServletRequest.getSession();
+        String userId;
+        String userCompanyId;
+        String userSiteId;
+
+        if (session != null && session.getAttribute("userId") != null) {
+            userId = session.getAttribute("userId").toString();
+            userSiteId = session.getAttribute("userSite").toString();
+            userCompanyId = session.getAttribute("userCompany").toString();
+        } else {
+            throw new SessionExpiredException("Session Expired, Login again!");
+        }
+
+        // Search by vehicleNo
+        if (vehicleNo != null) {
+            VehicleMaster vehicleMaster = vehicleMasterRepository.findByVehicleNo(vehicleNo);
+            if (vehicleMaster != null) {
+                List<GateEntryTransaction> transactionsByVehicleId = gateEntryTransactionRepository.findByVehicleIdOrderByTicketNo(vehicleMaster.getId());
+                for (GateEntryTransaction gateEntryTransaction : transactionsByVehicleId) {
+                    GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(gateEntryTransaction.getTicketNo(), userCompanyId, userSiteId);
+                    if (transactionByTicketNo != null) {
+                        TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transactionByTicketNo.getTicketNo(), "QCT");
+                        if (qctTransactionLog != null) {
+                            QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+                            setQualityDashboardResponseDetails(qualityDashboardResponse, gateEntryTransaction);
+                            responses.add(qualityDashboardResponse);
+                        }
+
+                    }
+                }
+            }
+        }
+        return responses;
+
+    }
+
 
     private void setQualityDashboardResponseDetails(QualityDashboardResponse qualityDashboardResponse, GateEntryTransaction transaction) {
 

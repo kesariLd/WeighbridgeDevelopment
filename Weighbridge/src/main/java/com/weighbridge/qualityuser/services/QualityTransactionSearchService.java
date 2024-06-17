@@ -15,4 +15,7 @@ public interface QualityTransactionSearchService {
 
     List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress);
 
+    List<QualityDashboardResponse> searchByQCTCompletedVehicleNo(String vehicleNo);
+
+    List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddressQctCompleted(String supplierOrCustomerName, String supplierOrCustomerAddress);
 }

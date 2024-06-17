@@ -37,11 +37,26 @@ public class QualitySearchController {
         return ResponseEntity.ok().body(response);
     }
 
+    @GetMapping("/searchByVehicleNo-qctCompleted/{vehicleNo}")
+    public ResponseEntity<List<QualityDashboardResponse>> searchByQCTCompletedVehicleNo(@PathVariable String vehicleNo) {
+        List<QualityDashboardResponse> response = qualityTransactionSearchService.searchByQCTCompletedVehicleNo(vehicleNo);
+        return ResponseEntity.ok().body(response);
+    }
+
+
     @GetMapping("/searchBySupplierOrCustomer")
     public ResponseEntity<List<QualityDashboardResponse>> searchBySupplierOrCustomerNameAndAddress(
             @RequestParam(required = false) String supplierOrCustomerName,
             @RequestParam(required = false) String supplierOrCustomerAddress) {
         List<QualityDashboardResponse> response = qualityTransactionSearchService.searchBySupplierOrCustomerNameAndAddress(supplierOrCustomerName, supplierOrCustomerAddress);
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("searchBySupplierOrCustomer-qctCompleted")
+    public ResponseEntity<List<QualityDashboardResponse>> searchBySupplierOrCustomerNameAndAddressQctCompleted(
+            @RequestParam(required = false) String supplierOrCustomerName,
+            @RequestParam(required = false) String supplierOrCustomerAddress) {
+        List<QualityDashboardResponse> response = qualityTransactionSearchService.searchBySupplierOrCustomerNameAndAddressQctCompleted(supplierOrCustomerName, supplierOrCustomerAddress);
         return ResponseEntity.ok().body(response);
     }
 
