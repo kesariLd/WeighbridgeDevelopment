@@ -95,6 +95,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         String userSite = session.getAttribute("userSite").toString();
         String userCompany = session.getAttribute("userCompany").toString();
 
+
         // Retrieve all transactions for the user's site and company, ordered by transaction date in descending order
         List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDateDesc(userSite, userCompany);
         List<QualityDashboardResponse> qualityDashboardResponses = new ArrayList<>();

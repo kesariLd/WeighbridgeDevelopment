@@ -303,7 +303,9 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
             List<QualityTransaction> qualityTransactions = qualityTransactionRepository.findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(companyId, siteMaster.getSiteId(), date);
             for (QualityTransaction transaction : qualityTransactions) {
-                if (transaction.getIsQualityGood() != null && transaction.getIsQualityGood() == isGoodQuality) {
+                // Filtering based on quality type
+                boolean isTransactionGoodQuality = transaction.getIsQualityGood() != null && transaction.getIsQualityGood();
+                if (isTransactionGoodQuality == isGoodQuality) {
                     ManagementQualityDashboardResponse managementQualityDashboardResponse = new ManagementQualityDashboardResponse();
                     managementQualityDashboardResponse.setTicketNo(transaction.getGateEntryTransaction().getTicketNo());
                     managementQualityDashboardResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
@@ -332,7 +334,6 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         }
         return responseList;
     }
-
     @Override
 
     public ManagementGateEntryList gateEntryList(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable, String vehicleStatus, String company, String site) {
