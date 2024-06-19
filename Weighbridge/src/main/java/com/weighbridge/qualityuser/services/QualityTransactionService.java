@@ -1,13 +1,8 @@
 package com.weighbridge.qualityuser.services;
 
-import com.weighbridge.qualityuser.exception.ResourceNotFoundException;
-import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +16,7 @@ public interface QualityTransactionService {
      *
      * @return a list of QualityDashboardResponse objects
      */
-    List<QualityDashboardResponse> getAllGateDetails();
+    List<QualityDashboardResponse> getAllGateDetails(String userId);
 
     /**
      * Creates a new quality transaction for a given ticket number.
@@ -29,7 +24,7 @@ public interface QualityTransactionService {
      * @param ticketNo the ticket number for which the quality transaction is being created
      * @return a string representing the result of the operation
      */
-    String createQualityTransaction(Integer ticketNo, Map<String, Double> transactionRequest);
+    String createQualityTransaction(Integer ticketNo, String userId, Map<String, Double> transactionRequest);
 
     /**
      * Retrieves a report response for a given ticket number.
@@ -37,13 +32,13 @@ public interface QualityTransactionService {
      * @param ticketNo the ticket number for which the report response is being retrieved
      * @return a ReportResponse object containing the report details
      */
-    ReportResponse getReportResponse(Integer ticketNo);
+    ReportResponse getReportResponse(Integer ticketNo, String userId);
 
-    void passQualityTransaction(Integer ticketNo);
+    void passQualityTransaction(Integer ticketNo, String userId);
 
-    List<QualityDashboardResponse> getInboundTransaction();
+    List<QualityDashboardResponse> getInboundTransaction(String userId);
 
-    List<QualityDashboardResponse> getOutboundTransaction();
+    List<QualityDashboardResponse> getOutboundTransaction(String userId);
 
     List<String> getAllMaterialAndProductNames();
 
@@ -51,23 +46,23 @@ public interface QualityTransactionService {
 
     List<String> getAllMaterialNames();
 
-    int getInboundTransactionSize();
+    int getInboundTransactionSize(String userId);
 
-    int getOutboundTransactionSize();
+    int getOutboundTransactionSize(String userId);
 
-    int getTotalTransactionSize();
+    int getTotalTransactionSize(String userId);
 
-    List<QualityDashboardResponse> getQCTCompletedInbound();
+    List<QualityDashboardResponse> getQCTCompletedInbound(String userId);
 
-    List<QualityDashboardResponse> getQCTCompletedOutbound();
+    List<QualityDashboardResponse> getQCTCompletedOutbound(String userId);
 
-    List<QualityDashboardResponse> getQCTCompleted();
+    List<QualityDashboardResponse> getQCTCompleted(String userId);
 
-    int getInboundQCTCompletedSize();
+    int getInboundQCTCompletedSize(String userId);
 
-    int getOutboundQCTCompletedSize();
+    int getOutboundQCTCompletedSize(String userId);
 
-    int getTotalQCTCompletedSize();
+    int getTotalQCTCompletedSize(String userId);
 
 
 }

@@ -2,9 +2,17 @@ package com.weighbridge.qualityuser.services.Impl;
 
 import com.weighbridge.admin.entities.CustomerMaster;
 import com.weighbridge.admin.entities.SupplierMaster;
+import com.weighbridge.admin.entities.UserMaster;
 import com.weighbridge.admin.entities.VehicleMaster;
-import com.weighbridge.admin.exceptions.SessionExpiredException;
-import com.weighbridge.admin.repsitories.*;
+import com.weighbridge.admin.repsitories.CompanyMasterRepository;
+import com.weighbridge.admin.repsitories.CustomerMasterRepository;
+import com.weighbridge.admin.repsitories.MaterialMasterRepository;
+import com.weighbridge.admin.repsitories.ProductMasterRepository;
+import com.weighbridge.admin.repsitories.QualityRangeMasterRepository;
+import com.weighbridge.admin.repsitories.SupplierMasterRepository;
+import com.weighbridge.admin.repsitories.TransporterMasterRepository;
+import com.weighbridge.admin.repsitories.UserMasterRepository;
+import com.weighbridge.admin.repsitories.VehicleMasterRepository;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.gateuser.repositories.GateEntryTransactionRepository;
@@ -16,7 +24,6 @@ import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import com.weighbridge.qualityuser.services.QualityTransactionSearchService;
 import com.weighbridge.weighbridgeoperator.repositories.VehicleTransactionStatusRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,6 +34,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -45,8 +53,9 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
     private final QualityRangeMasterRepository qualityRangeMasterRepository;
     private final CompanyMasterRepository companyMasterRepository;
     private final ProductMasterRepository productMasterRepository;
+    private final UserMasterRepository userMasterRepository;
 
-    public QualityTransactionSearchServicesImpl(QualityTransactionRepository qualityTransactionRepository, GateEntryTransactionRepository gateEntryTransactionRepository, HttpServletRequest httpServletRequest, VehicleTransactionStatusRepository vehicleTransactionStatusRepository, SupplierMasterRepository supplierMasterRepository, CustomerMasterRepository customerMasterRepository, MaterialMasterRepository materialMasterRepository, TransporterMasterRepository transporterMasterRepository, VehicleMasterRepository vehicleMasterRepository, TransactionLogRepository transactionLogRepository, QualityRangeMasterRepository qualityRangeMasterRepository, CompanyMasterRepository companyMasterRepository, ProductMasterRepository productMasterRepository) {
+    public QualityTransactionSearchServicesImpl(QualityTransactionRepository qualityTransactionRepository, GateEntryTransactionRepository gateEntryTransactionRepository, HttpServletRequest httpServletRequest, VehicleTransactionStatusRepository vehicleTransactionStatusRepository, SupplierMasterRepository supplierMasterRepository, CustomerMasterRepository customerMasterRepository, MaterialMasterRepository materialMasterRepository, TransporterMasterRepository transporterMasterRepository, VehicleMasterRepository vehicleMasterRepository, TransactionLogRepository transactionLogRepository, QualityRangeMasterRepository qualityRangeMasterRepository, CompanyMasterRepository companyMasterRepository, ProductMasterRepository productMasterRepository, UserMasterRepository userMasterRepository) {
         this.qualityTransactionRepository = qualityTransactionRepository;
         this.gateEntryTransactionRepository = gateEntryTransactionRepository;
         this.httpServletRequest = httpServletRequest;
@@ -60,24 +69,21 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
         this.qualityRangeMasterRepository = qualityRangeMasterRepository;
         this.companyMasterRepository = companyMasterRepository;
         this.productMasterRepository = productMasterRepository;
+        this.userMasterRepository = userMasterRepository;
     }
 
     @Override
-    public QualityDashboardResponse searchByTicketNo(Integer ticketNo, boolean checkQualityCompleted) {
-        HttpSession session = httpServletRequest.getSession();
-        if (session == null || session.getAttribute("userId") == null) {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    public QualityDashboardResponse searchByTicketNo(Integer ticketNo, String userId, boolean checkQualityCompleted) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        String userId = session.getAttribute("userId").toString();
-        String userSiteId = session.getAttribute("userSite").toString();
-        String userCompanyId = session.getAttribute("userCompany").toString();
-
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
         if (ticketNo == null) {
             throw new IllegalArgumentException("Ticket number cannot be null");
         }
 
-        GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userCompanyId, userSiteId);
+        GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userCompany, userSite);
         if (transactionByTicketNo == null) {
             throw new ResourceNotFoundException("Ticket", "ticket no", String.valueOf(ticketNo));
         }
@@ -98,182 +104,132 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
 
     //search by supplierName and address
     @Override
-    public List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress) {
-        List<QualityDashboardResponse> responses = new ArrayList<>();
-        HttpSession session = httpServletRequest.getSession();
-        String userId;
-        String userCompanyId;
-        String userSiteId;
+public List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddress(String supplierOrCustomerName, String supplierOrCustomerAddress, String userId) {
+    UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        if (session != null && session.getAttribute("userId") != null) {
-            userId = session.getAttribute("userId").toString();
-            userSiteId = session.getAttribute("userSite").toString();
-            userCompanyId = session.getAttribute("userCompany").toString();
-        } else {
-            throw new SessionExpiredException("Session Expired, Login again!");
+    String userSite = userMaster.getSite().getSiteId();
+    String userCompany = userMaster.getCompany().getCompanyId();
+
+    List<QualityDashboardResponse> responses = new ArrayList<>();
+
+    // Search for supplierName and supplierAddress
+    if (supplierOrCustomerName != null || supplierOrCustomerAddress != null) {
+        List<SupplierMaster> supplierMasters = supplierMasterRepository.findBySupplierNameContainingOrSupplierAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
+        List<CustomerMaster> customerMasters = new ArrayList<>();
+
+        if (supplierMasters.isEmpty()) {
+            customerMasters = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
         }
 
-        // Search for supplierName and supplierAddress
-        if (supplierOrCustomerName != null || supplierOrCustomerAddress != null) {
-            System.out.println("supplierOrCustomer Name:" + supplierOrCustomerName);
-            System.out.println("supplierOrCustomer address :" + supplierOrCustomerAddress);
+        List<GateEntryTransaction> transactions = new ArrayList<>();
 
-            List<SupplierMaster> supplierMasters = supplierMasterRepository.findBySupplierNameContainingOrSupplierAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
-            List<CustomerMaster> customerMasters = new ArrayList<>();
-            log.info("Supplier master is null", supplierMasters.isEmpty());
-            if (supplierMasters.isEmpty()) {
-                customerMasters = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
-                System.out.println("number of customers :" + customerMasters.size());
+        if (!supplierMasters.isEmpty()) {
+            for (SupplierMaster supplierMaster : supplierMasters) {
+                List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findBySupplierIdOrderByTicketNoDesc(supplierMaster.getSupplierId());
+                transactions.addAll(gateEntryTransaction);
             }
-
-            List<GateEntryTransaction> transactions = new ArrayList<>();
-
-            if (!supplierMasters.isEmpty()) {
-                for (SupplierMaster supplierMaster : supplierMasters) {
-                    List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findBySupplierIdOrderByTicketNoDesc(supplierMaster.getSupplierId());
-                    transactions.addAll(gateEntryTransaction);
-                    System.out.println("Number of transactions for supplier " + supplierMaster.getSupplierId() + ": " + gateEntryTransaction.size());
-                }
-            }
-
-            if (!customerMasters.isEmpty()) {
-                for (CustomerMaster customerMaster : customerMasters) {
-                    List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findByCustomerIdOrderByTicketNoDesc(customerMaster.getCustomerId());
-                    transactions.addAll(gateEntryTransaction);
-                    System.out.println("Number of transactions for customer " + customerMaster.getCustomerId() + ": " + gateEntryTransaction.size());
-                }
-            }
-
-            for (GateEntryTransaction transaction : transactions) {
-                System.out.println("Transaction with ticket no: " + transaction.getTicketNo() + ", CompanyId: " + userCompanyId + ", SiteId: " + userSiteId);
-
-                // Check if the transaction is valid based on the current user context
-                GateEntryTransaction transactionBySupplierOrCustomerNameAndAddress = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(transaction.getTicketNo(), userCompanyId, userSiteId);
-                if (transactionBySupplierOrCustomerNameAndAddress != null) {
-                    System.out.println("Found transaction: " + transactionBySupplierOrCustomerNameAndAddress.getTicketNo());
-
-                    // Determine the status codes for GWT and TWT
-                    String gwtStatusCode = "GWT";
-                    String twtStatusCode = "TWT";
-
-                    // Check for completed GWT or TWT based on transaction type
-                    boolean isCompleted = false;
-                    if (transactionBySupplierOrCustomerNameAndAddress.getTransactionType().equalsIgnoreCase("Inbound")) {
-                        TransactionLog gwtTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), gwtStatusCode);
-                        isCompleted = (gwtTransactionLog != null);
-                    } else if (transactionBySupplierOrCustomerNameAndAddress.getTransactionType().equalsIgnoreCase("Outbound")) {
-                        TransactionLog twtTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), twtStatusCode);
-                        isCompleted = (twtTransactionLog != null);
-                    }
-
-                    if (isCompleted) {
-                        TransactionLog qctTransactionLog=transactionLogRepository.findByTicketNoAndStatusCode(transactionBySupplierOrCustomerNameAndAddress.getTicketNo(), "QCT");
-                        if(qctTransactionLog==null) {
-                            QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
-                            setQualityDashboardResponseDetails(qualityDashboardResponse, transactionBySupplierOrCustomerNameAndAddress);
-                            responses.add(qualityDashboardResponse);
-                        }
-                        System.out.println("Added quality response for ticket no: " + transaction.getTicketNo());
-                    } else {
-                        System.out.println("Required GWT or TWT log not completed for ticket no: " + transaction.getTicketNo());
-                    }
-                } else {
-                    System.out.println("No transaction found for ticket no: " + transaction.getTicketNo() + ", CompanyId: " + userCompanyId + ", SiteId: " + userSiteId);
-                }
-            }
-        } else {
-            System.out.println("Supplier/Customer name and address are both null.");
-        }
-        return responses;
-    }
-
-
-    @Override
-    public List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddressQctCompleted(String supplierOrCustomerName, String supplierOrCustomerAddress) {
-        List<QualityDashboardResponse> responses = new ArrayList<>();
-        HttpSession session = httpServletRequest.getSession();
-        String userId;
-        String userCompanyId;
-        String userSiteId;
-
-        if (session != null && session.getAttribute("userId") != null) {
-            userId = session.getAttribute("userId").toString();
-            userSiteId = session.getAttribute("userSite").toString();
-            userCompanyId = session.getAttribute("userCompany").toString();
-        } else {
-            throw new SessionExpiredException("Session Expired, Login again!");
         }
 
-        // Search for supplierName and supplierAddress
-        if (supplierOrCustomerName != null || supplierOrCustomerAddress != null) {
-            System.out.println("supplierOrCustomer Name:" + supplierOrCustomerName);
-            System.out.println("supplierOrCustomer address :" + supplierOrCustomerAddress);
-
-            List<SupplierMaster> supplierMasters = supplierMasterRepository.findBySupplierNameContainingOrSupplierAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
-            List<CustomerMaster> customerMasters = new ArrayList<>();
-            log.info("Supplier master is null", supplierMasters.isEmpty());
-            if (supplierMasters.isEmpty()) {
-                customerMasters = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
-                System.out.println("number of customers :" + customerMasters.size());
+        if (!customerMasters.isEmpty()) {
+            for (CustomerMaster customerMaster : customerMasters) {
+                List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findByCustomerIdOrderByTicketNoDesc(customerMaster.getCustomerId());
+                transactions.addAll(gateEntryTransaction);
             }
+        }
 
-            List<GateEntryTransaction> transactions = new ArrayList<>();
+        for (GateEntryTransaction transaction : transactions) {
+            // Check if the transaction is valid based on the current user context
+            GateEntryTransaction transactionBySupplierOrCustomerNameAndAddress = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(transaction.getTicketNo(), userCompany, userSite);
+            if (transactionBySupplierOrCustomerNameAndAddress != null) {
+                // Determine the status codes for GWT and TWT
+                String gwtStatusCode = "GWT";
+                String twtStatusCode = "TWT";
 
-            if (!supplierMasters.isEmpty()) {
-                for (SupplierMaster supplierMaster : supplierMasters) {
-                    List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findBySupplierIdOrderByTicketNoDesc(supplierMaster.getSupplierId());
-                    transactions.addAll(gateEntryTransaction);
-                    System.out.println("Number of transactions for supplier " + supplierMaster.getSupplierId() + ": " + gateEntryTransaction.size());
+                // Check for completed GWT or TWT based on transaction type
+                boolean isCompleted = false;
+                if (transactionBySupplierOrCustomerNameAndAddress.getTransactionType().equalsIgnoreCase("Inbound")) {
+                    TransactionLog gwtTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), gwtStatusCode);
+                    isCompleted = (gwtTransactionLog != null);
+                } else if (transactionBySupplierOrCustomerNameAndAddress.getTransactionType().equalsIgnoreCase("Outbound")) {
+                    TransactionLog twtTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), twtStatusCode);
+                    isCompleted = (twtTransactionLog != null);
                 }
-            }
 
-            if (!customerMasters.isEmpty()) {
-                for (CustomerMaster customerMaster : customerMasters) {
-                    List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findByCustomerIdOrderByTicketNoDesc(customerMaster.getCustomerId());
-                    transactions.addAll(gateEntryTransaction);
-                    System.out.println("Number of transactions for customer " + customerMaster.getCustomerId() + ": " + gateEntryTransaction.size());
-                }
-            }
-
-            for (GateEntryTransaction transaction : transactions) {
-                System.out.println("Transaction with ticket no: " + transaction.getTicketNo() + ", CompanyId: " + userCompanyId + ", SiteId: " + userSiteId);
-
-                // Check if the transaction is valid based on the current user context
-                GateEntryTransaction transactionBySupplierOrCustomerNameAndAddress = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(transaction.getTicketNo(), userCompanyId, userSiteId);
-                if (transactionBySupplierOrCustomerNameAndAddress != null) {
-                    System.out.println("Found transaction: " + transactionBySupplierOrCustomerNameAndAddress.getTicketNo());
-
-                    TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), "QCT");
-                    if (qctTransactionLog != null) {
+                if (isCompleted) {
+                    TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transactionBySupplierOrCustomerNameAndAddress.getTicketNo(), "QCT");
+                    if (qctTransactionLog == null) {
                         QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
                         setQualityDashboardResponseDetails(qualityDashboardResponse, transactionBySupplierOrCustomerNameAndAddress);
                         responses.add(qualityDashboardResponse);
-                        System.out.println("Added quality response for ticket no: " + transaction.getTicketNo());
-                    } else {
-                        System.out.println("QCT log already exists for ticket no: " + transaction.getTicketNo());
                     }
-                } else {
-                    System.out.println("No transaction found for ticket no: " + transaction.getTicketNo() + ", CompanyId: " + userCompanyId + ", SiteId: " + userSiteId);
                 }
             }
-        } else {
-            System.out.println("Supplier/Customer name and address are both null.");
         }
-        return responses;
     }
-
+    return responses;
+}
 
     @Override
-    public List<QualityDashboardResponse> searchByDate(String date) {
+public List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddressQctCompleted(String supplierOrCustomerName, String supplierOrCustomerAddress, String userId) {
+    UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
+
+    String userSite = userMaster.getSite().getSiteId();
+    String userCompany = userMaster.getCompany().getCompanyId();
+
+    List<QualityDashboardResponse> responses = new ArrayList<>();
+
+    // Search for supplierName and supplierAddress
+    if (supplierOrCustomerName != null || supplierOrCustomerAddress != null) {
+        List<SupplierMaster> supplierMasters = supplierMasterRepository.findBySupplierNameContainingOrSupplierAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
+        List<CustomerMaster> customerMasters = new ArrayList<>();
+
+        if (supplierMasters.isEmpty()) {
+            customerMasters = customerMasterRepository.findByCustomerNameContainingOrCustomerAddressLine1Containing(supplierOrCustomerName, supplierOrCustomerAddress);
+        }
+
+        List<GateEntryTransaction> transactions = new ArrayList<>();
+
+        if (!supplierMasters.isEmpty()) {
+            for (SupplierMaster supplierMaster : supplierMasters) {
+                List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findBySupplierIdOrderByTicketNoDesc(supplierMaster.getSupplierId());
+                transactions.addAll(gateEntryTransaction);
+            }
+        }
+
+        if (!customerMasters.isEmpty()) {
+            for (CustomerMaster customerMaster : customerMasters) {
+                List<GateEntryTransaction> gateEntryTransaction = gateEntryTransactionRepository.findByCustomerIdOrderByTicketNoDesc(customerMaster.getCustomerId());
+                transactions.addAll(gateEntryTransaction);
+            }
+        }
+
+        for (GateEntryTransaction transaction : transactions) {
+            // Check if the transaction is valid based on the current user context
+            GateEntryTransaction transactionBySupplierOrCustomerNameAndAddress = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(transaction.getTicketNo(), userCompany, userSite);
+            if (transactionBySupplierOrCustomerNameAndAddress != null) {
+                TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), "QCT");
+                if (qctTransactionLog != null) {
+                    QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+                    setQualityDashboardResponseDetails(qualityDashboardResponse, transactionBySupplierOrCustomerNameAndAddress);
+                    responses.add(qualityDashboardResponse);
+                }
+            }
+        }
+    }
+    return responses;
+}
+
+    @Override
+    public List<QualityDashboardResponse> searchByDate(String date, String userId) {
         List<QualityDashboardResponse> responses = new ArrayList<>();
         try {
-            HttpSession session = httpServletRequest.getSession(false);
-            if (session == null || session.getAttribute("userId") == null) {
-                throw new SessionExpiredException("Session Expired, Login again!");
-            }
-            String userId = session.getAttribute("userId").toString();
-            String userSite = session.getAttribute("userSite").toString();
-            String userCompany = session.getAttribute("userCompany").toString();
+            UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
+
+            String userSite = userMaster.getSite().getSiteId();
+            String userCompany = userMaster.getCompany().getCompanyId();
 
             LocalDate searchDate = LocalDate.parse(date);
 
@@ -296,9 +252,6 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
         } catch (DateTimeParseException e) {
             log.error("Invalid date format: ", e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid date format");
-        } catch (SessionExpiredException e) {
-            log.error("Session expired: ", e);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session expired, login again");
         } catch (Exception e) {
             log.error("Error occurred while searching: ", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while searching");
@@ -307,28 +260,21 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
     }
 
     @Override
-    public List<QualityDashboardResponse> searchByVehicleNo(String vehicleNo) {
+    public List<QualityDashboardResponse> searchByVehicleNo(String vehicleNo, String userId) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
+
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
+
         List<QualityDashboardResponse> responses = new ArrayList<>();
-        HttpSession session = httpServletRequest.getSession();
-        String userId;
-        String userCompanyId;
-        String userSiteId;
-
-        if (session != null && session.getAttribute("userId") != null) {
-            userId = session.getAttribute("userId").toString();
-            userSiteId = session.getAttribute("userSite").toString();
-            userCompanyId = session.getAttribute("userCompany").toString();
-        } else {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
-
         // Search by vehicleNo
         if (vehicleNo != null) {
             VehicleMaster vehicleMaster = vehicleMasterRepository.findByVehicleNo(vehicleNo);
             if (vehicleMaster != null) {
                 List<GateEntryTransaction> transactionsByVehicleId = gateEntryTransactionRepository.findByVehicleIdOrderByTicketNo(vehicleMaster.getId());
                 for (GateEntryTransaction gateEntryTransaction : transactionsByVehicleId) {
-                    GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(gateEntryTransaction.getTicketNo(), userCompanyId, userSiteId);
+                    GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(gateEntryTransaction.getTicketNo(), userCompany, userSite);
                     if (transactionByTicketNo != null) {
                         // Determine the status code based on transaction type
                         String inboundStatusCode = "GWT";
@@ -363,28 +309,22 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
 
 
     @Override
-    public List<QualityDashboardResponse> searchByQCTCompletedVehicleNo(String vehicleNo) {
+    public List<QualityDashboardResponse> searchByQCTCompletedVehicleNo(String vehicleNo, String userId) {
+         UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
+
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
+        
         List<QualityDashboardResponse> responses = new ArrayList<>();
-        HttpSession session = httpServletRequest.getSession();
-        String userId;
-        String userCompanyId;
-        String userSiteId;
-
-        if (session != null && session.getAttribute("userId") != null) {
-            userId = session.getAttribute("userId").toString();
-            userSiteId = session.getAttribute("userSite").toString();
-            userCompanyId = session.getAttribute("userCompany").toString();
-        } else {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
-
+        
         // Search by vehicleNo
         if (vehicleNo != null) {
             VehicleMaster vehicleMaster = vehicleMasterRepository.findByVehicleNo(vehicleNo);
             if (vehicleMaster != null) {
                 List<GateEntryTransaction> transactionsByVehicleId = gateEntryTransactionRepository.findByVehicleIdOrderByTicketNo(vehicleMaster.getId());
                 for (GateEntryTransaction gateEntryTransaction : transactionsByVehicleId) {
-                    GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(gateEntryTransaction.getTicketNo(), userCompanyId, userSiteId);
+                    GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(gateEntryTransaction.getTicketNo(), userCompany, userSite);
                     if (transactionByTicketNo != null) {
                         TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transactionByTicketNo.getTicketNo(), "QCT");
                         if (qctTransactionLog != null) {

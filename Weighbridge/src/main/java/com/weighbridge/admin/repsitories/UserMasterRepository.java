@@ -33,4 +33,7 @@ public interface UserMasterRepository extends JpaRepository<UserMaster, String> 
     Optional<UserMaster> findByUserEmailId(String emailId);
 
     boolean existsByUserEmailIdAndUserIdNot(String emailId, String userId);
+
+    @Query("SELECT um FROM UserMaster um WHERE um.userId = :userId")
+    UserMaster findByUserId(@Param("userId") String userId);
 }

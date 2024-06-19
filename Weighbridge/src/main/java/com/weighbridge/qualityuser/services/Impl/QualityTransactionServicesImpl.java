@@ -1,8 +1,23 @@
 package com.weighbridge.qualityuser.services.Impl;
 
-import com.weighbridge.admin.entities.*;
+import com.weighbridge.admin.entities.CompanyMaster;
+import com.weighbridge.admin.entities.CustomerMaster;
+import com.weighbridge.admin.entities.MaterialMaster;
+import com.weighbridge.admin.entities.ProductMaster;
+import com.weighbridge.admin.entities.QualityRangeMaster;
+import com.weighbridge.admin.entities.SupplierMaster;
+import com.weighbridge.admin.entities.UserMaster;
+import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
-import com.weighbridge.admin.repsitories.*;
+import com.weighbridge.admin.repsitories.CompanyMasterRepository;
+import com.weighbridge.admin.repsitories.CustomerMasterRepository;
+import com.weighbridge.admin.repsitories.MaterialMasterRepository;
+import com.weighbridge.admin.repsitories.ProductMasterRepository;
+import com.weighbridge.admin.repsitories.QualityRangeMasterRepository;
+import com.weighbridge.admin.repsitories.SupplierMasterRepository;
+import com.weighbridge.admin.repsitories.TransporterMasterRepository;
+import com.weighbridge.admin.repsitories.UserMasterRepository;
+import com.weighbridge.admin.repsitories.VehicleMasterRepository;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.entities.TransactionLog;
 import com.weighbridge.weighbridgeoperator.entities.VehicleTransactionStatus;
@@ -19,18 +34,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static org.springframework.jdbc.core.StatementCreatorUtils.setParameterValue;
 
 @Slf4j
 @Service
@@ -49,6 +65,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     private final QualityRangeMasterRepository qualityRangeMasterRepository;
     private final CompanyMasterRepository companyMasterRepository;
     private final ProductMasterRepository productMasterRepository;
+    private final UserMasterRepository userMasterRepository;
 
     public QualityTransactionServicesImpl(QualityTransactionRepository qualityTransactionRepository,
                                           GateEntryTransactionRepository gateEntryTransactionRepository,
@@ -60,7 +77,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
                                           TransporterMasterRepository transporterMasterRepository,
                                           VehicleMasterRepository vehicleMasterRepository,
                                           TransactionLogRepository transactionLogRepository,
-                                          QualityRangeMasterRepository qualityRangeMasterRepository, CompanyMasterRepository companyMasterRepository, ProductMasterRepository productMasterRepository) {
+                                          QualityRangeMasterRepository qualityRangeMasterRepository, CompanyMasterRepository companyMasterRepository, ProductMasterRepository productMasterRepository, UserMasterRepository userMasterRepository) {
         this.qualityTransactionRepository = qualityTransactionRepository;
         this.gateEntryTransactionRepository = gateEntryTransactionRepository;
         this.httpServletRequest = httpServletRequest;
@@ -74,6 +91,7 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
         this.qualityRangeMasterRepository = qualityRangeMasterRepository;
         this.companyMasterRepository = companyMasterRepository;
         this.productMasterRepository = productMasterRepository;
+        this.userMasterRepository = userMasterRepository;
     }
 
 
@@ -84,16 +102,13 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
      * @throws SessionExpiredException   if the session is null or expired.
      * @throws ResourceNotFoundException if the supplier or customer related to a transaction is not found.
      */
-    public List<QualityDashboardResponse> getAllGateDetails() {
-        // Get the session and user information
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    public List<QualityDashboardResponse> getAllGateDetails(String userId) {
+        // Find user by userId
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        String userId = session.getAttribute("userId").toString();
-        String userSite = session.getAttribute("userSite").toString();
-        String userCompany = session.getAttribute("userCompany").toString();
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
 
 
         // Retrieve all transactions for the user's site and company, ordered by transaction date in descending order
@@ -166,24 +181,21 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
 
     @Override
-    public List<QualityDashboardResponse> getQCTCompletedInbound() {
-        return getQCTCompletedByTransactionType("Inbound");
+    public List<QualityDashboardResponse> getQCTCompletedInbound(String userId) {
+        return getQCTCompletedByTransactionType(userId, "Inbound");
     }
 
     @Override
-    public List<QualityDashboardResponse> getQCTCompletedOutbound() {
-        return getQCTCompletedByTransactionType("Outbound");
+    public List<QualityDashboardResponse> getQCTCompletedOutbound(String userId) {
+        return getQCTCompletedByTransactionType(userId, "Outbound");
     }
 
-    private List<QualityDashboardResponse> getQCTCompletedByTransactionType(String transactionType) {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    private List<QualityDashboardResponse> getQCTCompletedByTransactionType(String userId, String transactionType) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        String userId = session.getAttribute("userId").toString();
-        String userSite = session.getAttribute("userSite").toString();
-        String userCompany = session.getAttribute("userCompany").toString();
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
 
         List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDateDesc(userSite, userCompany);
         List<QualityDashboardResponse> qualityDashboardResponses = new ArrayList<>();
@@ -260,34 +272,31 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     }
 
     @Override
-    public int getInboundQCTCompletedSize() {
-        List<QualityDashboardResponse> inboundResponses = getQCTCompletedInbound();
+    public int getInboundQCTCompletedSize(String userId) {
+        List<QualityDashboardResponse> inboundResponses = getQCTCompletedInbound(userId);
         return inboundResponses.size();
     }
 
     @Override
-    public int getOutboundQCTCompletedSize() {
-        List<QualityDashboardResponse> outboundResponses = getQCTCompletedOutbound();
+    public int getOutboundQCTCompletedSize(String userId) {
+        List<QualityDashboardResponse> outboundResponses = getQCTCompletedOutbound(userId);
         return outboundResponses.size();
     }
 
     @Override
-    public int getTotalQCTCompletedSize() {
-        List<QualityDashboardResponse> completedList = getQCTCompleted();
+    public int getTotalQCTCompletedSize(String userId) {
+        List<QualityDashboardResponse> completedList = getQCTCompleted(userId);
         return completedList.size();
     }
 
 
     @Override
-    public List<QualityDashboardResponse> getQCTCompleted() {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    public List<QualityDashboardResponse> getQCTCompleted(String userId) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        String userId = session.getAttribute("userId").toString();
-        String userSite = session.getAttribute("userSite").toString();
-        String userCompany = session.getAttribute("userCompany").toString();
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
 
         // Retrieve all transactions for the user's site and company, ordered by transaction date in descending order
         List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdOrderByTransactionDateDesc(userSite, userCompany);
@@ -384,22 +393,15 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
     @Transactional
     @Override
-    public String createQualityTransaction(Integer ticketNo, Map<String, Double> transactionRequest) {
-        HttpSession session = httpServletRequest.getSession();
-        String userId;
-        String userCompany;
-        String userSite;
-        if (session != null && session.getAttribute("userId") != null) {
-            userId = session.getAttribute("userId").toString();
-            userSite = session.getAttribute("userSite").toString();
-            userCompany = session.getAttribute("userCompany").toString();
-        } else {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    public String createQualityTransaction(Integer ticketNo, String userId, Map<String, Double> transactionRequest) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo)
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
+
+        GateEntryTransaction gateEntryTransaction = Optional.ofNullable(gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userCompany, userSite))
                 .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with ticketNo: " + ticketNo));
-
         QualityTransaction qualityTransaction = new QualityTransaction();
         StringBuilder qualityRangeIds = new StringBuilder();
         StringBuilder qualityValues = new StringBuilder();
@@ -501,8 +503,14 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
 
     //Generate report for quality check
     @Override
-    public ReportResponse getReportResponse(Integer ticketNo) {
-        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
+    public ReportResponse getReportResponse(Integer ticketNo, String userId) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
+
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
+
+        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userCompany, userSite);
         if (gateEntryTransaction != null) {
             VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(gateEntryTransaction.getTicketNo());
             ReportResponse reportResponse = new ReportResponse();
@@ -562,18 +570,15 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     }
 
     @Override
-    public void passQualityTransaction(Integer ticketNo) {
-        HttpSession session = httpServletRequest.getSession();
-        if (session == null || session.getAttribute("userId") == null) {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    public void passQualityTransaction(Integer ticketNo, String userId) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        String userId = session.getAttribute("userId").toString();
-        String userCompany = session.getAttribute("userCompany").toString();
-        String userSite = session.getAttribute("userSite").toString();
+        String userCompany = userMaster.getSite().getSiteId();
+        String userSite = userMaster.getCompany().getCompanyId();
 
-        GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findById(ticketNo)
-                .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with " + ticketNo));
+        GateEntryTransaction gateEntryTransaction = Optional.ofNullable(gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userSite, userCompany))
+                .orElseThrow(() -> new ResourceNotFoundException("Gate entry transaction is not found with ticketNo: " + ticketNo));
 
         VehicleTransactionStatus transactionStatus = vehicleTransactionStatusRepository.findByTicketNo(gateEntryTransaction.getTicketNo());
         if (transactionStatus == null) {
@@ -608,32 +613,25 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     }
 
     @Override
-    public List<QualityDashboardResponse> getInboundTransaction() {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    public List<QualityDashboardResponse> getInboundTransaction(String userId) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        String userId = session.getAttribute("userId").toString();
-        String userSite = session.getAttribute("userSite").toString();
-        String userCompany = session.getAttribute("userCompany").toString();
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
 
         // Retrieve all transactions for the user's site and company
-
         List<GateEntryTransaction> inboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Inbound", userSite, userCompany);
         return processTransaction(inboundTransaction);
     }
 
     @Override
-    public List<QualityDashboardResponse> getOutboundTransaction() {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    public List<QualityDashboardResponse> getOutboundTransaction(String userId) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        String userId = session.getAttribute("userId").toString();
-        String userSite = session.getAttribute("userSite").toString();
-        String userCompany = session.getAttribute("userCompany").toString();
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
 
         // Retrieve all transactions for the user's site and company, ordered by transaction date in descending order
         List<GateEntryTransaction> outboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Outbound", userSite, userCompany);
@@ -641,39 +639,33 @@ public class QualityTransactionServicesImpl implements QualityTransactionService
     }
 
     @Override
-    public int getInboundTransactionSize() {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    public int getInboundTransactionSize(String userId) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        String userSite = session.getAttribute("userSite").toString();
-        String userCompany = session.getAttribute("userCompany").toString();
-
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
         // Retrieve all inbound transactions for the user's site and company
         List<GateEntryTransaction> inboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Inbound", userSite, userCompany);
         return processTransaction(inboundTransaction).size();
     }
 
     @Override
-    public int getOutboundTransactionSize() {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session == null || session.getAttribute("userId") == null) {
-            throw new SessionExpiredException("Session Expired, Login again!");
-        }
+    public int getOutboundTransactionSize(String userId) {
+        UserMaster userMaster = Optional.ofNullable(userMasterRepository.findByUserId(userId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session timed out, Login again!"));
 
-        String userSite = session.getAttribute("userSite").toString();
-        String userCompany = session.getAttribute("userCompany").toString();
-
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany = userMaster.getCompany().getCompanyId();
         // Retrieve all outbound transactions for the user's site and company
         List<GateEntryTransaction> outboundTransaction = gateEntryTransactionRepository.findByTransactionTypeAndSiteIdAndCompanyIdOrderByTransactionDate("Outbound", userSite, userCompany);
         return processTransaction(outboundTransaction).size();
     }
 
     @Override
-    public int getTotalTransactionSize() {
-        int inboundSize = getInboundTransactionSize();
-        int outboundSize = getOutboundTransactionSize();
+    public int getTotalTransactionSize(String userId) {
+        int inboundSize = getInboundTransactionSize(userId);
+        int outboundSize = getOutboundTransactionSize(userId);
         return inboundSize + outboundSize;
     }
 

@@ -2,24 +2,23 @@ package com.weighbridge.qualityuser.controller;
 
 import com.weighbridge.admin.services.MaterialMasterService;
 import com.weighbridge.admin.services.ProductMasterService;
-import com.weighbridge.qualityuser.payloads.QualityCreationResponse;
 import com.weighbridge.qualityuser.payloads.QualityDashboardResponse;
 import com.weighbridge.qualityuser.payloads.ReportResponse;
 import com.weighbridge.qualityuser.services.QualityTransactionService;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Controller for handling quality transaction related operations.
@@ -36,7 +35,9 @@ public class QualityTransactionController {
      *
      * @param qualityTransactionService the  service to handle quality transaction related operations
      */
-    public QualityTransactionController(QualityTransactionService qualityTransactionService, ProductMasterService productMasterService, MaterialMasterService materialMasterService) {
+    public QualityTransactionController(QualityTransactionService qualityTransactionService,
+                                        ProductMasterService productMasterService,
+                                        MaterialMasterService materialMasterService) {
         this.qualityTransactionService = qualityTransactionService;
         this.productMasterService = productMasterService;
         this.materialMasterService = materialMasterService;
@@ -48,25 +49,25 @@ public class QualityTransactionController {
      * @return a ResponseEntity containing a list of all gate entry transaction details
      */
     @GetMapping("/getAllTransaction")
-    public ResponseEntity<List<QualityDashboardResponse>> getAllTickets() {
-        List<QualityDashboardResponse> response = qualityTransactionService.getAllGateDetails();
+    public ResponseEntity<List<QualityDashboardResponse>> getAllTickets(@RequestParam String userId) {
+        List<QualityDashboardResponse> response = qualityTransactionService.getAllGateDetails(userId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/qct-completed")
-    public ResponseEntity<List<QualityDashboardResponse>>getQCTCompleted(){
-        List<QualityDashboardResponse> responses=qualityTransactionService.getQCTCompleted();
+    public ResponseEntity<List<QualityDashboardResponse>>getQCTCompleted(@RequestParam String userId){
+        List<QualityDashboardResponse> responses=qualityTransactionService.getQCTCompleted(userId);
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/inbound-qct-completed")
-    public List<QualityDashboardResponse> getInboundQCTCompleted() {
-        return qualityTransactionService.getQCTCompletedInbound();
+    public List<QualityDashboardResponse> getInboundQCTCompleted(@RequestParam String userId) {
+        return qualityTransactionService.getQCTCompletedInbound(userId);
     }
 
     @GetMapping("/outbound-qct-completed")
-    public List<QualityDashboardResponse> getOutboundQCTCompleted() {
-        return qualityTransactionService.getQCTCompletedOutbound();
+    public List<QualityDashboardResponse> getOutboundQCTCompleted(@RequestParam String userId) {
+        return qualityTransactionService.getQCTCompletedOutbound(userId);
     }
 
     /**
@@ -77,14 +78,16 @@ public class QualityTransactionController {
      * @return a ResponseEntity containing the success message with HTTP status code 201(CREATED)
      */
     @PostMapping("/{ticketNo}")
-    public ResponseEntity<String> createQualityTransaction(@PathVariable Integer ticketNo, @RequestBody Map<String, Double> transactionRequest) {
-        String response = qualityTransactionService.createQualityTransaction(ticketNo, transactionRequest);
+    public ResponseEntity<String> createQualityTransaction(@PathVariable Integer ticketNo,
+                                                           @RequestParam String userId,
+                                                           @RequestBody Map<String, Double> transactionRequest) {
+        String response = qualityTransactionService.createQualityTransaction(ticketNo, userId, transactionRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("{ticketNo}")
-    public ResponseEntity<Void>passQualityTransaction(@PathVariable Integer ticketNo){
-        qualityTransactionService.passQualityTransaction(ticketNo);
+    public ResponseEntity<Void>passQualityTransaction(@PathVariable Integer ticketNo, @RequestParam String userId){
+        qualityTransactionService.passQualityTransaction(ticketNo, userId);
         return ResponseEntity.noContent().build();
     }
 
@@ -97,8 +100,8 @@ public class QualityTransactionController {
      */
 
     @GetMapping("/report-response/{ticketNo}")
-    public ResponseEntity<ReportResponse> checkReportResponse(@PathVariable Integer ticketNo) {
-        ReportResponse reportResponse = qualityTransactionService.getReportResponse(ticketNo);
+    public ResponseEntity<ReportResponse> checkReportResponse(@PathVariable Integer ticketNo, @RequestParam String userId) {
+        ReportResponse reportResponse = qualityTransactionService.getReportResponse(ticketNo, userId);
         if (reportResponse == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
