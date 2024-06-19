@@ -152,14 +152,30 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
                 if (transactionBySupplierOrCustomerNameAndAddress != null) {
                     System.out.println("Found transaction: " + transactionBySupplierOrCustomerNameAndAddress.getTicketNo());
 
-                    TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), "QCT");
-                    if (qctTransactionLog == null) {
-                        QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
-                        setQualityDashboardResponseDetails(qualityDashboardResponse, transactionBySupplierOrCustomerNameAndAddress);
-                        responses.add(qualityDashboardResponse);
+                    // Determine the status codes for GWT and TWT
+                    String gwtStatusCode = "GWT";
+                    String twtStatusCode = "TWT";
+
+                    // Check for completed GWT or TWT based on transaction type
+                    boolean isCompleted = false;
+                    if (transactionBySupplierOrCustomerNameAndAddress.getTransactionType().equalsIgnoreCase("Inbound")) {
+                        TransactionLog gwtTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), gwtStatusCode);
+                        isCompleted = (gwtTransactionLog != null);
+                    } else if (transactionBySupplierOrCustomerNameAndAddress.getTransactionType().equalsIgnoreCase("Outbound")) {
+                        TransactionLog twtTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transaction.getTicketNo(), twtStatusCode);
+                        isCompleted = (twtTransactionLog != null);
+                    }
+
+                    if (isCompleted) {
+                        TransactionLog qctTransactionLog=transactionLogRepository.findByTicketNoAndStatusCode(transactionBySupplierOrCustomerNameAndAddress.getTicketNo(), "QCT");
+                        if(qctTransactionLog==null) {
+                            QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+                            setQualityDashboardResponseDetails(qualityDashboardResponse, transactionBySupplierOrCustomerNameAndAddress);
+                            responses.add(qualityDashboardResponse);
+                        }
                         System.out.println("Added quality response for ticket no: " + transaction.getTicketNo());
                     } else {
-                        System.out.println("QCT log already exists for ticket no: " + transaction.getTicketNo());
+                        System.out.println("Required GWT or TWT log not completed for ticket no: " + transaction.getTicketNo());
                     }
                 } else {
                     System.out.println("No transaction found for ticket no: " + transaction.getTicketNo() + ", CompanyId: " + userCompanyId + ", SiteId: " + userSiteId);
@@ -170,6 +186,7 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
         }
         return responses;
     }
+
 
     @Override
     public List<QualityDashboardResponse> searchBySupplierOrCustomerNameAndAddressQctCompleted(String supplierOrCustomerName, String supplierOrCustomerAddress) {
@@ -313,19 +330,37 @@ public class QualityTransactionSearchServicesImpl implements QualityTransactionS
                 for (GateEntryTransaction gateEntryTransaction : transactionsByVehicleId) {
                     GateEntryTransaction transactionByTicketNo = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(gateEntryTransaction.getTicketNo(), userCompanyId, userSiteId);
                     if (transactionByTicketNo != null) {
-                        TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transactionByTicketNo.getTicketNo(), "QCT");
-                        if (qctTransactionLog == null) {
-                            QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
-                            setQualityDashboardResponseDetails(qualityDashboardResponse, gateEntryTransaction);
-                            responses.add(qualityDashboardResponse);
+                        // Determine the status code based on transaction type
+                        String inboundStatusCode = "GWT";
+                        String outboundStatusCode = "TWT";
+
+                        boolean isInboundComplete = false;
+                        boolean isOutboundComplete = false;
+
+                        if (transactionByTicketNo.getTransactionType().equalsIgnoreCase("Inbound")) {
+                            TransactionLog inboundLog = transactionLogRepository.findByTicketNoAndStatusCode(transactionByTicketNo.getTicketNo(), inboundStatusCode);
+                            isInboundComplete = (inboundLog != null);
+                        } else if (transactionByTicketNo.getTransactionType().equalsIgnoreCase("Outbound")) {
+                            TransactionLog outboundLog = transactionLogRepository.findByTicketNoAndStatusCode(transactionByTicketNo.getTicketNo(), outboundStatusCode);
+                            isOutboundComplete = (outboundLog != null);
                         }
 
+                        if ((transactionByTicketNo.getTransactionType().equalsIgnoreCase("Inbound") && isInboundComplete) ||
+                                (transactionByTicketNo.getTransactionType().equalsIgnoreCase("Outbound") && isOutboundComplete)) {
+                            TransactionLog qctTransactionLog = transactionLogRepository.findByTicketNoAndStatusCode(transactionByTicketNo.getTicketNo(), "QCT");
+                            if (qctTransactionLog == null) {
+                                QualityDashboardResponse qualityDashboardResponse = new QualityDashboardResponse();
+                                setQualityDashboardResponseDetails(qualityDashboardResponse, gateEntryTransaction);
+                                responses.add(qualityDashboardResponse);
+                            }
+                        }
                     }
                 }
             }
         }
         return responses;
     }
+
 
     @Override
     public List<QualityDashboardResponse> searchByQCTCompletedVehicleNo(String vehicleNo) {
