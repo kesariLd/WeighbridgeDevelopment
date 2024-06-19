@@ -3,6 +3,7 @@ package com.weighbridge.gateuser.services.impl;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
 import com.weighbridge.admin.entities.CustomerMaster;
+import com.weighbridge.admin.entities.UserMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.repsitories.*;
 import com.weighbridge.gateuser.dtos.GateEntryPrint;
@@ -35,6 +36,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class GateEntryTransactionServiceImpl implements GateEntryTransactionService {
+
+    @Autowired
+    private UserMasterRepository userMasterRepository;
     @Autowired
     private GateEntryTransactionRepository gateEntryTransactionRepository;
     @Autowired
@@ -83,16 +87,23 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
      * @throws ResponseStatusException   If the session is expired and login is required.
      */
     @Override
-    public Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest) {
+    public Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest,String userId) {
         try {
             // Set user session details
-            HttpSession session = httpServletRequest.getSession();
+           /* HttpSession session = httpServletRequest.getSession();
             String userId = (String) Optional.ofNullable(session.getAttribute("userId"))
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again!"));
             String userSite = (String) Optional.ofNullable(session.getAttribute("userSite"))
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again!"));
             String userCompany = (String) Optional.ofNullable(session.getAttribute("userCompany"))
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again!"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again!"));*/
+
+            UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
+
+            String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+            String userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
 // Assign to GateEntryTransaction
             GateEntryTransaction gateEntryTransaction = new GateEntryTransaction();
             // Validate and extract data from the request
@@ -281,11 +292,11 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
 
     @Override
-    public Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest, Integer ticketNo) {
+    public Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest, Integer ticketNo,String userId) {
         try {
 
             // Set user session details
-            HttpSession session = httpServletRequest.getSession();
+           /* HttpSession session = httpServletRequest.getSession();
             String userId;
             String userCompany;
             String userSite;
@@ -295,8 +306,13 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 userCompany = session.getAttribute("userCompany").toString();
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            }*/
+            UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
 
+            String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+            String userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
             GateEntryTransaction gateEntryTransaction = gateEntryTransactionRepository.findByTicketNo(ticketNo);
             if (gateEntryTransaction == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "GateEntry transaction is not available with given ticket No " + ticketNo);
@@ -421,11 +437,11 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     }
 
     @Override
-    public GateEntryEditResponse editGateEntryByTicketNo(Integer ticketNo) {
+    public GateEntryEditResponse editGateEntryByTicketNo(Integer ticketNo,String userId) {
         try {
 
             // Set user session details
-            HttpSession session = httpServletRequest.getSession();
+            /*HttpSession session = httpServletRequest.getSession();
             String userId;
             String userCompany;
             String userSite;
@@ -435,7 +451,13 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 userCompany = session.getAttribute("userCompany").toString();
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            }*/
+            UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
+
+            String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+            String userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
             GateEntryTransaction transaction = gateEntryTransactionRepository.findByTicketNoAndCompanyIdAndSiteId(ticketNo, userCompany, userSite);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             GateEntryEditResponse response = new GateEntryEditResponse();
@@ -447,7 +469,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             response.setTicketNo(String.valueOf(transaction.getTicketNo()));
             response.setTransactionType(transaction.getTransactionType());
             response.setMaterialType(transaction.getMaterialType());
-            response.setCompany(transaction.getTransactionType());
+            response.setCompany(transaction.getCompanyId());
             response.setSite(transaction.getSiteId());
 
             // Check the transaction type and set the appropriate entity
@@ -529,7 +551,7 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
      * @throws ResponseStatusException If the session is expired and login is required, or if the vehicle's tare weight is not measured yet.
      */
     @Override
-    public String setOutTime(Integer ticketNo) {
+    public String setOutTime(Integer ticketNo,String userId) {
         try {
             // Retrieve vehicle transaction status and gate entry transaction
             VehicleTransactionStatus vehicleTransactionStatus = vehicleTransactionStatusRepository.findByTicketNo(ticketNo);
@@ -552,16 +574,22 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle is not allowed to exit!");
             }
             // Retrieve user ID from session
-            HttpSession session = httpServletRequest.getSession();
-            String userId;
-            if (session != null && session.getAttribute("userId") != null) {
+   /*         HttpSession session = httpServletRequest.getSession();
+            String userId;*/
+           /* if (userId != null) {
                 userId = session.getAttribute("userId").toString();
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            }*/
+
             // Save transaction log with vehicle out time
             TransactionLog transactionLog = new TransactionLog();
-            transactionLog.setUserId(userId);
+            if (userId != null) {
+                transactionLog.setUserId(userId);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User Id not given !");
+            }
+
             LocalDateTime vehicleOutTime = LocalDateTime.now().withSecond(0).withNano(0); // Round up seconds
             transactionLog.setTimestamp(vehicleOutTime);
             transactionLog.setTicketNo(ticketNo);
@@ -586,10 +614,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     }
 
     @Override
-    public GateEntryTransactionPageResponse getAllGateEntryTransaction(Pageable pageable) {
+    public GateEntryTransactionPageResponse getAllGateEntryTransaction(Pageable pageable,String userId) {
         try {
             // Set user session details
-            HttpSession session = httpServletRequest.getSession();
+            /*HttpSession session = httpServletRequest.getSession();
             String userId;
             String userCompany;
             String userSite;
@@ -599,7 +627,13 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 userCompany = session.getAttribute("userCompany").toString();
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            }*/
+            UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
+
+            String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+            String userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
             Page<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdAndVehicleOutIsNull(pageable, userSite, userCompany);
@@ -714,22 +748,19 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
 
     @Override
-    public List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate, LocalDate endDate, String companyName, String siteName) {
+    public List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate, LocalDate endDate, String companyName, String siteName,String userId) {
         try {
-            String userId;
             String userCompany;
             String userSite;
             String userSiteAddress;
             // Set user session details
             if (companyName == null && siteName == null) {
-                HttpSession session = httpServletRequest.getSession();
-                if (session != null && session.getAttribute("userId") != null) {
-                    userId = session.getAttribute("userId").toString();
-                    userSite = session.getAttribute("userSite").toString();
-                    userCompany = session.getAttribute("userCompany").toString();
-                } else {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-                }
+                UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
+
+                userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+                userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
             } else if (companyName != null && !companyName.trim().isEmpty() && siteName != null && !siteName.trim().isEmpty()) {
 
                 // Retrieve company ID
@@ -873,19 +904,25 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
         }
     }
     @Override
-    public GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable) {
-        HttpSession session = httpServletRequest.getSession();
+    public GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable,String userId) {
+        /*HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompany;
-        String userSite;
+        String userSite;*/
+        UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
+
+        String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+        String userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
         try {
-            if (session != null && session.getAttribute("userId") != null) {
+            /*if (session != null && session.getAttribute("userId") != null) {
                 userId = session.getAttribute("userId").toString();
                 userSite = session.getAttribute("userSite").toString();
                 userCompany = session.getAttribute("userCompany").toString();
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            }*/
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
             Page<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdAndVehicleOutIsNotNull(pageable, userSite, userCompany);
             Integer totalPage = allTransactions.getTotalPages();
@@ -990,20 +1027,15 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
 
     @Override
-    public GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierNameC, String transactionType, Pageable pageable, String vehicleStatus) {
+    public GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierNameC, String transactionType, Pageable pageable, String vehicleStatus,String userId) {
         try {
             // Set user session details
-            HttpSession session = httpServletRequest.getSession();
-            String userId;
-            String userCompany;
-            String userSite;
-            if (session != null && session.getAttribute("userId") != null) {
-                userId = session.getAttribute("userId").toString();
-                userSite = session.getAttribute("userSite").toString();
-                userCompany = session.getAttribute("userCompany").toString();
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
+
+            String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+            String userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
             Page<GateEntryTransaction> gateEntryTransactionPage = gateEntryTransactionRepository.findAll(gateEntryTransactionSpecification.getTransactions(ticketNo, vehicleNo, date, supplierNameC, transactionType, vehicleStatus)
                     .and(gateEntryTransactionSpecification.filterBySiteAndCompany(userSite, userCompany)), pageable);
             // Convert Page content to List
@@ -1162,8 +1194,14 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
 
     @Override
-    public Long countPendingGateTransactionsInbound() {
-        Long count = gateEntryTransactionRepository.countPendingGateTransactionsInbound();
+    public Long countPendingGateTransactionsInbound(String userId) {
+        UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
+
+        String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+        String userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
+        Long count = gateEntryTransactionRepository.countPendingGateTransactionsInbound(userSite,userCompany);
         if (count != null) {
             return count;
         }
@@ -1171,8 +1209,14 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     }
 
     @Override
-    public Long countPendingGateTransactionsOutbound() {
-        Long count = gateEntryTransactionRepository.countPendingGateTransactionsOutbound();
+    public Long countPendingGateTransactionsOutbound(String userId) {
+        UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
+
+        String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+        String userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
+        Long count = gateEntryTransactionRepository.countPendingGateTransactionsOutbound(userSite,userCompany);
         if (count != null) {
             return count;
         }
@@ -1180,8 +1224,14 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     }
 
     @Override
-    public Long countCompleteTransactions() {
-        Long count = gateEntryTransactionRepository.countCompleteGateTransaction();
+    public Long countCompleteTransactions(String userId) {
+        UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
+
+        String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserSite Not Found! "));
+        String userCompany = (String) Optional.ofNullable(userMaster.getCompany().getCompanyId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "UserCompany Not Found! "));
+        Long count = gateEntryTransactionRepository.countCompleteGateTransaction(userSite,userCompany);
         if (count != null) {
             return count;
         }

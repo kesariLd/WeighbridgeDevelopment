@@ -119,18 +119,19 @@ public class MaterialMasterServiceImpl implements MaterialMasterService {
     }
 
     @Override
-    public String saveMaterialAndMaterialType(MaterialAndTypeRequest request) {
-        HttpSession session = httpServletRequest.getSession();
-        String user = session.getAttribute("userId").toString();
-        LocalDateTime currentDateTime = LocalDateTime.now();
+    public String saveMaterialAndMaterialType(MaterialAndTypeRequest request,String userId) {
 
+        if(userId==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Please Provide userId");
+        }
+        LocalDateTime currentDateTime = LocalDateTime.now();
         MaterialMaster materialMaster = materialMasterRepository.findByMaterialName(request.getMaterialName());
         if (materialMaster == null) {
             materialMaster = new MaterialMaster();
             materialMaster.setMaterialName(request.getMaterialName());
-            materialMaster.setMaterialCreatedBy(user);
+            materialMaster.setMaterialCreatedBy(userId);
             materialMaster.setMaterialCreatedDate(currentDateTime);
-            materialMaster.setMaterialModifiedBy(user);
+            materialMaster.setMaterialModifiedBy(userId);
             materialMaster.setMaterialModifiedDate(currentDateTime);
             materialMaster = materialMasterRepository.save(materialMaster);
         }

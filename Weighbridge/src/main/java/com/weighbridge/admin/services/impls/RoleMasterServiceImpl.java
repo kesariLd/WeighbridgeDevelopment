@@ -32,25 +32,27 @@ public class RoleMasterServiceImpl implements RoleMasterService {
     }
 
     @Override
-    public RoleMasterDto createRole(RoleMasterDto roleDto) {
+    public RoleMasterDto createRole(RoleMasterDto roleDto,String userId) {
         try {
             // Check if a role with the given name already exists
             RoleMaster byRoleName = roleMasterRepository.findByRoleName(roleDto.getRoleName());
             if (byRoleName != null) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Role already exists");
             }
-
+            if (userId == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Please Provide userId");
+            }
             // Get the current user's session and set creation details
-            HttpSession session = request.getSession();
+           /* HttpSession session = request.getSession();
             String loggedInUserId;
             if (session != null && session.getAttribute("userId") != null) {
                 loggedInUserId = session.getAttribute("userId").toString();
             }
             else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            }*/
 
-            roleDto.setRoleCreatedBy(loggedInUserId);
+            roleDto.setRoleCreatedBy(userId);
             roleDto.setRoleCreatedDate(LocalDateTime.now());
 
             // Map DTO to entity and save the role

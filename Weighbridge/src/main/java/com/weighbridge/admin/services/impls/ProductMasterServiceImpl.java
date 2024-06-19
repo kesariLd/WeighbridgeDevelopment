@@ -112,18 +112,19 @@ public class ProductMasterServiceImpl implements ProductMasterService {
     }
 
     @Override
-    public String saveProductAndProductType(ProductAndTypeRequest request) {
-        HttpSession session = httpServletRequest.getSession();
-        String user = session.getAttribute("userId").toString();
+    public String saveProductAndProductType(ProductAndTypeRequest request,String userId) {
+        if(userId==null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Please Provide userId");
+        }
         LocalDateTime currentDateTime = LocalDateTime.now();
 
         ProductMaster productMaster = productMasterRepository.findByProductName(request.getProductName());
         if (productMaster == null) {
             productMaster = new ProductMaster();
             productMaster.setProductName(request.getProductName());
-            productMaster.setProductCreatedBy(user);
+            productMaster.setProductCreatedBy(userId);
             productMaster.setProductCreatedDate(currentDateTime);
-            productMaster.setProductModifiedBy(user);
+            productMaster.setProductModifiedBy(userId);
             productMaster.setProductModifiedDate(currentDateTime);
             productMaster = productMasterRepository.save(productMaster);
         }

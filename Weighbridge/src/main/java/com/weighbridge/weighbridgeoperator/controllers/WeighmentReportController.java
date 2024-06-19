@@ -38,12 +38,13 @@ public class WeighmentReportController {
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
             @RequestParam(required = false) String companyName,
-            @RequestParam(required = false) String siteName
+            @RequestParam(required = false) String siteName,
+            @RequestParam(required = false) String userId
             
     ) {
         System.out.println("startDate" + startDate + " endDate " + endDate);
 
-        return ResponseEntity.ok(weighmentReportService.generateWeighmentReport(startDate, endDate,companyName,siteName));
+        return ResponseEntity.ok(weighmentReportService.generateWeighmentReport(startDate, endDate,companyName,siteName,userId));
     }
 
     @GetMapping("/transactions/print/{ticketNo}")

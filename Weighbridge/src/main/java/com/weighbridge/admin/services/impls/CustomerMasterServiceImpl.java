@@ -31,7 +31,7 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
     }
 
     @Override
-    public String createCustomer(CustomerMasterDto customerMasterDto) {
+    public String createCustomer(CustomerMasterDto customerMasterDto,String userId) {
         boolean exists = customerMasterRepository.existsByCustomerContactNoOrCustomerEmail(
                 customerMasterDto.getCustomerContactNo(),
                 customerMasterDto.getCustomerEmail());
@@ -50,8 +50,8 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
         customerMaster.setCity(customerMasterDto.getCity());
         customerMaster.setZip(customerMasterDto.getZip());
 
-        HttpSession session = httpServletRequest.getSession();
-        String userId = session.getAttribute("userId").toString();
+        /*HttpSession session = httpServletRequest.getSession();
+        String userId = session.getAttribute("userId").toString();*/
         LocalDateTime currentDateTime = LocalDateTime.now();
 
         customerMaster.setCustomerCreatedBy(userId);

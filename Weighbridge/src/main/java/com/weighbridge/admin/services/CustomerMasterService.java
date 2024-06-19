@@ -6,7 +6,7 @@ import com.weighbridge.admin.payloads.CustomerRequest;
 import java.util.List;
 
 public interface CustomerMasterService {
-    String createCustomer(CustomerMasterDto customerMasterDto);
+    String createCustomer(CustomerMasterDto customerMasterDto,String userId);
 
     List<CustomerMasterDto> getAllCustomers();
 

@@ -20,7 +20,7 @@ public interface MaterialMasterService {
 
     List<MaterialWithParameters> getQualityRangesByMaterialNameAndSupplierNameAndAddress(String materialName, String supplierName, String supplierAddress);
 
-    String saveMaterialAndMaterialType(MaterialAndTypeRequest materialAndTypeRequest);
+    String saveMaterialAndMaterialType(MaterialAndTypeRequest materialAndTypeRequest,String userId);
 
     List<MaterialWithParameters> getMaterialParameters(String materialName);
 }

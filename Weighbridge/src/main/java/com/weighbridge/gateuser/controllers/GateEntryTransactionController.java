@@ -37,8 +37,8 @@ public class GateEntryTransactionController {
      * @return The ID of the saved gate entry transaction.
      */
     @PostMapping
-    public ResponseEntity<Integer> saveTransaction(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest) {
-        Integer gateEntryResponse = gateEntryTransactionService.saveGateEntryTransaction(gateEntryTransactionRequest);
+    public ResponseEntity<Integer> saveTransaction(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest, @RequestParam String userId) {
+        Integer gateEntryResponse = gateEntryTransactionService.saveGateEntryTransaction(gateEntryTransactionRequest, userId);
         return new ResponseEntity<>(gateEntryResponse, HttpStatus.OK);
     }
 
@@ -51,7 +51,9 @@ public class GateEntryTransactionController {
     public ResponseEntity<GateEntryTransactionPageResponse> getAllTransaction( @RequestParam(defaultValue = "0", required = false) int page,
                                                                                  @RequestParam(defaultValue = "5", required = false) int size,
                                                                                  @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
-                                                                                 @RequestParam(defaultValue = "desc", required = false) String sortOrder) {
+                                                                               @RequestParam(defaultValue = "desc", required = false) String sortOrder,
+                                                                               @RequestParam String userId
+    ) {
         Pageable pageable;
         if(sortField!=null && !sortField.isEmpty()){
             Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;
@@ -61,18 +63,19 @@ public class GateEntryTransactionController {
         else{
             pageable = PageRequest.of(page,size);
         }
-        GateEntryTransactionPageResponse allGateEntryTransaction = gateEntryTransactionService.getAllGateEntryTransaction(pageable);
+        GateEntryTransactionPageResponse allGateEntryTransaction = gateEntryTransactionService.getAllGateEntryTransaction(pageable, userId);
         return new ResponseEntity<>(allGateEntryTransaction, HttpStatus.OK);
     }
 
     @GetMapping("/edit/{ticketNo}")
-    public ResponseEntity<GateEntryEditResponse> editGateEntryDetail(@PathVariable("ticketNo") Integer ticketNo){
-        GateEntryEditResponse gateEntryEditResponse = gateEntryTransactionService.editGateEntryByTicketNo(ticketNo);
+    public ResponseEntity<GateEntryEditResponse> editGateEntryDetail(@PathVariable("ticketNo") Integer ticketNo, @RequestParam String userId) {
+        GateEntryEditResponse gateEntryEditResponse = gateEntryTransactionService.editGateEntryByTicketNo(ticketNo, userId);
         return new ResponseEntity<>(gateEntryEditResponse,HttpStatus.OK);
     }
     @PostMapping("/update")
-    public ResponseEntity<Integer> updateGateEntryDetail(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest){
-        Integer gateEntryTransactionResponse = gateEntryTransactionService.updateGateEntryByTicketNo(gateEntryTransactionRequest,Integer.parseInt(gateEntryTransactionRequest.getTicketNo()));
+    public ResponseEntity<Integer> updateGateEntryDetail(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest,
+                                                         @RequestParam String userId) {
+        Integer gateEntryTransactionResponse = gateEntryTransactionService.updateGateEntryByTicketNo(gateEntryTransactionRequest, Integer.parseInt(gateEntryTransactionRequest.getTicketNo()), userId);
         return new ResponseEntity<>(gateEntryTransactionResponse,HttpStatus.OK);
     }
     /**
@@ -82,8 +85,8 @@ public class GateEntryTransactionController {
      * @return The status of the operation.
      */
     @PostMapping("/out/{ticketNo}")
-    public ResponseEntity<String> saveOutTime(@PathVariable Integer ticketNo) {
-        String status = gateEntryTransactionService.setOutTime(ticketNo);
+    public ResponseEntity<String> saveOutTime(@PathVariable Integer ticketNo, @RequestParam String userId) {
+        String status = gateEntryTransactionService.setOutTime(ticketNo, userId);
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
 
@@ -95,6 +98,7 @@ public class GateEntryTransactionController {
             @RequestParam(defaultValue = "desc", required = false) String sortOrder,
             @RequestParam(required = false , defaultValue = "completed") String vehicleStatus,
             @RequestParam(required = false) Integer ticketNo,
+            @RequestParam String userId,
             @RequestParam(required = false) String vehicleNo,
             @RequestParam(required = false) String transactionType,
             @RequestParam(required = false) String supplierName,
@@ -108,7 +112,7 @@ public class GateEntryTransactionController {
         else{
             pageable = PageRequest.of(page,size);
         }
-        GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName,transactionType,pageable,vehicleStatus);
+        GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName, transactionType, pageable, vehicleStatus, userId);
         return transactionsByFiltering;
     }
     @GetMapping("/transactions/ongoing")
@@ -122,6 +126,7 @@ public class GateEntryTransactionController {
             @RequestParam(required = false) String vehicleNo,
             @RequestParam(required = false) String transactionType,
             @RequestParam(required = false) String supplierName,
+            @RequestParam String userId,
             @RequestParam(required = false) LocalDate date) {
         Pageable pageable;
         if(sortField!=null && !sortField.isEmpty()){
@@ -132,7 +137,7 @@ public class GateEntryTransactionController {
         else{
             pageable = PageRequest.of(page,size);
         }
-        GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName,transactionType,pageable,vehicleStatus);
+        GateEntryTransactionPageResponse transactionsByFiltering = gateEntryTransactionService.findTransactionsByFiltering(ticketNo, vehicleNo, date, supplierName, transactionType, pageable, vehicleStatus, userId);
         return transactionsByFiltering;
     }
 
@@ -140,7 +145,8 @@ public class GateEntryTransactionController {
     public ResponseEntity<GateEntryTransactionPageResponse> getAllCompletedTransactions(@RequestParam(defaultValue = "0", required = false) int page,
                                                                                         @RequestParam(defaultValue = "5", required = false) int size,
                                                                                         @RequestParam(required = false, defaultValue = "ticketNo") String sortField,
-                                                                                        @RequestParam(defaultValue = "desc", required = false) String sortOrder){
+                                                                                        @RequestParam(defaultValue = "desc", required = false) String sortOrder,
+                                                                                        @RequestParam String userId) {
         Pageable pageable;
         if(sortField!=null && !sortField.isEmpty()){
             Sort.Direction direction = sortOrder.equalsIgnoreCase("desc")?Sort.Direction.DESC:Sort.Direction.ASC;
@@ -150,7 +156,7 @@ public class GateEntryTransactionController {
         else{
             pageable = PageRequest.of(page,size);
         }
-        GateEntryTransactionPageResponse allGateEntryTransaction = gateEntryTransactionService.getAllCompletedGateEntry(pageable);
+        GateEntryTransactionPageResponse allGateEntryTransaction = gateEntryTransactionService.getAllCompletedGateEntry(pageable,userId);
         return new ResponseEntity<>(allGateEntryTransaction, HttpStatus.OK);
     }
 

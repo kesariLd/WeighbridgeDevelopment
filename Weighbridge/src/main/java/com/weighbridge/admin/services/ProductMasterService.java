@@ -20,7 +20,7 @@ public interface ProductMasterService {
 
     List<ProductWithParameters> getQualityRangesByProductName(String productName);
 
-    String saveProductAndProductType(ProductAndTypeRequest productAndTypeRequest);
+    String saveProductAndProductType(ProductAndTypeRequest productAndTypeRequest,String userId);
 
     List<ProductParameterResponse> getProductParameters(String productName);
 }

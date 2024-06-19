@@ -57,8 +57,8 @@ public class ProductMasterController {
     }
 
     @PostMapping("/withType")
-    public ResponseEntity<String> saveProductAndProductType(@RequestBody ProductAndTypeRequest productAndTypeRequest) {
-        String response = productMasterService.saveProductAndProductType(productAndTypeRequest);
+    public ResponseEntity<String> saveProductAndProductType(@RequestBody ProductAndTypeRequest productAndTypeRequest,@RequestParam String userId) {
+        String response = productMasterService.saveProductAndProductType(productAndTypeRequest,userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

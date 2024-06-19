@@ -39,23 +39,26 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
      * @return
      */
     @Override
-    public String createCompany(CompanyDto companyDto) {
+    public String createCompany(CompanyDto companyDto,String userId) {
         try {
             // Check if the company name already exists
             CompanyMaster existingCompany = companyMasterRepository.findByCompanyName(companyDto.getCompanyName());
             if (existingCompany != null) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Company name already exists");
             }
+            if(userId==null){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Please Provide UserId");
+            }
 
             // Set user session details
-            HttpSession session = request.getSession();
+            /*HttpSession session = request.getSession();
             String userId;
             if (session != null && session.getAttribute("userId") != null) {
                 userId = session.getAttribute("userId").toString();
             }
             else {
                 throw new SessionExpiredException( "Session Expired, Login again !");
-            }
+            }*/
 
             CompanyMaster newCompany = new CompanyMaster();
             newCompany.setCompanyId(generateCompanyId(companyDto.getCompanyName()));
@@ -65,6 +68,7 @@ public class CompanyMasterServiceImpl implements CompanyMasterService {
             newCompany.setCompanyAddress(companyDto.getCompanyAddress());
             newCompany.setCompanyCreatedBy(userId);
             newCompany.setCompanyCreatedDate(LocalDateTime.now());
+
             newCompany.setCompanyModifiedBy(userId);
             newCompany.setCompanyModifiedDate(LocalDateTime.now());
 

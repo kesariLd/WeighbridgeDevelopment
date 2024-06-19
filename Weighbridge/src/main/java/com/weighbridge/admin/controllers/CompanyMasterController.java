@@ -26,8 +26,8 @@ public class CompanyMasterController {
      * @return ResponseEntity containing a success message and HTTP status CREATED.
      */
     @PostMapping
-    public ResponseEntity<String> createCompany(@Validated @RequestBody CompanyDto companyDto) {
-        String response = companyMasterService.createCompany(companyDto);
+    public ResponseEntity<String> createCompany(@Validated @RequestBody CompanyDto companyDto,@RequestParam String userId) {
+        String response = companyMasterService.createCompany(companyDto,userId);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
     /**

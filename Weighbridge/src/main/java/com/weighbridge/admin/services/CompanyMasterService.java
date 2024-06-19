@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CompanyMasterService {
 
-    String createCompany(CompanyDto companyDto);
+    String createCompany(CompanyDto companyDto,String userId);
 
     List<CompanyDto> getAllCompany();
 

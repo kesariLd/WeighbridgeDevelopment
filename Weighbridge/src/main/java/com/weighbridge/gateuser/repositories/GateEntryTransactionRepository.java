@@ -75,15 +75,18 @@ public interface GateEntryTransactionRepository extends JpaRepository<GateEntryT
     );
 
     // TODO Add Company and site
-    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Inbound' AND g.vehicleOut IS NULL")
-    Long countPendingGateTransactionsInbound();
+    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g " +
+            "WHERE g.transactionType = 'Inbound' AND g.vehicleOut IS NULL " +
+            "AND g.siteId = :siteId AND g.companyId = :companyId")
+    Long countPendingGateTransactionsInbound(@Param("siteId") String siteId, @Param("companyId") String companyId);
 
 
-    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Outbound' AND g.vehicleOut IS NULL")
-    Long countPendingGateTransactionsOutbound();
 
-    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g where g.vehicleOut IS Not null ")
-    Long countCompleteGateTransaction();
+    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType = 'Outbound' AND g.vehicleOut IS NULL AND g.siteId = :siteId AND g.companyId = :companyId")
+    Long countPendingGateTransactionsOutbound(@Param("siteId") String siteId, @Param("companyId") String companyId);
+
+    @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g where g.vehicleOut IS Not null AND g.siteId = :siteId AND g.companyId = :companyId")
+    Long countCompleteGateTransaction(@Param("siteId") String siteId, @Param("companyId") String companyId);
 
 
     @Query("SELECT count(g.ticketNo) FROM GateEntryTransaction g WHERE g.transactionType=:transactionType AND g.vehicleOut IS NULL AND g.transactionDate BETWEEN :startDate AND :endDate AND g.siteId=:siteId AND g.companyId=:companyId")

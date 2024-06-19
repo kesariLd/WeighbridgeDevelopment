@@ -22,11 +22,11 @@ public interface GateEntryTransactionService {
      * @param gateEntryTransactionRequest The request containing the details of the gate entry transaction.
      * @return The ticket number of the saved gate entry transaction.
      */
-    Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest);
+    Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest,String userId);
 
-    GateEntryEditResponse editGateEntryByTicketNo(Integer ticketNo);
+    GateEntryEditResponse editGateEntryByTicketNo(Integer ticketNo,String userId);
 
-    Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest,Integer ticketNo);
+    Integer updateGateEntryByTicketNo(GateEntryTransactionRequest gateEntryTransactionRequest,Integer ticketNo,String userId);
 
     /**
      * Sets the out time for a vehicle associated with the specified ticket number.
@@ -34,7 +34,7 @@ public interface GateEntryTransactionService {
      * @param ticketNo The ticket number of the vehicle for which out time is to be set.
      * @return A message indicating whether the vehicle can exit or not.
      */
-    String setOutTime(Integer ticketNo);
+    String setOutTime(Integer ticketNo,String userId);
 
     /**
      * Retrieves all gate entry transactions associated with the current user session.
@@ -42,21 +42,21 @@ public interface GateEntryTransactionService {
      * @return A list of gate entry transaction responses containing various details such as ticket number,
      *         transaction type, material, supplier, vehicle information, timestamps, and other related data.
      */
-    GateEntryTransactionPageResponse getAllGateEntryTransaction(Pageable pageable);
+    GateEntryTransactionPageResponse getAllGateEntryTransaction(Pageable pageable,String userId);
 
 
-    List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate , LocalDate endDate,String companyName, String siteName);
+    List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate , LocalDate endDate,String companyName, String siteName,String userId);
 
     List<String> getAllMaterialAndProductNames();
 
-    GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable);
+    GateEntryTransactionPageResponse getAllCompletedGateEntry(Pageable pageable, String userId);
 
-    GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable,String vehicleStatus);
+    GateEntryTransactionPageResponse findTransactionsByFiltering(Integer ticketNo, String vehicleNo, LocalDate date, String supplierName, String transactionType, Pageable pageable,String vehicleStatus,String userId);
 
     GateEntryPrint getPrintTicketWise(Integer ticketNo);
 
-    Long countPendingGateTransactionsInbound();
-    Long countPendingGateTransactionsOutbound();
-    Long countCompleteTransactions();
+    Long countPendingGateTransactionsInbound(String userId);
+    Long countPendingGateTransactionsOutbound(String userId);
+    Long countCompleteTransactions(String userId);
 }
 

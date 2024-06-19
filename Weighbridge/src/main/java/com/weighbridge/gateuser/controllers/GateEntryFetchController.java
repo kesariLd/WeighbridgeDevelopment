@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -34,18 +35,18 @@ public class GateEntryFetchController {
     }
 
     @GetMapping("/count/Inbound")
-    public ResponseEntity<Long> getInboundPendingCount(){
-        Long countPending = gateEntryTransactionService.countPendingGateTransactionsInbound();
+    public ResponseEntity<Long> getInboundPendingCount(@RequestParam String userId){
+        Long countPending = gateEntryTransactionService.countPendingGateTransactionsInbound(userId);
         return new ResponseEntity<>(countPending, HttpStatus.OK);
     }
     @GetMapping("/count/Outbound")
-    public ResponseEntity<Long> getOutboundPendingCount(){
-        Long countPending = gateEntryTransactionService.countPendingGateTransactionsOutbound();
+    public ResponseEntity<Long> getOutboundPendingCount(@RequestParam String userId){
+        Long countPending = gateEntryTransactionService.countPendingGateTransactionsOutbound(userId);
         return new ResponseEntity<>(countPending, HttpStatus.OK);
     }
      @GetMapping("/count/Complete")
-    public ResponseEntity<Long> getCompleteCount(){
-        Long countPending = gateEntryTransactionService.countCompleteTransactions();
+    public ResponseEntity<Long> getCompleteCount(@RequestParam String userId){
+        Long countPending = gateEntryTransactionService.countCompleteTransactions(userId);
         return new ResponseEntity<>(countPending, HttpStatus.OK);
     }
 }

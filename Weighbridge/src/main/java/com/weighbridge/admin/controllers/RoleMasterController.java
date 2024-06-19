@@ -33,8 +33,8 @@ public class RoleMasterController {
      * @return ResponseEntity containing the saved role information and HTTP status CREATED.
      */
     @PostMapping
-    public ResponseEntity<RoleMasterDto> createRole(@Validated @RequestBody RoleMasterDto roleDto) {
-        RoleMasterDto roleMasterDto = roleMasterService.createRole(roleDto);
+    public ResponseEntity<RoleMasterDto> createRole(@Validated @RequestBody RoleMasterDto roleDto,String userId) {
+        RoleMasterDto roleMasterDto = roleMasterService.createRole(roleDto,userId);
         return new ResponseEntity<>(roleMasterDto, HttpStatus.CREATED);
     }
 
