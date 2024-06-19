@@ -81,8 +81,8 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
 
 
     @Override
-    public WeighmentPrintResponse getAllWeighmentTransactions(Integer ticketNo) {
-        HttpSession session = httpServletRequest.getSession();
+    public WeighmentPrintResponse getAllWeighmentTransactions(Integer ticketNo,String userId) {
+     /*   HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompany;
         String userSite;
@@ -92,7 +92,7 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
             userCompany = session.getAttribute("userCompany").toString();
         } else {
             throw new SessionExpiredException("Session Expired, Login again !");
-        }
+        }*/
 
         // Check transaction exists with ticketNo or not
         WeighmentTransaction weighmentTransaction = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(ticketNo);
@@ -101,12 +101,12 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
         }
 
         WeighmentPrintResponse weighmentPrintResponse = new WeighmentPrintResponse();
-        CompanyMaster companyMaster = companyMasterRepository.findById(userCompany)
-                .orElseThrow(() -> new ResourceNotFoundException("Company is not found with id " + userCompany));
+        CompanyMaster companyMaster = companyMasterRepository.findById(weighmentTransaction.getGateEntryTransaction().getCompanyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company is not found with id " +weighmentTransaction.getGateEntryTransaction().getCompanyId()));
         weighmentPrintResponse.setCompanyName(companyMaster.getCompanyName());
 
-        SiteMaster siteMaster = siteMasterRepository.findById(userSite)
-                .orElseThrow(() -> new ResourceNotFoundException("Site is not found with id " + userSite));
+        SiteMaster siteMaster = siteMasterRepository.findById(weighmentTransaction.getGateEntryTransaction().getSiteId())
+                .orElseThrow(() -> new ResourceNotFoundException("Site is not found with id " + weighmentTransaction.getGateEntryTransaction().getSiteId()));
 
         String companyAddress = siteMaster.getSiteName() +
                 ", " +
@@ -312,14 +312,15 @@ public class WeighmentReportServiceImpl implements WeighmentReportService {
 
     @Override
     public List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields, LocalDate
-            startDate, LocalDate endDate) {
-        HttpSession session = httpServletRequest.getSession();
+            startDate, LocalDate endDate,String userId) {
+       /* HttpSession session = httpServletRequest.getSession();
         if (session == null || session.getAttribute("userId") == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
         }
-
-        String userSite = session.getAttribute("userSite").toString();
-        String userCompany = session.getAttribute("userCompany").toString();
+*/
+        UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("user not found with " + userId));
+        String userSite = userMaster.getSite().getSiteId();
+        String userCompany =userMaster.getCompany().getCompanyId();
 
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();

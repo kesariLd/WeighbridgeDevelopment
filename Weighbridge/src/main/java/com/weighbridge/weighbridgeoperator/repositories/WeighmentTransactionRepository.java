@@ -46,11 +46,11 @@ public interface WeighmentTransactionRepository extends JpaRepository<WeighmentT
     @Query("SELECT COUNT(wt.netWeight) FROM WeighmentTransaction wt WHERE wt.netWeight!=0.0")
     long countCompletedTransactions();
 
-    @Query("SELECT COUNT(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.netWeight = 0.0 AND wt.gateEntryTransaction.transactionType = 'Inbound'")
-    Long countInboundTransactionsWithZeroNetWeight();
+    @Query("SELECT COUNT(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.netWeight = 0.0 AND wt.gateEntryTransaction.transactionType = 'Inbound' AND wt.gateEntryTransaction.siteId=:siteId AND wt.gateEntryTransaction.companyId=:companyId")
+    Long countInboundTransactionsWithZeroNetWeight(@Param("siteId")String siteId,@Param("companyId") String companyId);
 
-    @Query("SELECT COUNT(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.netWeight = 0.0 AND wt.gateEntryTransaction.transactionType = 'Outbound'")
-    Long countOutBoundPendingGrossWeight();
+    @Query("SELECT COUNT(wt.gateEntryTransaction) FROM WeighmentTransaction wt WHERE wt.netWeight = 0.0 AND wt.gateEntryTransaction.transactionType = 'Outbound' AND wt.gateEntryTransaction.siteId=:siteId AND wt.gateEntryTransaction.companyId=:companyId")
+    Long countOutBoundPendingGrossWeight(@Param("siteId") String siteId,@Param("companyId") String companyId);
 
     @Query("SELECT wt FROM WeighmentTransaction wt WHERE wt.gateEntryTransaction.companyId = :companyId AND wt.gateEntryTransaction.siteId = :siteId AND wt.gateEntryTransaction.transactionDate = :transactionDate")
     List<WeighmentTransaction> findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(@Param("companyId") String companyId, @Param("siteId") String siteId, @Param("transactionDate") LocalDate date);

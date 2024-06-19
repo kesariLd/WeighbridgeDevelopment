@@ -18,7 +18,7 @@ public interface VehicleTransactionStatusService {
      *
      * @return The number of pending inbound gross weight transactions.
      */
-    public Long countInboundPendingAction();
+    public Long countInboundPendingAction(String siteId,String companyId);
 
     /**
      * Retrieves the number of pending inbound transactions with tare weight.
@@ -34,14 +34,14 @@ public interface VehicleTransactionStatusService {
      *
      * @return The number of pending outbound gross weight transactions.
      */
-    public Long countOutBoundPendingGross();
+    public Long countOutBoundPendingGross(String siteId,String companyId);
 
     /**
      * Retrieves the number of pending outbound transactions with tare weight.
      *
      * @return The number of pending outbound tare weight transactions.
      */
-    public Long countOutBoundPendingTare();
+    public Long countOutBoundPendingTare(String siteId,String companyId);
 
-    public Long countInboundPendingTare();
+    public Long countInboundPendingTare(String siteId,String companyId);
 }

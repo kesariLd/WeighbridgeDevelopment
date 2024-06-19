@@ -81,13 +81,13 @@ public class WeighbridgeOperatorPrintServiceImpl implements WeighbridgeOperatorP
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         String dateFormat = gwt != null ? gwt.getTimestamp().format(dateFormatter) : "";
         String timeFormat=gwt!=null?gwt.getTimestamp().format(timeFormatter):"";
-            weighbridgeOperatorPrint.setGrossWeightDate(dateFormat);
-            weighbridgeOperatorPrint.setGrossWeightTime(timeFormat);
+        weighbridgeOperatorPrint.setGrossWeightDate(dateFormat);
+        weighbridgeOperatorPrint.setGrossWeightTime(timeFormat);
         String dateFormat1 = twt != null ? twt.getTimestamp().format(dateFormatter) : "";
         String timeFormat1=twt!=null?twt.getTimestamp().format(timeFormatter):"";
-            weighbridgeOperatorPrint.setTareWeightDate(dateFormat1);
-            weighbridgeOperatorPrint.setTareWeightTime(timeFormat1);
-            weighbridgeOperatorPrint.setNetWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getNetWeight());
+        weighbridgeOperatorPrint.setTareWeightDate(dateFormat1);
+        weighbridgeOperatorPrint.setTareWeightTime(timeFormat1);
+        weighbridgeOperatorPrint.setNetWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getNetWeight());
         System.out.println(weighbridgeOperatorPrint);
         return weighbridgeOperatorPrint;
     }

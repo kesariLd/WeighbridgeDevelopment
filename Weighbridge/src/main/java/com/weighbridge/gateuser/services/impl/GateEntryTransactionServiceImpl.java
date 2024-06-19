@@ -17,6 +17,7 @@ import com.weighbridge.gateuser.services.GateEntryTransactionService;
 import com.weighbridge.qualityuser.entites.QualityTransaction;
 import com.weighbridge.qualityuser.repository.QualityTransactionRepository;
 import com.weighbridge.weighbridgeoperator.repositories.VehicleTransactionStatusRepository;
+import com.weighbridge.weighbridgeoperator.repositories.WeighmentTransactionRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.modelmapper.ModelMapper;
@@ -77,6 +78,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     @Autowired
     private QualityTransactionRepository qualityTransactionRepository;
 
+    @Autowired
+    private WeighmentTransactionRepository weighmentTransactionRepository;
 
     /**
      * Saves a gate entry transaction based on the provided request data.
@@ -749,7 +752,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
 
     @Override
     public List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate, LocalDate endDate, String companyName, String siteName,String userId) {
-        try {
             String userCompany;
             String userSite;
             String userSiteAddress;
@@ -784,9 +786,10 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 }
 
             } else {
-                // Handle the case where siteName is invalid or not as expected
-                throw new IllegalArgumentException("Invalid Company or siteName format. Expected format: 'Company Name,SiteName,SiteAddress'");
+
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
             }
+        try {
             if (startDate == null && endDate != null) {
                 startDate = endDate;
             }
@@ -797,8 +800,8 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
             LocalDate finalEndDate = endDate;
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
-
-            List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdAndTransactionDateBetweenOrderByTransactionDateDesc(userSite, userCompany, startDate, endDate);
+            UserMaster user=userMasterRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("user not found"));
+            List<GateEntryTransaction> allTransactions = gateEntryTransactionRepository.findBySiteIdAndCompanyIdAndTransactionDateBetweenOrderByTransactionDateDesc(user.getSite().getSiteId(),user.getCompany().getCompanyId(), startDate, endDate);
             System.out.println("GateEntryTransactionServiceImpl.getAllGateEntryTransaction" + allTransactions);
             List<GateEntryTransactionResponse> responseList = new ArrayList<>();
             for (GateEntryTransaction transaction : allTransactions) {
@@ -889,13 +892,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
                 responseList.add(response);
             }
             return responseList;
-        } catch (ResponseStatusException ex) {
-            // Re-throw ResponseStatusException
-            throw ex;
-        } catch (IllegalArgumentException e) {
-            // Log and rethrow the exception with a clear message
-            System.err.println("Error in site name format: " + e.getMessage());
-            throw e;
         } catch (Exception ex) {
             // Log the error
             ex.printStackTrace();

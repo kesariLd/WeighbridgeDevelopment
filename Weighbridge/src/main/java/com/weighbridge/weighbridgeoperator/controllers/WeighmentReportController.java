@@ -48,15 +48,14 @@ public class WeighmentReportController {
     }
 
     @GetMapping("/transactions/print/{ticketNo}")
-    public ResponseEntity<WeighmentPrintResponse> printWeighmentTransaction(@PathVariable Integer ticketNo) {
-        WeighmentPrintResponse  weighmentPrintResponse = weighmentReportService.getAllWeighmentTransactions(ticketNo);
+    public ResponseEntity<WeighmentPrintResponse> printWeighmentTransaction(@PathVariable Integer ticketNo,@RequestParam String userId) {
+        WeighmentPrintResponse  weighmentPrintResponse = weighmentReportService.getAllWeighmentTransactions(ticketNo,userId);
         return ResponseEntity.ok(weighmentPrintResponse);
     }
     @GetMapping("/getReport")
     public ResponseEntity<List<Map<String, Object>>> getDemoData(@RequestBody List<String> selectedFields, @RequestParam(required = false) LocalDate startDate,
-                                                                 @RequestParam(required = false) LocalDate endDate) {
+                                                                 @RequestParam(required = false) LocalDate endDate,@RequestParam String userId) {
 
-        return new ResponseEntity<>(weighmentReportService.generateCustomizedReport(selectedFields,startDate,endDate), HttpStatus.OK);
+        return new ResponseEntity<>(weighmentReportService.generateCustomizedReport(selectedFields,startDate,endDate,userId), HttpStatus.OK);
     }
 }
-

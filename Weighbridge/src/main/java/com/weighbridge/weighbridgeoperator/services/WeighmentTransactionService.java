@@ -22,14 +22,14 @@ public interface WeighmentTransactionService {
      * @param weighmentRequest The request containing weighment details.
      * @return A string indicating the status of the save operation.
      */
-    String saveWeight(WeighmentRequest weighmentRequest);
+    String saveWeight(WeighmentRequest weighmentRequest,String userId);
 
     /**
      * Retrieves all gate details.
      *
      * @return A list of WeighmentTransactionResponse containing all gate details.
      */
-  WeighbridgePageResponse getAllGateDetails(Pageable pageable);
+  WeighbridgePageResponse getAllGateDetails(Pageable pageable,String userId);
 
     /**
      * Retrieves the ticket response by ticket number.
@@ -39,6 +39,6 @@ public interface WeighmentTransactionService {
      */
     TicketResponse getResponseByTicket(Integer ticketNo);
 
-    WeighbridgePageResponse getAllCompletedTickets(Pageable pageable);
+    WeighbridgePageResponse getAllCompletedTickets(Pageable pageable,String userId);
 
 }

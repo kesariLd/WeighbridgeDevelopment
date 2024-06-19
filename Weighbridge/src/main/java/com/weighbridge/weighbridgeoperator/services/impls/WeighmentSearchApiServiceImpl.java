@@ -2,6 +2,7 @@ package com.weighbridge.weighbridgeoperator.services.impls;
 
 
 import com.weighbridge.admin.entities.MaterialMaster;
+import com.weighbridge.admin.entities.UserMaster;
 import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
@@ -65,6 +66,9 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
 
     @Autowired
     private GateEntryTransactionRepository gateEntryTransactionRepository;
+
+    @Autowired
+    private UserMasterRepository userMasterRepository;
 
     /**
      * @return
@@ -169,8 +173,8 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
      * @return
      */
     @Override
-    public WeighbridgePageResponse getAllBySearchFields(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable) {
-        HttpSession session = httpServletRequest.getSession();
+    public WeighbridgePageResponse getAllBySearchFields(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable,String userId) {
+       /* HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompany;
         String userSite;
@@ -181,9 +185,10 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
             userCompany = session.getAttribute("userCompany").toString();
         } else {
             throw new SessionExpiredException("Session Expired, Login again !");
-        }
-        criteria.setSiteId(userSite);
-        criteria.setCompanyId(userCompany);
+        }*/
+       UserMaster byId = userMasterRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("user not found with"+userId));
+        criteria.setSiteId(byId.getSite().getSiteId());
+        criteria.setCompanyId(byId.getCompany().getCompanyId());
         criteria.setUserId(userId);
         WeighmentTransactionSpecification specification = new WeighmentTransactionSpecification(criteria,vehicleMasterRepository,materialMasterRepository,transporterMasterRepository,productMasterRepository,supplierMasterRepository,customerMasterRepository);
         Specification<WeighmentTransaction> netWeightNotNullSpec = WeighmentTransactionSpecification.netWeightNotZero();

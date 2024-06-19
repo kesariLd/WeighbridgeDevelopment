@@ -4,6 +4,7 @@ import com.weighbridge.SalesManagement.entities.SalesOrder;
 import com.weighbridge.SalesManagement.entities.SalesProcess;
 import com.weighbridge.SalesManagement.repositories.SalesOrderRespository;
 import com.weighbridge.SalesManagement.repositories.SalesProcessRepository;
+import com.weighbridge.admin.entities.UserMaster;
 import com.weighbridge.admin.entities.VehicleMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.exceptions.SessionExpiredException;
@@ -79,11 +80,14 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
     @Autowired
     private ProductMasterRepository productMasterRepository;
 
+    @Autowired
+    private UserMasterRepository userMasterRepository;
+
 
     @Override
-    public String saveWeight(WeighmentRequest weighmentRequest) {
+    public String saveWeight(WeighmentRequest weighmentRequest,String userId) {
         // Set user session details
-        HttpSession session = httpServletRequest.getSession();
+    /*    HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompany;
         String userSite;
@@ -93,7 +97,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             userCompany = session.getAttribute("userCompany").toString();
         } else {
             throw new SessionExpiredException("Session Expired, Login again !");
-        }
+        }*/
         GateEntryTransaction gateEntryId = gateEntryTransactionRepository.findById(weighmentRequest.getTicketNo()).get();
         WeighmentTransaction weighmentTicketNo = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(weighmentRequest.getTicketNo());
         VehicleTransactionStatus byTicketNo = vehicleTransactionStatusRepository.findByTicketNo(weighmentRequest.getTicketNo());
@@ -173,8 +177,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
     }
 
     @Override
-    public WeighbridgePageResponse getAllGateDetails(Pageable pageable) {
-        HttpSession session = httpServletRequest.getSession();
+    public WeighbridgePageResponse getAllGateDetails(Pageable pageable,String userId) {
+       /* HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompany;
         String userSite;
@@ -186,8 +190,9 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
         } else {
             throw new SessionExpiredException("Session Expired, Login again !");
         }
-        System.out.println(userSite);
-        Page<Object[]> pageResult = weighmentTransactionRepository.getAllGateEntries(userSite,userCompany,pageable);
+        System.out.println(userSite);*/
+        UserMaster byId = userMasterRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("userId not found"));
+        Page<Object[]> pageResult = weighmentTransactionRepository.getAllGateEntries(byId.getSite().getSiteId(),byId.getCompany().getCompanyId(),pageable);
         List<Object[]> allUsers = pageResult.getContent();
         System.out.println(allUsers);
         List<WeighmentTransactionResponse> responses = new ArrayList<>();
@@ -352,8 +357,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
      * @return
      */
     @Override
-    public WeighbridgePageResponse getAllCompletedTickets(Pageable pageable) {
-        HttpSession session = httpServletRequest.getSession();
+    public WeighbridgePageResponse getAllCompletedTickets(Pageable pageable,String userId) {
+       /* HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompany;
         String userSite;
@@ -364,8 +369,9 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             userCompany = session.getAttribute("userCompany").toString();
         } else {
             throw new SessionExpiredException("Session Expired, Login again !");
-        }
-        Page<WeighmentTransaction> all = weighmentTransactionRepository.findAllByUserSiteAndUserCompany(userSite,userCompany,pageable);
+        }*/
+        UserMaster byId = userMasterRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("user not found with"+userId));
+        Page<WeighmentTransaction> all = weighmentTransactionRepository.findAllByUserSiteAndUserCompany(byId.getSite().getSiteId(),byId.getCompany().getCompanyId(),pageable);
         List<WeighmentTransaction> allUsers = all.getContent();
         if(allUsers==null){
             throw new ResourceNotFoundException("No response found.");

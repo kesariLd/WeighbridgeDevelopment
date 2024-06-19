@@ -12,5 +12,5 @@ import java.util.List;
 public interface WeighmentSearchApiService {
     WeighmentTransactionResponse getByTicketNo(Integer ticketNo);
 
-    WeighbridgePageResponse getAllBySearchFields(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable);
+    WeighbridgePageResponse getAllBySearchFields(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable,String userId);
 }

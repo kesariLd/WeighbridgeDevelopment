@@ -44,7 +44,6 @@ public interface GateEntryTransactionService {
      */
     GateEntryTransactionPageResponse getAllGateEntryTransaction(Pageable pageable,String userId);
 
-
     List<GateEntryTransactionResponse> getAllGateEntryTransactionForWeighmentReport(LocalDate startDate , LocalDate endDate,String companyName, String siteName,String userId);
 
     List<String> getAllMaterialAndProductNames();

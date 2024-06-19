@@ -15,7 +15,7 @@ import java.util.Map;
 public interface WeighmentReportService {
 
 
-    WeighmentPrintResponse getAllWeighmentTransactions(Integer ticketNo);
+    WeighmentPrintResponse getAllWeighmentTransactions(Integer ticketNo,String userId);
   
 
         /**
@@ -34,6 +34,6 @@ public interface WeighmentReportService {
          */
         List<WeighbridgeReportResponse> generateWeighmentReport(LocalDate startDate, LocalDate endDate, String companyName, String siteName, String userId);
 
-    List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields,LocalDate startDate,LocalDate endDate);
+    List<Map<String, Object>> generateCustomizedReport(List<String> selectedFields,LocalDate startDate,LocalDate endDate,String userId);
 
 }

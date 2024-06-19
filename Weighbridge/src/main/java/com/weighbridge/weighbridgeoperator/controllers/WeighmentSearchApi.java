@@ -38,7 +38,7 @@ public class WeighmentSearchApi {
                                                                     @RequestParam(required = false) String materialName,
                                                                     @RequestParam(required = false) Boolean today,
                                                                     @RequestParam(defaultValue = "0") int page,
-                                                                    @RequestParam(defaultValue = "5") int size) {
+                                                                    @RequestParam(defaultValue = "5") int size,@RequestParam String userId) {
 
         WeighbridgeOperatorSearchCriteria criteria = new WeighbridgeOperatorSearchCriteria();
         criteria.setTicketNo(ticketNo);
@@ -51,7 +51,7 @@ public class WeighmentSearchApi {
         criteria.setMaterialName(materialName);
         criteria.setToday(today);
         Pageable pageable = PageRequest.of(page, size);
-        WeighbridgePageResponse allBySearchFields = weighmentSearchApiService.getAllBySearchFields(criteria, pageable);
+        WeighbridgePageResponse allBySearchFields = weighmentSearchApiService.getAllBySearchFields(criteria, pageable,userId);
         return ResponseEntity.ok(allBySearchFields);
     }
 }

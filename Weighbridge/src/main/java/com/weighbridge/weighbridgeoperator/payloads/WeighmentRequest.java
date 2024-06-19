@@ -13,4 +13,5 @@ import lombok.Data;
 
     @NotBlank(message = "ticketNo required")
     private Integer ticketNo;
+
 }
