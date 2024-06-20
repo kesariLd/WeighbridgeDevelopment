@@ -15,4 +15,5 @@ public class ManagementQualityDashboardResponse {
     private String supplierOrCustomerAddress;
     private String transactionType;
     private String qualityType;
+    private String transactionDate;
 }
