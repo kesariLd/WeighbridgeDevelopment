@@ -117,7 +117,7 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
     }
 
     @Override
-    public String updateCustomerById(CustomerRequest customerRequest, long id) {
+    public String updateCustomerById(CustomerRequest customerRequest, long id,String userId) {
         try{
             CustomerMaster customerMaster = customerMasterRepository.findByCustomerId(id);
             if(customerMaster==null){
@@ -139,11 +139,6 @@ public class CustomerMasterServiceImpl implements CustomerMasterService {
             customerMaster.setCountry(customerRequest.getCountry());
             customerMaster.setZip(customerRequest.getZip());
             customerMaster.setCustomerContactNo(customerRequest.getCustomerContactNo());
-            HttpSession session = httpServletRequest.getSession();
-            if(session==null && session.getAttribute("userID")==null){
-                throw new SessionExpiredException("Session Expired ! Login again");
-            }
-            String userId = session.getAttribute("userId").toString();
             LocalDateTime currentDateTime = LocalDateTime.now();
             customerMaster.setCustomerModifiedBy(userId);
             customerMaster.setCustomerModifiedDate(currentDateTime);
