@@ -235,13 +235,13 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
             }
             if (transaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")) {
                 String materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId(transaction.getGateEntryTransaction().getMaterialId());
-                weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getTemporaryWeight()) != null ? String.valueOf(transaction.getTemporaryWeight()) + "/" + restTimeStamp : "");
-                weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTareWeight()) != null ? String.valueOf(transaction.getTareWeight()) + "/" + restTimeStamp1 : "");
+                weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getTemporaryWeight()) != null ? String.valueOf(transaction.getTemporaryWeight()): "");
+                weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTareWeight()) != null ? String.valueOf(transaction.getTareWeight()): "");
                 weighmentTransactionResponse.setMaterialName(materialNameByMaterialId != null ? materialNameByMaterialId : "");
             } else {
                 String productNameByProductId = productMasterRepository.findProductNameByProductId(transaction.getGateEntryTransaction().getMaterialId());
-                weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTemporaryWeight()) != null ? String.valueOf(transaction.getTemporaryWeight()) + "/" + restTimeStamp1 : "");
-                weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getGrossWeight()) != null ? String.valueOf(transaction.getGrossWeight()) + "/" + restTimeStamp : "");
+                weighmentTransactionResponse.setTareWeight(String.valueOf(transaction.getTemporaryWeight()) != null ? String.valueOf(transaction.getTemporaryWeight()): "");
+                weighmentTransactionResponse.setGrossWeight(String.valueOf(transaction.getGrossWeight()) != null ? String.valueOf(transaction.getGrossWeight()): "");
                 weighmentTransactionResponse.setMaterialName(productNameByProductId != null ? productNameByProductId : "");
             }
             weighmentTransactionResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());

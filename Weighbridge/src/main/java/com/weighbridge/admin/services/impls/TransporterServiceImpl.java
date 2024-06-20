@@ -33,19 +33,19 @@ public class TransporterServiceImpl implements TransporterService {
     private HttpServletRequest request;
 
     @Override
-    public String addTransporter(TransporterRequest transporterRequest) {
+    public String addTransporter(TransporterRequest transporterRequest,String userId) {
         Boolean ByTransporterMaster = transporterMasterRepository.existsByTransporterName(transporterRequest.getTransporterName());
         if (ByTransporterMaster){
             throw new ResponseStatusException(HttpStatus.CONFLICT,"Transporter already exist");
         }
         else {
-            HttpSession session = request.getSession();
+           /* HttpSession session = request.getSession();
             String userId;
             if (session != null && session.getAttribute("userId") != null) {
                 userId = session.getAttribute("userId").toString();
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            }*/
             TransporterMaster transporterMaster=new TransporterMaster();
             transporterMaster.setTransporterName(transporterRequest.getTransporterName());
             transporterMaster.setTransporterAddress(transporterRequest.getTransporterAddress());
@@ -54,9 +54,9 @@ public class TransporterServiceImpl implements TransporterService {
 
             LocalDateTime currentDateTime = LocalDateTime.now();
 
-            transporterMaster.setTransporterCreatedBy(String.valueOf(userId));
+            transporterMaster.setTransporterCreatedBy(userId);
             transporterMaster.setTransporterCreatedDate(currentDateTime);
-            transporterMaster.setTransporterModifiedBy(String.valueOf(userId));
+            transporterMaster.setTransporterModifiedBy(userId);
             transporterMaster.setTransporterModifiedDate(currentDateTime);
 
 
@@ -90,18 +90,18 @@ public class TransporterServiceImpl implements TransporterService {
 
     @Transactional
     @Override
-    public String updateTransporterById(Long transporterId, TransporterDto transporterDto) {
+    public String updateTransporterById(Long transporterId, TransporterDto transporterDto,String userId) {
         log.info("Updating transporter wit ID: {}", transporterId);
         TransporterMaster transporterMaster = transporterMasterRepository.findById(transporterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Transporter", "id", transporterId.toString()));
 
-        HttpSession session = request.getSession();
+      /*  HttpSession session = request.getSession();
         String userId;
         if (session != null && session.getAttribute("userId") != null) {
             userId = session.getAttribute("userId").toString();
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-        }
+        }*/
 
         transporterMaster.setTransporterName(transporterDto.getTransporterName());
         transporterMaster.setTransporterContactNo(transporterDto.getTransporterContactNo());

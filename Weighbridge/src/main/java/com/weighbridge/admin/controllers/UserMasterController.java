@@ -1,5 +1,6 @@
 package com.weighbridge.admin.controllers;
 
+import com.weighbridge.admin.payloads.GetAllUsersPaginationResponse;
 import com.weighbridge.admin.payloads.UpdateRequest;
 import com.weighbridge.admin.payloads.UserRequest;
 import com.weighbridge.admin.payloads.UserResponse;
@@ -29,12 +30,11 @@ public class UserMasterController {
     /**
      * Endpoint for creating a new user.
      * @param userRequest The request body containing user information.
-     * @param httpSession The HTTP session associated with the request.
      * @return ResponseEntity containing a success message and HTTP status CREATED.
      */
     @PostMapping
-    public ResponseEntity<String> createUser(@Validated @RequestBody UserRequest userRequest, HttpSession httpSession) {
-        String response = userMasterService.createUser(userRequest, httpSession);
+    public ResponseEntity<String> createUser(@Validated @RequestBody UserRequest userRequest,@RequestParam String userId) {
+        String response = userMasterService.createUser(userRequest, userId);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -47,7 +47,7 @@ public class UserMasterController {
      * @return ResponseEntity containing a list of users and HTTP status OK.
      */
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers(@RequestParam(defaultValue = "0", required = false) int page, @RequestParam(defaultValue = "10", required = false) int size, @RequestParam(required = false, defaultValue = "userModifiedDate") String sortField, @RequestParam(defaultValue = "desc", required = false) String sortOrder) {
+    public ResponseEntity<GetAllUsersPaginationResponse> getAllUsers(@RequestParam(defaultValue = "0", required = false) int page, @RequestParam(defaultValue = "10", required = false) int size, @RequestParam(required = false, defaultValue = "userModifiedDate") String sortField, @RequestParam(defaultValue = "desc", required = false) String sortOrder) {
 
         Pageable pageable;
 
@@ -59,9 +59,7 @@ public class UserMasterController {
             pageable = PageRequest.of(page, size);
         }
 
-        Page<UserResponse> userPage = userMasterService.getAllUsers(pageable);
-
-        List<UserResponse> userLists = userPage.getContent();
+        GetAllUsersPaginationResponse userLists = userMasterService.getAllUsers(pageable);
         return ResponseEntity.ok(userLists);
     }
 
@@ -83,8 +81,8 @@ public class UserMasterController {
      * @return ResponseEntity with HTTP status NO_CONTENT if user is successfully deactivated, otherwise NOT_FOUND.
      */
     @DeleteMapping("/{userId}/deactivate")
-    public ResponseEntity<Void> deleteUserById(@PathVariable String userId) {
-        boolean deleted = userMasterService.deleteUserById(userId);
+    public ResponseEntity<Void> deleteUserById(@PathVariable String userId,@RequestParam String user) {
+        boolean deleted = userMasterService.deleteUserById(userId,user);
         if (deleted) {
             return ResponseEntity.noContent().build();
         } else {
@@ -98,8 +96,8 @@ public class UserMasterController {
      * @return ResponseEntity with HTTP status OK if user is successfully activated, otherwise NOT_FOUND.
      */
     @PutMapping("/{userId}/activate")
-    public ResponseEntity<Void> activateUser(@PathVariable String userId) {
-        boolean activated = userMasterService.activateUser(userId);
+    public ResponseEntity<Void> activateUser(@PathVariable String userId,@RequestParam String user) {
+        boolean activated = userMasterService.activateUser(userId,user);
         if (activated) {
             return ResponseEntity.ok().build();
         } else {
@@ -111,13 +109,12 @@ public class UserMasterController {
      * Endpoint for updating a user by userId.
      * @param updateRequest The request body containing updated user information.
      * @param userId The ID of the user to update.
-     * @param httpSession The HTTP session associated with the request.
      * @return ResponseEntity containing a success message and HTTP status OK.
      */
     @PutMapping("/updateUser/{userId}")
-    public ResponseEntity<String> updateUserById(@Validated @RequestBody UpdateRequest updateRequest, @PathVariable String userId, HttpSession httpSession) {
+    public ResponseEntity<String> updateUserById(@Validated @RequestBody UpdateRequest updateRequest, @PathVariable String userId,@RequestParam String user) {
 
-        String userResponse = userMasterService.updateUserById(updateRequest, userId, httpSession);
+        String userResponse = userMasterService.updateUserById(updateRequest, userId, user);
         return ResponseEntity.ok(userResponse);
     }
 
@@ -154,6 +151,5 @@ public class UserMasterController {
         List<UserResponse> userLists = userPage.getContent();
         return ResponseEntity.ok(userLists);
     }
-
 
 }

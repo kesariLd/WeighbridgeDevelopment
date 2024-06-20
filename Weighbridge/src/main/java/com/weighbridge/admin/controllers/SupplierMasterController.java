@@ -45,8 +45,8 @@ public class SupplierMasterController {
      *         or an appropriate error response otherwise.
      */
     @PostMapping
-    public ResponseEntity<SupplierMasterDto> saveSupplierMaster(@RequestBody SupplierMasterDto supplierMasterDto) {
-        SupplierMasterDto supplier = supplierMasterService.createSupplier(supplierMasterDto);
+    public ResponseEntity<SupplierMasterDto> saveSupplierMaster(@RequestBody SupplierMasterDto supplierMasterDto,@RequestParam String userId) {
+        SupplierMasterDto supplier = supplierMasterService.createSupplier(supplierMasterDto,userId);
         return new ResponseEntity<>(supplier, HttpStatus.OK);
     }
 
@@ -102,8 +102,8 @@ public class SupplierMasterController {
     }
 
     @PutMapping("/update/{supplierId}")
-    public ResponseEntity<String> updateSupplierBySupplierId(@Validated @RequestBody SupplierRequest supplierRequest, @PathVariable long supplierId){
-        String supplierResponse = supplierMasterService.updateSupplierById(supplierRequest, supplierId);
+    public ResponseEntity<String> updateSupplierBySupplierId(@Validated @RequestBody SupplierRequest supplierRequest, @PathVariable long supplierId,@RequestParam String userId){
+        String supplierResponse = supplierMasterService.updateSupplierById(supplierRequest, supplierId,userId);
         return new ResponseEntity<>(supplierResponse,HttpStatus.OK);
     }
     @DeleteMapping("/delete/{supplierId}")

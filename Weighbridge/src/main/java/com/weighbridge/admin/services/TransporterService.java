@@ -15,7 +15,7 @@ public interface TransporterService {
      * @param transporterRequest The payload containing the transporter to be saved.
      * @return String containing a successful message.
      */
-    String addTransporter(TransporterRequest transporterRequest);
+    String addTransporter(TransporterRequest transporterRequest,String userId);
 
     /**
      * Get all transporters
@@ -27,7 +27,7 @@ public interface TransporterService {
 
     TransporterDto getTransporterById(Long transporterId);
 
-    String updateTransporterById(Long transporterId, TransporterDto transporterDto);
+    String updateTransporterById(Long transporterId, TransporterDto transporterDto,String userId);
 
     boolean deactivateTransporterById(Long transporterId);
 

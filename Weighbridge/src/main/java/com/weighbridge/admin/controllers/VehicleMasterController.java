@@ -44,8 +44,8 @@ public class VehicleMasterController {
      * @return ResponseEntity containing a success message and HTTP status CREATED.
      */
     @PostMapping("/{transporterName}")
-    public ResponseEntity<String> addVehicle(@RequestBody VehicleRequest vehicleRequest, @PathVariable String transporterName) {
-        String response = vehicleMasterService.addVehicle(vehicleRequest, transporterName);
+    public ResponseEntity<String> addVehicle(@RequestBody VehicleRequest vehicleRequest, @PathVariable String transporterName,@RequestParam String userId) {
+        String response = vehicleMasterService.addVehicle(vehicleRequest, transporterName,userId);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
     /**
@@ -103,8 +103,8 @@ public class VehicleMasterController {
      * @return ResponseEntity containing a success message and HTTP status OK.
      */
     @PutMapping("/update/{vehicleNo}")
-    public ResponseEntity<String> updateVehicle(@PathVariable String vehicleNo, @RequestBody VehicleRequest vehicleRequest){
-        String response = vehicleMasterService.updateVehicleByVehicleNo(vehicleNo, vehicleRequest);
+    public ResponseEntity<String> updateVehicle(@PathVariable String vehicleNo, @RequestBody VehicleRequest vehicleRequest,@RequestParam String userId){
+        String response = vehicleMasterService.updateVehicleByVehicleNo(vehicleNo, vehicleRequest,userId);
         return ResponseEntity.ok(response);
     }
 
@@ -134,8 +134,8 @@ public class VehicleMasterController {
      * @return ResponseEntity containing a success message with HTTP status OK.
      */
     @PutMapping("/{vehicleId}")
-    public ResponseEntity<String> updateVehicleById(@PathVariable Long vehicleId, @RequestBody VehicleMasterDto vehicleDto) {
-        String response = vehicleMasterService.updateVehicleById(vehicleId, vehicleDto);
+    public ResponseEntity<String> updateVehicleById(@PathVariable Long vehicleId, @RequestBody VehicleMasterDto vehicleDto,@RequestParam String userId) {
+        String response = vehicleMasterService.updateVehicleById(vehicleId, vehicleDto,userId);
         return ResponseEntity.ok(response);
     }
 

@@ -33,7 +33,7 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
     @Autowired
     private ModelMapper modelMapper;
     @Override
-    public SupplierMasterDto createSupplier(SupplierMasterDto supplierMasterDto) {
+    public SupplierMasterDto createSupplier(SupplierMasterDto supplierMasterDto,String userId) {
         try {
             // Check if the supplier contact number or email already exists
             boolean exists = supplierMasterRepository.existsBySupplierContactNoOrSupplierEmail(
@@ -49,8 +49,8 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
                 throw new ResourceNotFoundException("supplierMasterDto is null");
             }
             SupplierMaster newSupplierMaster = modelMapper.map(supplierMasterDto, SupplierMaster.class);
-            HttpSession session = httpServletRequest.getSession();
-            String userId = String.valueOf(session.getAttribute("userId"));
+           /* HttpSession session = httpServletRequest.getSession();
+            String userId = String.valueOf(session.getAttribute("userId"));*/
             newSupplierMaster.setSupplierCreatedBy(userId);
             newSupplierMaster.setSupplierCreatedDate(LocalDateTime.now());
             newSupplierMaster.setSupplierModifiedBy(userId);
@@ -110,7 +110,7 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
     }
 
     @Override
-    public String updateSupplierById(SupplierRequest supplierRequest, long id) {
+    public String updateSupplierById(SupplierRequest supplierRequest, long id,String userId) {
         try {
             SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(id);
             if (supplierMaster == null) {
@@ -132,11 +132,11 @@ public class SupplierMasterServiceImpl implements SupplierMasterService {
             supplierMaster.setCountry(supplierRequest.getCountry());
             supplierMaster.setZip(supplierRequest.getZip());
             supplierMaster.setSupplierContactNo(supplierRequest.getSupplierContactNo());
-            HttpSession session = httpServletRequest.getSession();
+          /*  HttpSession session = httpServletRequest.getSession();
             if (session == null && session.getAttribute("userID") == null) {
                 throw new SessionExpiredException("Session Expired ! Login again");
-            }
-            String userId = session.getAttribute("userId").toString();
+            }*/
+           // String userId = session.getAttribute("userId").toString();
             LocalDateTime currentDateTime = LocalDateTime.now();
             supplierMaster.setSupplierModifiedBy(userId);
             supplierMaster.setSupplierModifiedDate(currentDateTime);

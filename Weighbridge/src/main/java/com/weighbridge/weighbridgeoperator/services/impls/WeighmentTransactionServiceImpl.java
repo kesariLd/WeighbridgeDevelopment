@@ -105,7 +105,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             WeighmentTransaction weighmentTransaction = new WeighmentTransaction();
             weighmentTransaction.setGateEntryTransaction(gateEntryId);
             weighmentTransaction.setMachineId(weighmentRequest.getMachineId());
-            weighmentTransaction.setTemporaryWeight(weighmentRequest.getWeight());
+            weighmentTransaction.setTemporaryWeight(weighmentRequest.getWeight()/1000);
             weighmentTransactionRepository.save(weighmentTransaction);
 
             //History save with vehicle intime and vehicle out time
@@ -135,14 +135,15 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             }
 
             double temporaryWeight = weighmentTicketNo.getTemporaryWeight();
-            if (temporaryWeight > weighmentRequest.getWeight()) {
+            double secondWeight=weighmentRequest.getWeight()/1000;
+            if (temporaryWeight > secondWeight) {
                 weighmentTicketNo.setGrossWeight(temporaryWeight);
-                weighmentTicketNo.setTareWeight(weighmentRequest.getWeight());
+                weighmentTicketNo.setTareWeight(secondWeight);
             } else {
                 weighmentTicketNo.setTareWeight(temporaryWeight);
-                weighmentTicketNo.setGrossWeight(weighmentRequest.getWeight());
+                weighmentTicketNo.setGrossWeight(secondWeight);
             }
-            double netWeight = Math.abs(temporaryWeight - weighmentRequest.getWeight());
+            double netWeight = Math.abs(temporaryWeight - secondWeight)/1000;
             weighmentTicketNo.setNetWeight(netWeight);
 
             weighmentTransactionRepository.save(weighmentTicketNo);
@@ -166,8 +167,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             if (gateEntryId.getTransactionType().equalsIgnoreCase("Outbound")) {
                 SalesProcess bySalePassNo = salesProcessRepository.findBySalePassNo(gateEntryId.getTpNo());
                 SalesOrder bySaleOrderNo = salesOrderRespository.findBySaleOrderNo(bySalePassNo.getPurchaseSale().getSaleOrderNo());
-                double progressiveQty = bySaleOrderNo.getProgressiveQuantity() + netWeight / 1000;
-                double balanceQty = bySaleOrderNo.getBalanceQuantity() - progressiveQty / 1000;
+                double progressiveQty = bySaleOrderNo.getProgressiveQuantity() + netWeight;
+                double balanceQty = bySaleOrderNo.getBalanceQuantity() - progressiveQty ;
                 bySaleOrderNo.setProgressiveQuantity(progressiveQty);
                 bySaleOrderNo.setBalanceQuantity(balanceQty);
                 salesOrderRespository.save(bySaleOrderNo);
@@ -343,7 +344,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             ticketResponse.setDriverDlNo(gateEntryTransaction.getDlNo());
             Double supplyConsignmentWeight = gateEntryTransaction.getSupplyConsignmentWeight();
             if(supplyConsignmentWeight!=null) {
-                ticketResponse.setConsignmentWeight(gateEntryTransaction.getSupplyConsignmentWeight());
+                ticketResponse.setConsignmentWeight(supplyConsignmentWeight*1000);
             }
             else{
                 ticketResponse.setConsignmentWeight(0.0);

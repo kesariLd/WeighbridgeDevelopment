@@ -56,7 +56,7 @@ public class SiteMasterServiceImpl implements SiteMasterService {
     }
 
     @Override
-    public String createSite(SiteRequest siteRequest) {
+    public String createSite(SiteRequest siteRequest,String userId) {
         // Find the company by name
         CompanyMaster company = companyMasterRepository.findByCompanyName(siteRequest.getCompanyName());
         if (company == null) {
@@ -82,8 +82,8 @@ public class SiteMasterServiceImpl implements SiteMasterService {
                 } else {
                     // Create a new site if it doesn't exist
                     SiteMaster newSite = new SiteMaster();
-                    HttpSession session = httpServletRequest.getSession();
-                    String userId = String.valueOf(session.getAttribute("userId"));
+                  /*  HttpSession session = httpServletRequest.getSession();
+                    String userId = String.valueOf(session.getAttribute("userId"));*/
                     LocalDateTime currentDateTime = LocalDateTime.now();
                     newSite.setSiteId(generateSiteId(siteRequest.getSiteName()));
                     newSite.setSiteName(siteName);

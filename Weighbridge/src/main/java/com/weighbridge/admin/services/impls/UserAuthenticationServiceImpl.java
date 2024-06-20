@@ -74,7 +74,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
 
 
         // Set session attributes
-        HttpSession session = request.getSession();
+      /*  HttpSession session = request.getSession();
         try {
             session.setAttribute("userId", dto.getUserId());
             session.setAttribute("userSite", userMaster.getSite().getSiteId());
@@ -82,7 +82,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
         }
         catch (Exception e){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Session Expired, Login again");
-        }
+        }*/
 
         // Prepare login response
         LoginResponse loginResponse = new LoginResponse();
@@ -93,7 +93,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
                 .map(RoleMaster::getRoleName)
                 .collect(Collectors.toSet());
         loginResponse.setRoles(roles);
-        session.setAttribute("roles", roles);
+       // session.setAttribute("roles", roles);
 
         // Set user name in the response
         String userName = userMaster.getUserFirstName();

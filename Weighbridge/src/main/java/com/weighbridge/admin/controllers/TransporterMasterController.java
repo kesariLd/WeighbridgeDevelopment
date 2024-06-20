@@ -24,8 +24,8 @@ public class TransporterMasterController {
      * @return ResponseEntity with a success message containing transporter added successfully.
      */
     @PostMapping()
-    public ResponseEntity<String> addTransporters(@RequestBody TransporterRequest transporterRequest){
-        String response = transporterService.addTransporter(transporterRequest);
+    public ResponseEntity<String> addTransporters(@RequestBody TransporterRequest transporterRequest,@RequestParam String userId){
+        String response = transporterService.addTransporter(transporterRequest,userId);
         return ResponseEntity.ok(response);
     }
 
@@ -70,8 +70,8 @@ public class TransporterMasterController {
      * @return ResponseEntity containing a success message with HTTP status OK.
      */
     @PutMapping("/{transporterId}")
-    public ResponseEntity<String> updateTransporterById(@PathVariable Long transporterId, @RequestBody TransporterDto transporterDto) {
-        String response = transporterService.updateTransporterById(transporterId, transporterDto);
+    public ResponseEntity<String> updateTransporterById(@PathVariable Long transporterId, @RequestBody TransporterDto transporterDto,@RequestParam String userId) {
+        String response = transporterService.updateTransporterById(transporterId, transporterDto,userId);
         return ResponseEntity.ok(response);
     }
 

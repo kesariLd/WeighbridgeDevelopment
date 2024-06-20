@@ -10,7 +10,7 @@ public interface SiteMasterService {
 
     List<SiteMasterDto> getAllSite();
 
-    String createSite(SiteRequest siteRequest);
+    String createSite(SiteRequest siteRequest,String userId);
 
     List<Map<String, String>> findAllByCompanySites(String companyName);
 }

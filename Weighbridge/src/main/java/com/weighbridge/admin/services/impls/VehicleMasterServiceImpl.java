@@ -47,7 +47,7 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
     private HttpServletRequest httpServletRequest;
 
     @Override
-    public String addVehicle(VehicleRequest vehicleRequest, String transporterName) {
+    public String addVehicle(VehicleRequest vehicleRequest, String transporterName,String userId) {
         VehicleMaster existsVehicle = vehicleMasterRepository.findByVehicleNoAndTransporterMasterTransporterName(vehicleRequest.getVehicleNo(), transporterName);
         if (existsVehicle != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vehicle no: " + vehicleRequest.getVehicleNo() + " is already present with transporter name : " + transporterName);
@@ -79,13 +79,13 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
             newVehicle.setVehicleFitnessUpTo(vehicleRequest.getVehicleFitnessUpTo());
 
             // Get userId form session
-            HttpSession session = httpServletRequest.getSession();
+         /*   HttpSession session = httpServletRequest.getSession();
             String userId;
             if (session != null && session.getAttribute("userId") != null) {
                 userId = session.getAttribute("userId").toString();
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            }*/
             LocalDateTime currentTime = LocalDateTime.now();
             newVehicle.setVehicleCreatedBy(userId);
             newVehicle.setVehicleCreatedDate(currentTime);
@@ -122,7 +122,7 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
     }
 
     @Override
-    public String updateVehicleByVehicleNo(String vehicleNo, VehicleRequest vehicleRequest) {
+    public String updateVehicleByVehicleNo(String vehicleNo, VehicleRequest vehicleRequest,String userId) {
         VehicleMaster vehicleMaster = vehicleMasterRepository.findByVehicleNo(vehicleNo);
 
         vehicleMaster.setVehicleWheelsNo(vehicleRequest.getVehicleWheelsNo());
@@ -133,13 +133,13 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
         vehicleMaster.setVehicleLoadCapacity(vehicleRequest.getVehicleLoadCapacity());
         vehicleMaster.setVehicleTareWeight(vehicleRequest.getVehicleTareWeight());
 
-        HttpSession session = httpServletRequest.getSession();
+        /*HttpSession session = httpServletRequest.getSession();
         String userId;
         if (session != null && session.getAttribute("userId") != null) {
             userId = session.getAttribute("userId").toString();
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-        }
+        }*/
         LocalDateTime currentTime = LocalDateTime.now();
 
         vehicleMaster.setVehicleModifiedBy(userId);
@@ -191,24 +191,27 @@ public class VehicleMasterServiceImpl implements VehicleMasterService {
 
     @Transactional
     @Override
-    public String updateVehicleById(Long vehicleId, VehicleMasterDto vehicleMasterDto) {
+    public String updateVehicleById(Long vehicleId, VehicleMasterDto vehicleMasterDto,String userId) {
         log.info("Updating vehicle wit ID: {}", vehicleId);
         VehicleMaster vehicleMaster = vehicleMasterRepository.findById(vehicleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle", "id", vehicleId.toString()));
 
-        HttpSession session = httpServletRequest.getSession();
+      /*  HttpSession session = httpServletRequest.getSession();
         String userId;
         if (session != null && session.getAttribute("userId") != null) {
             userId = session.getAttribute("userId").toString();
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-        }
+        }*/
+        LocalDateTime localDateTime=LocalDateTime.now();
         vehicleMaster.setVehicleType(vehicleMasterDto.getVehicleType());
         vehicleMaster.setVehicleManufacturer(vehicleMasterDto.getVehicleManufacturer());
         vehicleMaster.setVehicleWheelsNo(vehicleMasterDto.getVehicleWheelsNo());
         vehicleMaster.setVehicleTareWeight(vehicleMasterDto.getVehicleTareWeight());
         vehicleMaster.setVehicleLoadCapacity(vehicleMasterDto.getVehicleLoadCapacity());
         vehicleMaster.setVehicleFitnessUpTo(vehicleMasterDto.getVehicleFitnessUpTo());
+        vehicleMaster.setVehicleModifiedBy(userId);
+        vehicleMaster.setVehicleModifiedDate(localDateTime);
         try {
             vehicleMasterRepository.save(vehicleMaster);
         } catch (DataAccessException e) {

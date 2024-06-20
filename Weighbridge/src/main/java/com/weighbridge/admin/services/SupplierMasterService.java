@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface SupplierMasterService {
 
-    SupplierMasterDto createSupplier(SupplierMasterDto supplierMasterDto);
+    SupplierMasterDto createSupplier(SupplierMasterDto supplierMasterDto,String userId);
 
     List<SupplierMasterDto> getAllSupplier();
     List<String> getAllSupplierAsString();
@@ -18,7 +18,7 @@ public interface SupplierMasterService {
     List<String> getSupplierAddressBySupplierName(String supplierName);
 
     SupplierMasterDto getSupplierById(long id);
-    String updateSupplierById(SupplierRequest SupplierRequest, long id);
+    String updateSupplierById(SupplierRequest SupplierRequest, long id,String userId);
 
     String deleteSupplierById(long id);
 

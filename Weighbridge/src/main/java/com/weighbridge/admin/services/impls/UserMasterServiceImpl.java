@@ -2,6 +2,7 @@ package com.weighbridge.admin.services.impls;
 
 import com.weighbridge.admin.entities.*;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
+import com.weighbridge.admin.payloads.GetAllUsersPaginationResponse;
 import com.weighbridge.admin.payloads.UpdateRequest;
 import com.weighbridge.admin.payloads.UserRequest;
 import com.weighbridge.admin.payloads.UserResponse;
@@ -52,7 +53,7 @@ public class UserMasterServiceImpl implements UserMasterService {
 
 
     @Override
-    public String createUser(UserRequest userRequest, HttpSession session) {
+    public String createUser(UserRequest userRequest,String userId) {
 
         // Check if email or contact number already exists
         if (userMasterRepository.existsByUserEmailId(userRequest.getEmailId())) {
@@ -81,8 +82,8 @@ public class UserMasterServiceImpl implements UserMasterService {
         }
         // Create UserMaster instance and set properties
         UserMaster userMaster = new UserMaster();
-        String userId = generateUserId(companyMaster.getCompanyId());
-        userMaster.setUserId(userId);
+        String userId1 = generateUserId(companyMaster.getCompanyId());
+        userMaster.setUserId(userId1);
         userMaster.setCompany(companyMaster);
         userMaster.setSite(siteMaster);
         userMaster.setUserEmailId(userRequest.getEmailId());
@@ -92,15 +93,15 @@ public class UserMasterServiceImpl implements UserMasterService {
         userMaster.setUserLastName(userRequest.getLastName());
 
         LocalDateTime currentDateTime = LocalDateTime.now();
-        String createdBy = session.getAttribute("userId").toString(); // Assuming the user creation is done by the current session user
-        userMaster.setUserCreatedBy(createdBy);
+     //   String createdBy = session.getAttribute("userId").toString(); // Assuming the user creation is done by the current session user
+        userMaster.setUserCreatedBy(userId);
         userMaster.setUserCreatedDate(currentDateTime);
-        userMaster.setUserModifiedBy(createdBy);
+        userMaster.setUserModifiedBy(userId);
         userMaster.setUserModifiedDate(currentDateTime);
 
         // Create UserAuthentication instance and set properties
         UserAuthentication userAuthentication = new UserAuthentication();
-        userAuthentication.setUserId(userId);
+        userAuthentication.setUserId(userId1);
         Set<String> setOfRoles = userRequest.getRole();
         Set<RoleMaster> roles = new HashSet<>();
         if (setOfRoles != null) {
@@ -129,8 +130,8 @@ public class UserMasterServiceImpl implements UserMasterService {
             UserMaster updatedUser = userMasterRepository.save(userMaster);
             UserAuthentication updatedAuthUser = userAuthenticationRepository.save(userAuthentication);
 
-            emailService.sendCredentials(userRequest.getEmailId(), userId, defaultPassword);
-            return "User is created successfully with userId : " + userId;
+            emailService.sendCredentials(userRequest.getEmailId(), userId1, defaultPassword);
+            return "User is created successfully with userId : " + userId1;
         } catch (DataAccessException e) {
             // Catch any database access exceptions and throw an InternalServerError exception
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database access error occurred", e);
@@ -154,7 +155,7 @@ public class UserMasterServiceImpl implements UserMasterService {
     }
 
     @Override
-    public Page<UserResponse> getAllUsers(Pageable pageable) {
+    public GetAllUsersPaginationResponse getAllUsers(Pageable pageable) {
         System.out.println("pageable = " + pageable);
         Page<UserMaster> userPage = userMasterRepository.findAll(pageable);
         System.out.println(userPage);
@@ -181,8 +182,11 @@ public class UserMasterServiceImpl implements UserMasterService {
 
             return userResponse;
         });
-
-        return responsePage;
+        GetAllUsersPaginationResponse getAllUsersPaginationResponse=new GetAllUsersPaginationResponse();
+        getAllUsersPaginationResponse.setUsers(responsePage.getContent());
+        getAllUsersPaginationResponse.setTotalPages(responsePage.getTotalPages());
+        getAllUsersPaginationResponse.setTotalElements(responsePage.getTotalElements());
+        return getAllUsersPaginationResponse;
     }
 
     @Override
@@ -208,12 +212,10 @@ public class UserMasterServiceImpl implements UserMasterService {
             SiteMaster site = userMaster.getSite();
             String siteAddress = site.getSiteName() + "," + site.getSiteAddress();
             userResponse.setSite(site != null ? siteAddress : null);
-
             Set<RoleMaster> roleMasters = userAuthenticationRepository.findRolesByUserId(userMaster.getUserId());
             Set<String> roleNames = roleMasters.stream().map(RoleMaster::getRoleName).collect(Collectors.toSet());
             userResponse.setRole(roleNames);
             userResponse.setStatus(userMaster.getUserStatus());
-
             return userResponse;
         });
 
@@ -252,11 +254,24 @@ public class UserMasterServiceImpl implements UserMasterService {
     }
 
     @Override
-    public boolean deleteUserById(String userId) {
+    public boolean deleteUserById(String userId,String user) {
         UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
-
+        LocalDateTime dateTime=LocalDateTime.now();
         if (userMaster.getUserStatus().equals("ACTIVE")) {
             userMaster.setUserStatus("INACTIVE");
+            UserHistory userHistory=new UserHistory();
+            userHistory.setCompany(userMaster.getCompany().getCompanyName());
+            userHistory.setUserModifiedBy(userMaster.getUserModifiedBy());
+            userHistory.setUserCreatedBy(userMaster.getUserCreatedBy());
+            userHistory.setSite(userMaster.getSite().getSiteId());
+            UserAuthentication userAuthentication = userAuthenticationRepository.findByUserId(userId);
+            String roles = String.join(",", getRoleNames(userAuthentication.getRoles()));
+            // Set the roles String to the UseruserHistory
+            userHistory.setRoles(roles);
+            userHistory.setUserId(userId);
+            userHistoryRepository.save(userHistory);
+            userMaster.setUserModifiedBy(user);
+            userMaster.setUserModifiedDate(dateTime);
             userMasterRepository.save(userMaster);
             return true;
         } else {
@@ -265,7 +280,7 @@ public class UserMasterServiceImpl implements UserMasterService {
     }
 
     @Override
-    public String updateUserById(UpdateRequest updateRequest, String userId, HttpSession session) {
+    public String updateUserById(UpdateRequest updateRequest, String userId,String user) {
         try {
             // Fetch the existing user from the database
             UserMaster userMaster = userMasterRepository.findById(userId)
@@ -297,8 +312,8 @@ public class UserMasterServiceImpl implements UserMasterService {
             String modifiedUser = null;
             LocalDateTime currentDateTime = LocalDateTime.now();
 
-            if (session != null && session.getAttribute("userId") != null) {
-                modifiedUser = String.valueOf(session.getAttribute("userId"));
+            /*if (session != null && session.getAttribute("userId") != null) {
+                modifiedUser = String.valueOf(session.getAttribute("userId"));*/
 
                 // Add update to user history
                 UserHistory userHistory = new UserHistory();
@@ -313,7 +328,7 @@ public class UserMasterServiceImpl implements UserMasterService {
                 userHistory.setCompany(userMaster.getCompany().getCompanyName());
                 userHistory.setUserCreatedBy(userMaster.getUserCreatedBy());
                 userHistory.setUserCreatedDate(userMaster.getUserCreatedDate());
-                userHistory.setUserModifiedBy(modifiedUser);
+                userHistory.setUserModifiedBy(user);
                 userHistory.setUserModifiedDate(userMaster.getUserModifiedDate());
 
                 // Set userMaster object properties from the request
@@ -324,7 +339,7 @@ public class UserMasterServiceImpl implements UserMasterService {
                 userMaster.setUserFirstName(updateRequest.getFirstName());
                 userMaster.setUserMiddleName(updateRequest.getMiddleName());
                 userMaster.setUserLastName(updateRequest.getLastName());
-                userMaster.setUserModifiedBy(modifiedUser);
+                userMaster.setUserModifiedBy(user);
                 userMaster.setUserModifiedDate(currentDateTime);
 
                 Set<RoleMaster> updatedRoles = updateRoles(userAuthentication, updateRequest.getRole());
@@ -339,9 +354,9 @@ public class UserMasterServiceImpl implements UserMasterService {
                 userHistoryRepository.save(userHistory);
 
                 return "User Updated Succesfully";
-            } else {
+           /* } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }
+            }*/
 
 
         } catch (ResourceNotFoundException e) {
@@ -359,11 +374,24 @@ public class UserMasterServiceImpl implements UserMasterService {
     }
 
     @Override
-    public boolean activateUser(String userId) {
+    public boolean activateUser(String userId,String user) {
         UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
-
+        LocalDateTime localDateTime=LocalDateTime.now();
         if (userMaster.getUserStatus().equals("INACTIVE")) {
+            UserHistory userHistory=new UserHistory();
+            userHistory.setCompany(userMaster.getCompany().getCompanyName());
+            userHistory.setUserModifiedBy(userMaster.getUserModifiedBy());
+            userHistory.setUserCreatedBy(userMaster.getUserCreatedBy());
+            userHistory.setSite(userMaster.getSite().getSiteId());
+            UserAuthentication userAuthentication = userAuthenticationRepository.findByUserId(userId);
+            String roles = String.join(",", getRoleNames(userAuthentication.getRoles()));
+            // Set the roles String to the UseruserHistory
+            userHistory.setRoles(roles);
+            userHistory.setUserId(userId);
+            userHistoryRepository.save(userHistory);
             userMaster.setUserStatus("ACTIVE");
+            userMaster.setUserModifiedBy(user);
+            userMaster.setUserModifiedDate(localDateTime);
             userMasterRepository.save(userMaster);
             return true;
         }
@@ -377,7 +405,6 @@ public class UserMasterServiceImpl implements UserMasterService {
             Iterable<RoleMaster> roleMasters = roleMasterRepository.findAllByRoleNameIn(updatedRoleNames);
             Map<String, RoleMaster> roleMap = new HashMap<>();
             roleMasters.forEach(role -> roleMap.put(role.getRoleName(), role));
-
             updatedRoleNames.forEach(roleName -> {
                 RoleMaster roleMaster = roleMap.get(roleName);
                 if (roleMaster != null) {
@@ -389,6 +416,7 @@ public class UserMasterServiceImpl implements UserMasterService {
         }
         return updatedRoles;
     }
+
 
     private Set<String> getRoleNames(Set<RoleMaster> roles) {
         return roles.stream().map(RoleMaster::getRoleName).collect(Collectors.toSet());

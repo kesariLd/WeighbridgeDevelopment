@@ -44,8 +44,8 @@ public class SiteMasterController {
      *         upon successful creation, or an appropriate error response otherwise.
      */
     @PostMapping
-    public ResponseEntity<String> createSite(@Validated @RequestBody SiteRequest siteRequest) {
-        String response = siteMasterService.createSite(siteRequest);
+    public ResponseEntity<String> createSite(@Validated @RequestBody SiteRequest siteRequest,@RequestParam String userId) {
+        String response = siteMasterService.createSite(siteRequest,userId);
         return ResponseEntity.ok(response);
     }
 
