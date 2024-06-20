@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +60,8 @@ public class ManagementDashboardController {
     public ResponseEntity<List<ManagementQualityDashboardResponse>> getGoodOrBadQualities(
             @RequestBody ManagementPayload managementRequest,
             @RequestParam(required = false) String transactionType,
-            @RequestParam(required = false) String qualityType) {
+            @RequestParam(required = false) String qualityType)
+             {
         List<ManagementQualityDashboardResponse> response = managementDashboardService.getGoodOrBadQualities(managementRequest, transactionType, qualityType);
         return ResponseEntity.ok(response);
     }

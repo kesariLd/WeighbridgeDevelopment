@@ -238,12 +238,13 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     @Override
     public List<ManagementQualityDashboardResponse> getGoodOrBadQualities(ManagementPayload managementRequest, String transactionType, String qualityType) {
         LocalDate startDate = managementRequest.getFromDate();
-        LocalDate endDate = managementRequest.getToDate();
+        LocalDate endDate = startDate;
 
         String companyId = companyMasterRepository.findCompanyIdByCompanyName(managementRequest.getCompanyName());
-        String[] site = managementRequest.getSiteName().split(",");
-        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(site[0], site[1]);
-        System.out.println(site[0] + "," + site[1]);
+        String[] siteInfoParts = managementRequest.getSiteName().split(",", 2);
+        String siteName = siteInfoParts[0].trim();
+        String siteAddress = siteInfoParts.length == 2 ? siteInfoParts[1].trim() : "";
+        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(siteName, siteAddress);
 
         List<ManagementQualityDashboardResponse> responseList = new ArrayList<>();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
@@ -293,11 +294,14 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
 
     private List<ManagementQualityDashboardResponse> getQualitiesByType(ManagementPayload managementRequest, String transactionType, boolean isGoodQuality) {
         LocalDate startDate = managementRequest.getFromDate();
-        LocalDate endDate = managementRequest.getToDate();
+        LocalDate endDate = startDate;
 
         String companyId = companyMasterRepository.findCompanyIdByCompanyName(managementRequest.getCompanyName());
-        String[] site = managementRequest.getSiteName().split(",");
-        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(site[0], site[1]);
+
+        String[] siteInfoParts = managementRequest.getSiteName().split(",", 2);
+        String siteName = siteInfoParts[0].trim();
+        String siteAddress = siteInfoParts.length == 2 ? siteInfoParts[1].trim() : "";
+        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(siteName, siteAddress);
 
         List<ManagementQualityDashboardResponse> responseList = new ArrayList<>();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
@@ -489,8 +493,10 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
         response.setSiteName(managementRequest.getSiteName());
 
         String companyId = companyMasterRepository.findCompanyIdByCompanyName(managementRequest.getCompanyName());
-        String[] site = managementRequest.getSiteName().split(",");
-        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(site[0], site[1]);
+        String[] siteInfoParts = managementRequest.getSiteName().split(",", 2);
+        String siteName = siteInfoParts[0].trim();
+        String siteAddress = siteInfoParts.length == 2 ? siteInfoParts[1].trim() : "";
+        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(siteName, siteAddress);
 
         List<MaterialProductQualityResponse.MaterialProductQualityData> materialProductQualityDataList = new ArrayList<>();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {

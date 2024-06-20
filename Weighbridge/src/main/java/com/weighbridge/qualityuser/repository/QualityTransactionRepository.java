@@ -26,5 +26,6 @@ public interface QualityTransactionRepository extends JpaRepository<QualityTrans
     Long countInboundQuality(String transactionType,LocalDate startDate,LocalDate endDate,String siteId,String companyId);
 
 
+
 }
 
