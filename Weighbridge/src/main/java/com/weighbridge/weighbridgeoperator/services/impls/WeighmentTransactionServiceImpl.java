@@ -204,8 +204,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                     response.setVehicleIn(vehicleInDateTime.format(formatter));
                     if (((String) row[2]).equalsIgnoreCase("Inbound")) {
                         if(row[8]!=null&&row[6]!=null) {
-                            response.setGrossWeight((String) row[8]);
-                            response.setTareWeight((String) row[6]);
+                            response.setGrossWeight(multiplyWeight(row[8]));
+                            response.setTareWeight(multiplyWeight(row[6]));
                         }
                         else{
                             response.setGrossWeight("");
@@ -213,15 +213,15 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                         }
                     } else {
                         if(row[8]!=null&&row[5]!=null) {
-                            response.setTareWeight(String.valueOf(row[8]));
-                            response.setGrossWeight((String) row[5]);
+                            response.setTareWeight(multiplyWeight(row[8]));
+                            response.setGrossWeight(multiplyWeight(row[5]));
                         }
                         else{
                             response.setGrossWeight("");
                             response.setTareWeight("");
                         }
                     }
-                    response.setNetWeight(row[7] != null ? String.valueOf(row[7]) : "");
+                    response.setNetWeight(row[7] != null ? multiplyWeight(row[7]) : "");
                     response.setVehicleNo((String) row[9]);
                     response.setVehicleFitnessUpTo((LocalDate) row[10]);
                     if (((String) row[2]).equalsIgnoreCase("Inbound")) {
@@ -247,6 +247,19 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             weighbridgePageResponse.setTotalElements(pageResult.getTotalElements());
             return weighbridgePageResponse;
         }
+    }
+
+    private String multiplyWeight(Object weightObj) {
+        if (weightObj != null) {
+            try {
+                double weight = Double.parseDouble(String.valueOf(weightObj));
+                weight *= 1000; // Multiply by 1000
+                return String.valueOf(weight);
+            } catch (NumberFormatException e) {
+                return "";
+            }
+        }
+        return "";
     }
 
     @Override
@@ -348,9 +361,9 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             weighmentTransactionResponse.setWeighmentNo(String.valueOf(weighmentTransaction.getWeighmentNo()));
             weighmentTransactionResponse.setTicketNo(String.valueOf(weighmentTransaction.getGateEntryTransaction().getTicketNo()));
             weighmentTransactionResponse.setVehicleIn(weighmentTransaction.getGateEntryTransaction().getVehicleIn().format(formatter));
-            weighmentTransactionResponse.setNetWeight(String.valueOf(weighmentTransaction.getNetWeight()));
-            weighmentTransactionResponse.setGrossWeight(String.valueOf(weighmentTransaction.getGrossWeight()));
-            weighmentTransactionResponse.setTareWeight(String.valueOf(weighmentTransaction.getTareWeight()));
+            weighmentTransactionResponse.setNetWeight(String.valueOf(weighmentTransaction.getNetWeight()*1000));
+            weighmentTransactionResponse.setGrossWeight(String.valueOf(weighmentTransaction.getGrossWeight()*1000));
+            weighmentTransactionResponse.setTareWeight(String.valueOf(weighmentTransaction.getTareWeight()*1000));
             weighmentTransactionResponse.setVehicleNo(vehicleMasterRepository.findVehicleNoById(weighmentTransaction.getGateEntryTransaction().getVehicleId()));
             weighmentTransactionResponse.setVehicleFitnessUpTo(vehicleMasterRepository.findVehicleFitnessById(weighmentTransaction.getGateEntryTransaction().getVehicleId()));
             if (weighmentTransaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")) {

@@ -174,18 +174,6 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
      */
     @Override
     public WeighbridgePageResponse getAllBySearchFields(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable,String userId) {
-       /* HttpSession session = httpServletRequest.getSession();
-        String userId;
-        String userCompany;
-        String userSite;
-
-        if (session != null && session.getAttribute("userId") != null) {
-            userId = session.getAttribute("userId").toString();
-            userSite = session.getAttribute("userSite").toString();
-            userCompany = session.getAttribute("userCompany").toString();
-        } else {
-            throw new SessionExpiredException("Session Expired, Login again !");
-        }*/
        UserMaster byId = userMasterRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("user not found with"+userId));
         criteria.setSiteId(byId.getSite().getSiteId());
         criteria.setCompanyId(byId.getCompany().getCompanyId());
@@ -249,4 +237,26 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
             weighmentTransactionResponse.setTransporterName(transporterNameByTransporterId != null ? transporterNameByTransporterId : "");
             return weighmentTransactionResponse;
     }
+
+    @Override
+    public WeighbridgePageResponse getAllBySearchFieldsForInprocessTransaction(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable, String userId) {
+        UserMaster byId = userMasterRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("user not found with"+userId));
+        criteria.setSiteId(byId.getSite().getSiteId());
+        criteria.setCompanyId(byId.getCompany().getCompanyId());
+        criteria.setUserId(userId);
+        WeighmentTransactionSpecification specification = new WeighmentTransactionSpecification(criteria,vehicleMasterRepository,materialMasterRepository,transporterMasterRepository,productMasterRepository,supplierMasterRepository,customerMasterRepository);
+        Specification<WeighmentTransaction> netWeightNullSpec = WeighmentTransactionSpecification.netWeightZero();
+        Specification<WeighmentTransaction> combinedSpec = Specification.where(specification).and(netWeightNullSpec);
+        Page<WeighmentTransaction> pageResult = weighmentTransactionRepository.findAll(combinedSpec,pageable);
+        List<WeighmentTransactionResponse> responses = pageResult.stream()
+                .map(this::mapToResponse)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        WeighbridgePageResponse response = new WeighbridgePageResponse();
+        response.setWeighmentTransactionResponses(responses);
+        response.setTotalPages((long) pageResult.getTotalPages());
+        response.setTotalElements(pageResult.getTotalElements());
+        return response;
+    }
+
 }
