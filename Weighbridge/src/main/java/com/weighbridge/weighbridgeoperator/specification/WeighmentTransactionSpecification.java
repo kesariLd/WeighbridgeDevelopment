@@ -156,4 +156,10 @@ public class WeighmentTransactionSpecification implements Specification<Weighmen
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.notEqual(root.get("netWeight"), 0.0);
     }
+
+    public static Specification<WeighmentTransaction> netWeightZero() {
+        return (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("netWeight"), 0.0);
+    }
+
 }

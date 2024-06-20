@@ -13,4 +13,6 @@ public interface WeighmentSearchApiService {
     WeighmentTransactionResponse getByTicketNo(Integer ticketNo);
 
     WeighbridgePageResponse getAllBySearchFields(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable,String userId);
+
+    WeighbridgePageResponse getAllBySearchFieldsForInprocessTransaction(WeighbridgeOperatorSearchCriteria criteria, Pageable pageable,String userId);
 }

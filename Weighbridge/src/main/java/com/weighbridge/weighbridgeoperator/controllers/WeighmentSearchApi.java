@@ -54,4 +54,33 @@ public class WeighmentSearchApi {
         WeighbridgePageResponse allBySearchFields = weighmentSearchApiService.getAllBySearchFields(criteria, pageable,userId);
         return ResponseEntity.ok(allBySearchFields);
     }
+
+    @GetMapping("/serachApi/Inprocess")
+    public ResponseEntity<WeighbridgePageResponse> searchByVariableForInProcessTransaction(@RequestParam(required = false) Integer ticketNo,
+                                                                    @RequestParam(required = false) String transactionType,
+                                                                    @RequestParam(required = false) LocalDate transactionDate,
+                                                                    @RequestParam(required = false) String vehicleNo,
+                                                                    @RequestParam(required = false) String supplierName,
+                                                                    @RequestParam(required = false) String customerName,
+                                                                    @RequestParam(required = false) String transporterName,
+                                                                    @RequestParam(required = false) String materialName,
+                                                                    @RequestParam(required = false) Boolean today,
+                                                                    @RequestParam(defaultValue = "0") int page,
+                                                                    @RequestParam(defaultValue = "5") int size,@RequestParam String userId) {
+
+        WeighbridgeOperatorSearchCriteria criteria = new WeighbridgeOperatorSearchCriteria();
+        criteria.setTicketNo(ticketNo);
+        criteria.setTransactionType(transactionType);
+        criteria.setTransactionDate(transactionDate);
+        criteria.setVehicleNo(vehicleNo);
+        criteria.setSupplierName(supplierName);
+        criteria.setCustomerName(customerName);
+        criteria.setTransporterName(transporterName);
+        criteria.setMaterialName(materialName);
+        criteria.setToday(today);
+        Pageable pageable = PageRequest.of(page, size);
+        WeighbridgePageResponse allBySearchFields = weighmentSearchApiService.getAllBySearchFieldsForInprocessTransaction(criteria, pageable,userId);
+        return ResponseEntity.ok(allBySearchFields);
+    }
+
 }

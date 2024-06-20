@@ -62,14 +62,14 @@ public class WeighbridgeOperatorPrintServiceImpl implements WeighbridgeOperatorP
         if(byTicketNo.getTransactionType().equalsIgnoreCase("Outbound")) {
             weighbridgeOperatorPrint.setProductName(productMasterRepository.findProductNameByProductId(byTicketNo.getMaterialId()));
             weighbridgeOperatorPrint.setCustomerName(customerMasterRepository.findCustomerNameByCustomerId(byTicketNo.getCustomerId()));
-            weighbridgeOperatorPrint.setGrossWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getGrossWeight());
-            weighbridgeOperatorPrint.setTareWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getTemporaryWeight());
+            weighbridgeOperatorPrint.setGrossWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getGrossWeight()*1000);
+            weighbridgeOperatorPrint.setTareWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getTemporaryWeight()*1000);
         }
         else {
             weighbridgeOperatorPrint.setMaterialName(materialMasterRepository.findMaterialNameByMaterialId(byTicketNo.getMaterialId()));
             weighbridgeOperatorPrint.setSupplierName(supplierMasterRepository.findSupplierNameBySupplierId(byTicketNo.getSupplierId()));
-            weighbridgeOperatorPrint.setTareWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getTareWeight());
-           weighbridgeOperatorPrint.setGrossWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getTemporaryWeight());
+            weighbridgeOperatorPrint.setTareWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getTareWeight()*1000);
+           weighbridgeOperatorPrint.setGrossWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getTemporaryWeight()*1000);
         }
         weighbridgeOperatorPrint.setTransporterName(transporterMasterRepository.findTransporterNameByTransporterId(byTicketNo.getTransporterId()));
         weighbridgeOperatorPrint.setChallanNo(byTicketNo.getTpNo());
@@ -87,7 +87,7 @@ public class WeighbridgeOperatorPrintServiceImpl implements WeighbridgeOperatorP
         String timeFormat1=twt!=null?twt.getTimestamp().format(timeFormatter):"";
         weighbridgeOperatorPrint.setTareWeightDate(dateFormat1);
         weighbridgeOperatorPrint.setTareWeightTime(timeFormat1);
-        weighbridgeOperatorPrint.setNetWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getNetWeight());
+        weighbridgeOperatorPrint.setNetWeight(weighmentTransactionRepository.findByGateEntryTransactionTicketNo(byTicketNo.getTicketNo()).getNetWeight()*1000);
         System.out.println(weighbridgeOperatorPrint);
         return weighbridgeOperatorPrint;
     }
