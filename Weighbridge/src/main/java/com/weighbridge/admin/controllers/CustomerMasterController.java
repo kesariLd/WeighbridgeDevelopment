@@ -89,8 +89,8 @@ public class CustomerMasterController {
     }
     
     @PutMapping("/update/{customerId}")
-    public ResponseEntity<String> updateCustomerByCustomerId(@Validated @RequestBody CustomerRequest customerRequest, @PathVariable long customerId){
-        String customerResponse = customerMasterService.updateCustomerById(customerRequest, customerId);
+    public ResponseEntity<String> updateCustomerByCustomerId(@Validated @RequestBody CustomerRequest customerRequest, @PathVariable long customerId,@RequestParam String userId){
+        String customerResponse = customerMasterService.updateCustomerById(customerRequest, customerId,userId);
         return new ResponseEntity<>(customerResponse,HttpStatus.OK);
     }
 

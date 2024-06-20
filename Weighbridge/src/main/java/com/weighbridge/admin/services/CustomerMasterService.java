@@ -14,7 +14,7 @@ public interface CustomerMasterService {
 
     List<String> getAddressOfCustomer(String name);
     CustomerMasterDto getCustomerById(long id);
-    String updateCustomerById(CustomerRequest customerRequest, long id);
+    String updateCustomerById(CustomerRequest customerRequest, long id,String userId);
 
     String deleteCustomerById(long id);
     String activeCustomerId(Long customerId);
