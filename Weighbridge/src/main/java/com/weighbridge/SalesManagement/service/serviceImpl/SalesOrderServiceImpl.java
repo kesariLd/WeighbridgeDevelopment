@@ -156,8 +156,8 @@ public class SalesOrderServiceImpl implements SalesOrderService {
         return salesDetailResponse;
     }
 
-    public SalesUserPageResponse getVehiclesAndTransporterDetails(Pageable pageable){
-        HttpSession session = httpServletRequest.getSession();
+    public SalesUserPageResponse getVehiclesAndTransporterDetails(Pageable pageable,String userId){
+       /* HttpSession session = httpServletRequest.getSession();
         String userId;
         String userCompany;
         String userSite;
@@ -167,8 +167,9 @@ public class SalesOrderServiceImpl implements SalesOrderService {
             userCompany = session.getAttribute("userCompany").toString();
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-        }
-       Page<SalesProcess> allVehiclesDetails= salesProcessRepository.findAllByStatusAndPurchaseSaleSiteIdAndPurchaseSaleCompanyId(true,userSite,userCompany,pageable);
+        }*/
+        UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("user not found with site and company."));
+        Page<SalesProcess> allVehiclesDetails= salesProcessRepository.findAllByStatusAndPurchaseSaleSiteIdAndPurchaseSaleCompanyId(true,userMaster.getSite().getSiteId(),userMaster.getCompany().getCompanyId(),pageable);
         List<SalesProcess> allUsers = allVehiclesDetails.getContent();
         List<VehicleAndTransporterDetail> listOfVehicle=new ArrayList<>();
         for (SalesProcess salesProcess:allUsers) {

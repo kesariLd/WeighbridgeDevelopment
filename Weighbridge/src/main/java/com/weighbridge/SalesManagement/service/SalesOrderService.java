@@ -14,7 +14,7 @@ public interface SalesOrderService{
 
     public SalesDetailResponse getSalesDetails(String purchaseOrderNo);
 
-    public SalesUserPageResponse getVehiclesAndTransporterDetails(Pageable pageable);
+    public SalesUserPageResponse getVehiclesAndTransporterDetails(Pageable pageable,String userId);
 
     public VehicleAndTransporterDetail getBySalePassNo(String salePassNo);
 
