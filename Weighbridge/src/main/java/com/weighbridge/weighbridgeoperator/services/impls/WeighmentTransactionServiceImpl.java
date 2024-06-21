@@ -301,8 +301,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
 
             if (transactionType.equalsIgnoreCase("Inbound")) {
                 if (byGateEntryTransactionTicketNo != null) {
-                    ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
-                    ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight());
+                    ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getTemporaryWeight()*1000);
+                    ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTareWeight()*1000);
                 }
                 Object[] supplierInfo = supplierMasterRepository.findSupplierNameAndAddressBySupplierId(gateEntryTransaction.getSupplierId());
                 Object[] supplierData = (Object[]) supplierInfo[0];
@@ -316,8 +316,8 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
             }
             if (transactionType.equalsIgnoreCase("Outbound")) {
                 if (byGateEntryTransactionTicketNo != null) {
-                    ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight());
-                    ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight());
+                    ticketResponse.setTareWeight(byGateEntryTransactionTicketNo.getTemporaryWeight()*1000);
+                    ticketResponse.setGrossWeight(byGateEntryTransactionTicketNo.getGrossWeight()*1000);
                 }
                 Object[] customerInfo = customerMasterRepository.findCustomerNameAndAddressBycustomerId(gateEntryTransaction.getCustomerId());
                 Object[] customerData = (Object[]) customerInfo[0];
