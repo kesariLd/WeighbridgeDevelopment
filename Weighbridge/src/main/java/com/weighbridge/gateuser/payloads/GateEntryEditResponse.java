@@ -3,6 +3,7 @@ package com.weighbridge.gateuser.payloads;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 @Data
 public class GateEntryEditResponse {
@@ -30,5 +31,6 @@ public class GateEntryEditResponse {
         private String challanNo;
         private String ewayBillNo;
         private LocalDate challanDate;
+        private Map<String, byte[]> imagesMap ;
     }
 
