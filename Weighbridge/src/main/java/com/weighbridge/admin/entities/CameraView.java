@@ -20,7 +20,9 @@ public class CameraView {
     private String frontImg1;
     private String backImg2;
     private String topImg3;
-    private String sideImg4;
+    private String bottomImg4;
+    private String leftImg5;
+    private String rightImg6;
     private LocalDate date;
     private Integer roleId;
 }

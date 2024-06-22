@@ -1,25 +1,15 @@
-package com.weighbridge.admin.entities;
+package com.weighbridge.admin.dtos;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "camera_master")
-public class CameraMaster {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String companyId;
-    private String siteId;
-    private Integer roleId;
+public class CameraMasterDto {
+    private String companyName;
+    private String siteName;
+    private String role;
     private String topCamUrl1;
     private String bottomCamUrl2;
     private String frontCamUrl3;
