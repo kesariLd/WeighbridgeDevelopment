@@ -111,6 +111,12 @@ public class CameraMasterServiceImpl implements CameraMasterService {
         CameraMasterResponse cameraMasterResponse=new CameraMasterResponse();
         cameraMasterResponse.setCompanyName(companyNameByCompanyId);
         cameraMasterResponse.setSiteName(siteName);
+        if(byId!=null) {
+            cameraMasterResponse.setRole(byId.getRoleName());
+        }
+        else{
+            throw new ResourceNotFoundException("role not found.");
+        }
         cameraMasterResponse.setTopCamUrl1(cameraMaster.getTopCamUrl1());
         cameraMasterResponse.setBottomCamUrl2(cameraMaster.getBottomCamUrl2());
         cameraMasterResponse.setFrontCamUrl3(cameraMaster.getFrontCamUrl3());
@@ -129,6 +135,27 @@ public class CameraMasterServiceImpl implements CameraMasterService {
         cameraMaster.setBottomCamUrl2(cameraMasterDto.getBottomCamUrl2());
         cameraMaster.setFrontCamUrl3(cameraMasterDto.getFrontCamUrl3());
         cameraMaster.setBackCamUrl4(cameraMasterDto.getBackCamUrl4());
+        String companyId = companyMasterRepository.findCompanyIdByCompanyName(cameraMasterDto.getCompanyName());
+        String[] siteInfoParts = cameraMasterDto.getSiteName().split(",", 2);
+        String siteName=null;
+        String siteAddress="";
+        if (siteInfoParts.length != 2) {
+            //throw new IllegalArgumentException("Invalid format for site info: " + userRequest.getSite());
+            siteName = siteInfoParts[0].trim();
+        }
+        else {
+            siteName = siteInfoParts[0].trim();
+            siteAddress = siteInfoParts[1].trim();
+        }
+        String siteId = siteMasterRepository.findSiteIdBySiteName(siteName, siteAddress);
+        RoleMaster roleMaster = roleMasterRepository.findByRoleName(cameraMasterDto.getRole());
+        cameraMaster.setSiteId(siteId);
+        cameraMaster.setCompanyId(companyId);
+        if (roleMaster != null) {
+            cameraMaster.setRoleId(roleMaster.getRoleId());
+        } else {
+            throw new ResourceNotFoundException("role doesnot exist!");
+        }
         LocalDateTime localDateTime=LocalDateTime.now();
         cameraMaster.setModifiedBy(userId);
         cameraMaster.setModifiedDate(localDateTime);
@@ -138,7 +165,12 @@ public class CameraMasterServiceImpl implements CameraMasterService {
 
     @Override
     public String deleteCameraDetails(Long id) {
-        cameraMasterRepository.deleteById(id);
-        return "record deleted with id "+id;
+       if(cameraMasterRepository.existsById(id)){
+           cameraMasterRepository.deleteById(id);
+           return "rcord deeleted with id "+id;
+       }
+       else{
+            return "record not found.";
+       }
     }
 }
