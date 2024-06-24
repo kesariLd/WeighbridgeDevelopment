@@ -265,10 +265,9 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
         String customerNameByCustomerId = customerMasterRepository.findCustomerNameByCustomerId(transaction.getCustomerId());
         String supplierNameBySupplierIdsearchField = supplierMasterRepository.findSupplierNameBySupplierId(transaction.getSupplierId());
         String transporterNameByTransporterId = transporterMasterRepository.findTransporterNameByTransporterId(transaction.getTransporterId());
-        WeighmentTransaction byId1 = weighmentTransactionRepository.findById(transaction.getTicketNo()).orElseThrow(()->new ResourceNotFoundException("ticket not found."));
+        WeighmentTransaction byId1 = weighmentTransactionRepository.findByGateEntryTransactionTicketNo(transaction.getTicketNo());
         WeighmentTransactionResponse weighmentTransactionResponse = new WeighmentTransactionResponse();
         weighmentTransactionResponse.setTicketNo(String.valueOf(transaction.getTicketNo()));
-        weighmentTransactionResponse.setWeighmentNo(String.valueOf(byId1.getWeighmentNo()));
         weighmentTransactionResponse.setVehicleFitnessUpTo(byId.getVehicleFitnessUpTo());
         weighmentTransactionResponse.setTransactionType(transaction.getTransactionType());
         weighmentTransactionResponse.setCustomerName(customerNameByCustomerId != null ? customerNameByCustomerId : "");
@@ -290,24 +289,27 @@ public class WeighmentSearchApiServiceImpl implements WeighmentSearchApiService 
             restTimeStamp1 = timestamp1 != null ? timestamp1.format(formatter) : "";
         }
         if (transaction.getTransactionType().equalsIgnoreCase("Inbound")) {
+            System.out.println("===============");
             String materialNameByMaterialId = materialMasterRepository.findMaterialNameByMaterialId(transaction.getMaterialId());
-            if(byId1!=null) {
-                weighmentTransactionResponse.setGrossWeight(String.valueOf(byId1.getTemporaryWeight()) != null ? String.valueOf(byId1.getTemporaryWeight()*1000) : "");
-                weighmentTransactionResponse.setTareWeight(String.valueOf(byId1.getTareWeight()) != null ? String.valueOf(byId1.getTareWeight()*1000) : "");
-            }
+
+                weighmentTransactionResponse.setWeighmentNo(byId1!=null?String.valueOf(byId1.getWeighmentNo()):"");
+                weighmentTransactionResponse.setGrossWeight(byId1!=null?String.valueOf(byId1.getTemporaryWeight()*1000):"");
+                weighmentTransactionResponse.setTareWeight(byId1!=null?String.valueOf(byId1.getTareWeight()*1000):"");
+
+
             weighmentTransactionResponse.setMaterialName(materialNameByMaterialId != null ? materialNameByMaterialId : "");
         } else {
             String productNameByProductId = productMasterRepository.findProductNameByProductId(transaction.getMaterialId());
-            if(byId1!=null) {
-                weighmentTransactionResponse.setTareWeight(String.valueOf(byId1.getTemporaryWeight()) != null ? String.valueOf(byId1.getTemporaryWeight()*1000) : "");
-                weighmentTransactionResponse.setGrossWeight(String.valueOf(byId1.getGrossWeight()) != null ? String.valueOf(byId1.getGrossWeight()*1000) : "");
-            }
+                weighmentTransactionResponse.setWeighmentNo(byId1!=null?String.valueOf(byId1.getWeighmentNo()):"");
+                weighmentTransactionResponse.setTareWeight(byId1!=null?String.valueOf(byId1.getTemporaryWeight()*1000):"");
+                weighmentTransactionResponse.setGrossWeight(byId1!=null?String.valueOf(byId1.getGrossWeight()*1000):"");
+
+
             weighmentTransactionResponse.setMaterialName(productNameByProductId != null ? productNameByProductId : "");
         }
         weighmentTransactionResponse.setTransactionType(transaction.getTransactionType());
-        weighmentTransactionResponse.setNetWeight(String.valueOf(byId1.getNetWeight()) != null ? String.valueOf(byId1.getNetWeight()*1000) : "");
+        weighmentTransactionResponse.setNetWeight(byId1 != null ? String.valueOf(byId1.getNetWeight()*1000) : "");
         weighmentTransactionResponse.setTransporterName(transporterNameByTransporterId != null ? transporterNameByTransporterId : "");
         return weighmentTransactionResponse;
     }
-
 }
