@@ -4,6 +4,9 @@ import lombok.Data;
 
 @Data
 public class CameraMasterResponse {
+
+    private Long cameraId;
+
     private String companyName;
     private String siteName;
     private String role;
