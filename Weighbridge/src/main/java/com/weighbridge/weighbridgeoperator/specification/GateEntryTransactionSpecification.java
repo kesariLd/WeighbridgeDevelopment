@@ -153,10 +153,8 @@ public class GateEntryTransactionSpecification implements Specification<GateEntr
     }
 
     public Specification<GateEntryTransaction> netWeightZero() {
-
-            // Fetch the in-process transactions
         return (root, query, criteriaBuilder) -> {
-            // Create a subquery for WeighmentTransaction
+            // Subquery to fetch GateEntryTransaction IDs that are referenced in WeighmentTransaction with netWeight 0.0
             Subquery<Long> subquery = query.subquery(Long.class);
             Root<WeighmentTransaction> weighmentTransactionRoot = subquery.from(WeighmentTransaction.class);
             subquery.select(weighmentTransactionRoot.get("gateEntryTransaction").get("id"));
@@ -171,11 +169,16 @@ public class GateEntryTransactionSpecification implements Specification<GateEntr
             // Main query predicates
             Predicate siteIdPredicate = criteriaBuilder.equal(root.get("siteId"), criteria.getSiteId());
             Predicate companyIdPredicate = criteriaBuilder.equal(root.get("companyId"), criteria.getCompanyId());
-            Predicate noWeighmentTransactionPredicate =criteriaBuilder.or(
-                    criteriaBuilder.not(root.get("id").in(subquery)),
-                    criteriaBuilder.isNull(root.get("id")));
-            return criteriaBuilder.and(siteIdPredicate, companyIdPredicate, noWeighmentTransactionPredicate);
-        };
+            Predicate notInWeighmentTransactionPredicate = criteriaBuilder.not(root.get("id").in(subquery));
+            Predicate inWeighmentTransactionWithZeroNetWeightPredicate = criteriaBuilder.in(root.get("id")).value(subquery);
 
+            // Combine predicates using OR to include transactions not in weighmentTransaction or with zero net weight
+            return criteriaBuilder.and(
+                    siteIdPredicate,
+                    companyIdPredicate,
+                    criteriaBuilder.or(notInWeighmentTransactionPredicate, inWeighmentTransactionWithZeroNetWeightPredicate)
+            );
+        };
     }
+
 }
