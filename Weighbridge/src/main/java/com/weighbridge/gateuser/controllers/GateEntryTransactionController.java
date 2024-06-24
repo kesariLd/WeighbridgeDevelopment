@@ -44,8 +44,8 @@ public class GateEntryTransactionController {
     public ResponseEntity<Integer> saveTransaction(
             @RequestParam("requestBody") String requestBody,
             @RequestParam("userId") String userId,
-            @RequestParam("frontImg1") MultipartFile frontImg1,
-            @RequestParam("backImg2") MultipartFile backImg2,
+            @RequestParam(value = "frontImg1",required = false) MultipartFile frontImg1,
+            @RequestParam(value = "backImg2",required = false) MultipartFile backImg2,
             @RequestParam(value = "topImg3", required = false) MultipartFile topImg3,
             @RequestParam(value = "bottomImg4", required = false) MultipartFile bottomImg4,
             @RequestParam(value = "leftImg5", required = false) MultipartFile leftImg5,
