@@ -10,6 +10,8 @@ import java.time.LocalDate;
 public class ManagementPayload {
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate fromDate;
+
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate toDate;
     @NotBlank
     private String companyName;

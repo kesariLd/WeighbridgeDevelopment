@@ -44,5 +44,7 @@ public interface ManagementDashboardService {
     List<ManagementQualityDashboardResponse> getGoodQualities(ManagementPayload managementRequest, String transactionType);
 
     List<ManagementQualityDashboardResponse> getBadQualities(ManagementPayload managementRequest, String transactionType);
+
+    ManagementQualityDashboardResponse searchByTicketNo(String ticketNo, String companyName, String siteName);
 }
 

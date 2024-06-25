@@ -287,6 +287,7 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     }
 
 
+
     @Override
     public List<ManagementQualityDashboardResponse> getGoodQualities(ManagementPayload managementRequest, String transactionType) {
         return getQualitiesByType(managementRequest, transactionType, true);
@@ -295,6 +296,51 @@ public class ManagementDashboardServiceImpl implements ManagementDashboardServic
     @Override
     public List<ManagementQualityDashboardResponse> getBadQualities(ManagementPayload managementRequest, String transactionType) {
         return getQualitiesByType(managementRequest, transactionType, false);
+    }
+
+    @Override
+    public ManagementQualityDashboardResponse searchByTicketNo(String ticketNo, String companyName, String siteName) {
+        String companyId = companyMasterRepository.findCompanyIdByCompanyName(companyName);
+
+        String[] siteInfoParts = siteName.split(",", 2);
+        String siteNamePart = siteInfoParts[0].trim();
+        String siteAddress = siteInfoParts.length == 2 ? siteInfoParts[1].trim() : "";
+
+        SiteMaster siteMaster = siteMasterRepository.findBySiteNameAndSiteAddress(siteNamePart, siteAddress);
+
+        List<QualityTransaction> qualityTransactions = qualityTransactionRepository.findByGateEntryTransactionCompanyIdAndSiteIdAndTransactionDate(ticketNo, companyId, LocalDate.parse(siteMaster.getSiteId()));
+
+        if (qualityTransactions.isEmpty()) {
+            throw new ResourceNotFoundException("Quality Transaction", "ticketNo", ticketNo);
+        }
+
+        QualityTransaction transaction = qualityTransactions.get(0);
+
+        ManagementQualityDashboardResponse managementQualityDashboardResponse = new ManagementQualityDashboardResponse();
+        managementQualityDashboardResponse.setTicketNo(transaction.getGateEntryTransaction().getTicketNo());
+        managementQualityDashboardResponse.setTransactionType(transaction.getGateEntryTransaction().getTransactionType());
+
+        if (transaction.getGateEntryTransaction().getTransactionType().equalsIgnoreCase("Inbound")) {
+            SupplierMaster supplierMaster = supplierMasterRepository.findBySupplierId(transaction.getGateEntryTransaction().getSupplierId());
+            managementQualityDashboardResponse.setSupplierOrCustomerName(supplierMaster.getSupplierName());
+            managementQualityDashboardResponse.setSupplierOrCustomerAddress(supplierMaster.getSupplierAddressLine1() + "," + supplierMaster.getSupplierAddressLine2());
+        } else {
+            CustomerMaster customerMaster = customerMasterRepository.findByCustomerId(transaction.getGateEntryTransaction().getCustomerId());
+            managementQualityDashboardResponse.setSupplierOrCustomerName(customerMaster.getCustomerName());
+            managementQualityDashboardResponse.setSupplierOrCustomerAddress(customerMaster.getCustomerAddressLine2());
+        }
+
+        boolean isGoodQuality = transaction.getIsQualityGood() != null && transaction.getIsQualityGood();
+        managementQualityDashboardResponse.setQualityType(isGoodQuality ? "Good" : "Bad");
+
+        managementQualityDashboardResponse.setVehicleNo(vehicleMasterRepository.findVehicleNoById(transaction.getGateEntryTransaction().getVehicleId()));
+        managementQualityDashboardResponse.setProductOrMaterialType(transaction.getGateEntryTransaction().getMaterialType());
+        managementQualityDashboardResponse.setProductOrMaterialName(getMaterialOrProductName(transaction.getGateEntryTransaction()));
+
+        String formattedDate = transaction.getGateEntryTransaction().getTransactionDate().format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        managementQualityDashboardResponse.setTransactionDate(formattedDate);
+
+        return managementQualityDashboardResponse;
     }
 
     private List<ManagementQualityDashboardResponse> getQualitiesByType(ManagementPayload managementRequest, String transactionType, boolean isGoodQuality) {
