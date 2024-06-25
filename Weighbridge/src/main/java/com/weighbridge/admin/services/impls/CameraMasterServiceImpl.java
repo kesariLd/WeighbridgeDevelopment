@@ -3,6 +3,7 @@ package com.weighbridge.admin.services.impls;
 import com.weighbridge.admin.dtos.CameraMasterDto;
 import com.weighbridge.admin.entities.CameraMaster;
 import com.weighbridge.admin.entities.RoleMaster;
+import com.weighbridge.admin.entities.SiteMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
 import com.weighbridge.admin.payloads.CameraMasterResponse;
 import com.weighbridge.admin.repsitories.CameraMasterRepository;
@@ -106,11 +107,17 @@ public class CameraMasterServiceImpl implements CameraMasterService {
     public CameraMasterResponse getCameraDetail(Long id) {
         CameraMaster cameraMaster = cameraMasterRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("camera with id " + id + " not found"));
         String companyNameByCompanyId = companyMasterRepository.findCompanyNameByCompanyId(cameraMaster.getCompanyId());
-        String siteName=siteMasterRepository.findSiteNameBySiteId(cameraMaster.getSiteId());
+        SiteMaster byId1 = siteMasterRepository.findById(cameraMaster.getSiteId()).get();
         RoleMaster byId = roleMasterRepository.findById(cameraMaster.getRoleId()).get();
         CameraMasterResponse cameraMasterResponse=new CameraMasterResponse();
+        cameraMasterResponse.setId(cameraMaster.getId());
         cameraMasterResponse.setCompanyName(companyNameByCompanyId);
-        cameraMasterResponse.setSiteName(siteName);
+        if(byId1!=null) {
+            String siteAddress = byId1.getSiteAddress();
+            String siteName = byId1.getSiteName();
+            String site = siteName + ", " + siteAddress;
+            cameraMasterResponse.setSiteName(site);
+        }
         if(byId!=null) {
             cameraMasterResponse.setRole(byId.getRoleName());
         }
@@ -125,7 +132,6 @@ public class CameraMasterServiceImpl implements CameraMasterService {
         cameraMasterResponse.setRightCamUrl6(cameraMaster.getRightCamUrl6());
         return cameraMasterResponse;
     }
-
 
     public String updateCameraDetails(CameraMasterResponse cameraMasterDto,Long id,String userId){
         CameraMaster cameraMaster = cameraMasterRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("cameraDetail with id " + id + " not found"));
