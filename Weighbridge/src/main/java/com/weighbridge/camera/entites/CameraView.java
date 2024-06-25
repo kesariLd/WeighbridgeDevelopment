@@ -25,4 +25,5 @@ public class CameraView {
     private String rightImg6;
     private LocalDate date;
     private Integer roleId;
+    private String truckStatus;
 }

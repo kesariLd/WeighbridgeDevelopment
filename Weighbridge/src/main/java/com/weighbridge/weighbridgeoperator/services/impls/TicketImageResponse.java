@@ -10,6 +10,7 @@ public class TicketImageResponse {
 
     private TicketResponse ticketResponse;
 
-    private Map<String, byte[]> imagesMap ;
+    private Map<String, byte[]> inImagesMap ;
+    private Map<String, byte[]> outImagesMap ;
 
 }

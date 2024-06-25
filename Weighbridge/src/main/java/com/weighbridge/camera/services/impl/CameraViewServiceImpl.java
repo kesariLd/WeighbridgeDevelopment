@@ -57,13 +57,12 @@ public class CameraViewServiceImpl implements CameraViewService {
         return null;
     }
 
-    @Override
     public String uploadImages(Integer ticketNo, MultipartFile frontImg1, MultipartFile backImg2, MultipartFile topImg3,
                                MultipartFile bottomImg4, MultipartFile leftImg5, MultipartFile rightImg6,
-                                String role) throws IOException {
+                               String role,String truckStatus) throws IOException {
         CameraView cameraView = new CameraView();
         cameraView.setTicketNo(ticketNo);
-
+        cameraView.setTruckStatus(truckStatus);
         cameraView.setDate(LocalDate.now());
         if(role==null){
             throw new ResourceNotFoundException("role is not given");
@@ -153,8 +152,7 @@ public class CameraViewServiceImpl implements CameraViewService {
     }
 
 
-    @Override
-    public Map<String, byte[]> downloadImages(Integer ticketNo, String role, String companyId, String siteId) {
+    public Map<String, byte[]> downloadImages(Integer ticketNo, String role, String companyId, String siteId,String truckStatus) {
         if (role == null) {
             throw new ResourceNotFoundException("role is not given");
         }
@@ -162,7 +160,7 @@ public class CameraViewServiceImpl implements CameraViewService {
         if (roleId == null) {
             throw new ResourceNotFoundException("role is not found " + role);
         }
-        CameraView cameraView = cameraRepository.findByTicketNoAndRoleId(ticketNo, roleId);
+        CameraView cameraView = cameraRepository.findByTicketNoAndRoleIdAndTruckStatus(ticketNo, roleId,truckStatus);
         if (cameraView == null) {
             throw new ResourceNotFoundException("CameraView not found for ticketNo and role: " + ticketNo + " and " + role);
         }
