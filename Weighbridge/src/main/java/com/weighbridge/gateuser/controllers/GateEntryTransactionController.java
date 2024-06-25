@@ -1,5 +1,8 @@
 package com.weighbridge.gateuser.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.weighbridge.gateuser.dtos.GateEntryPrint;
 import com.weighbridge.gateuser.entities.GateEntryTransaction;
 import com.weighbridge.gateuser.payloads.GateEntryEditResponse;
@@ -16,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,12 +37,36 @@ public class GateEntryTransactionController {
     /**
      * Save a gate entry transaction.
      *
-     * @param gateEntryTransactionRequest The gate entry transaction details to be saved.
+     *
      * @return The ID of the saved gate entry transaction.
      */
-    @PostMapping
-    public ResponseEntity<Integer> saveTransaction(@RequestBody GateEntryTransactionRequest gateEntryTransactionRequest, @RequestParam String userId) {
-        Integer gateEntryResponse = gateEntryTransactionService.saveGateEntryTransaction(gateEntryTransactionRequest, userId);
+    @PostMapping("/saveTransaction")
+    public ResponseEntity<Integer> saveTransaction(
+            @RequestParam("requestBody") String requestBody,
+            @RequestParam("userId") String userId,
+            @RequestParam(value = "frontImg1",required = false) MultipartFile frontImg1,
+            @RequestParam(value = "backImg2",required = false) MultipartFile backImg2,
+            @RequestParam(value = "topImg3", required = false) MultipartFile topImg3,
+            @RequestParam(value = "bottomImg4", required = false) MultipartFile bottomImg4,
+            @RequestParam(value = "leftImg5", required = false) MultipartFile leftImg5,
+            @RequestParam(value = "rightImg6", required = false) MultipartFile rightImg6,
+            @RequestParam("role") String role,ObjectMapper objectMapper) {
+
+        // Configure ObjectMapper with JavaTimeModule
+        objectMapper.registerModule(new JavaTimeModule());
+
+        GateEntryTransactionRequest gateEntryTransactionRequest;
+        try {
+            gateEntryTransactionRequest = objectMapper.readValue(requestBody, GateEntryTransactionRequest.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("Invalid JSON format in requestBody");
+        }
+
+        // Call service method with parsed request and file parameters
+        Integer gateEntryResponse = gateEntryTransactionService.saveGateEntryTransaction(
+                gateEntryTransactionRequest, userId, frontImg1, backImg2, topImg3, bottomImg4, leftImg5, rightImg6, role);
+
         return new ResponseEntity<>(gateEntryResponse, HttpStatus.OK);
     }
 

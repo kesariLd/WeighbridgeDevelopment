@@ -7,6 +7,7 @@ import com.weighbridge.gateuser.payloads.GateEntryTransactionPageResponse;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionRequest;
 import com.weighbridge.gateuser.payloads.GateEntryTransactionResponse;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,7 +23,9 @@ public interface GateEntryTransactionService {
      * @param gateEntryTransactionRequest The request containing the details of the gate entry transaction.
      * @return The ticket number of the saved gate entry transaction.
      */
-    Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest,String userId);
+    Integer saveGateEntryTransaction(GateEntryTransactionRequest gateEntryTransactionRequest, String userId, MultipartFile frontImg1, MultipartFile backImg2, MultipartFile topImg3,
+                                     MultipartFile bottomImg4, MultipartFile leftImg5,
+                                     MultipartFile rightImg6, String role);
 
     GateEntryEditResponse editGateEntryByTicketNo(Integer ticketNo,String userId);
 
