@@ -495,19 +495,6 @@ public class GateEntryTransactionServiceImpl implements GateEntryTransactionServ
     @Override
     public GateEntryEditResponse editGateEntryByTicketNo(Integer ticketNo,String userId) {
         try {
-
-            // Set user session details
-            /*HttpSession session = httpServletRequest.getSession();
-            String userId;
-            String userCompany;
-            String userSite;
-            if (session != null && session.getAttribute("userId") != null) {
-                userId = session.getAttribute("userId").toString();
-                userSite = session.getAttribute("userSite").toString();
-                userCompany = session.getAttribute("userCompany").toString();
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session Expired, Login again !");
-            }*/
             UserMaster userMaster = userMasterRepository.findById(userId).orElseThrow(()-> new IllegalArgumentException("User Not Found "+userId));
 
             String userSite = (String) Optional.ofNullable(userMaster.getSite().getSiteId())
