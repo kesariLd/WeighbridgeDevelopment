@@ -121,7 +121,7 @@ public class CameraMasterServiceImpl implements CameraMasterService {
         SiteMaster byId1 = siteMasterRepository.findById(cameraMaster.getSiteId()).get();
         RoleMaster byId = roleMasterRepository.findById(cameraMaster.getRoleId()).get();
         CameraMasterResponse cameraMasterResponse=new CameraMasterResponse();
-        cameraMasterResponse.setId(cameraMaster.getId());
+        cameraMasterResponse.setCameraId(cameraMaster.getId());
         cameraMasterResponse.setCompanyName(companyNameByCompanyId);
         if(byId1!=null) {
             String siteAddress = byId1.getSiteAddress();
