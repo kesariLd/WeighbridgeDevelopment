@@ -1,6 +1,7 @@
 package com.weighbridge.admin.services;
 
 import com.weighbridge.admin.dtos.CameraMasterDto;
+
 import com.weighbridge.admin.payloads.CameraMasterResponse;
 
 import java.util.List;
@@ -15,4 +16,5 @@ public interface CameraMasterService {
     public String updateCameraDetails(CameraMasterResponse cameraMasterDto,Long id,String userId);
 
     String deleteCameraDetails(Long id);
+
 }

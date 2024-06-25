@@ -1,4 +1,4 @@
-package com.weighbridge.admin.entities;
+package com.weighbridge.camera.entites;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

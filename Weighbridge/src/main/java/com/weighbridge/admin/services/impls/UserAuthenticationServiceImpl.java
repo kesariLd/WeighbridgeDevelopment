@@ -72,19 +72,6 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid userId or password");
         }
 
-
-        // Set session attributes
-      /*  HttpSession session = request.getSession();
-        try {
-            session.setAttribute("userId", dto.getUserId());
-            session.setAttribute("userSite", userMaster.getSite().getSiteId());
-            session.setAttribute("userCompany", userMaster.getCompany().getCompanyId());
-        }
-        catch (Exception e){
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Session Expired, Login again");
-        }*/
-
-        // Prepare login response
         LoginResponse loginResponse = new LoginResponse();
         loginResponse.setMessage("User logged in successfully!");
 

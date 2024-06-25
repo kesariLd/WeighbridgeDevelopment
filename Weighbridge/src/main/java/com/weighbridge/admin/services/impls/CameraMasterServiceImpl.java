@@ -5,7 +5,11 @@ import com.weighbridge.admin.entities.CameraMaster;
 import com.weighbridge.admin.entities.RoleMaster;
 import com.weighbridge.admin.entities.SiteMaster;
 import com.weighbridge.admin.exceptions.ResourceNotFoundException;
+
+
 import com.weighbridge.admin.payloads.CameraMasterResponse;
+
+
 import com.weighbridge.admin.repsitories.CameraMasterRepository;
 import com.weighbridge.admin.repsitories.CompanyMasterRepository;
 import com.weighbridge.admin.repsitories.RoleMasterRepository;
@@ -15,9 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+
+
 
 @Service
 public class CameraMasterServiceImpl implements CameraMasterService {
@@ -84,6 +92,9 @@ public class CameraMasterServiceImpl implements CameraMasterService {
             String siteName=siteMasterRepository.findSiteNameBySiteId(cameraMasterDto.getSiteId());
             RoleMaster byId = roleMasterRepository.findById(cameraMasterDto.getRoleId()).get();
             CameraMasterResponse cameraMasterDto1=new CameraMasterResponse();
+
+            cameraMasterDto1.setCameraId(cameraMasterDto.getId());
+
             cameraMasterDto1.setCompanyName(companyNameByCompanyId);
             cameraMasterDto1.setSiteName(siteName);
             if(byId!=null) {
@@ -171,12 +182,17 @@ public class CameraMasterServiceImpl implements CameraMasterService {
 
     @Override
     public String deleteCameraDetails(Long id) {
-       if(cameraMasterRepository.existsById(id)){
-           cameraMasterRepository.deleteById(id);
-           return "rcord deeleted with id "+id;
-       }
-       else{
+
+        if(cameraMasterRepository.existsById(id)){
+            cameraMasterRepository.deleteById(id);
+            return "record deleted with id "+id;
+        }
+        else{
             return "record not found.";
-       }
+        }
     }
-}
+
+   
+    }
+
+
