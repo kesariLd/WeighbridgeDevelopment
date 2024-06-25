@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CameraRepository extends JpaRepository<CameraView,Long> {
     CameraView findByTicketNoAndRoleId(Integer ticketNo, int i);
+
+    CameraView findByTicketNoAndRoleIdAndTruckStatus(Integer ticketNo, Integer roleId,String truckStatus);
 }

@@ -11,12 +11,11 @@ public interface CameraViewService {
         String saveCameraPath(String url);
         String getUrlPath(Integer ticketNo,String role);
 
-        String uploadImages(Integer ticketNo,
-                            MultipartFile frontImg1, MultipartFile backImg2, MultipartFile topImg3,
-                            MultipartFile bottomImg4, MultipartFile leftImg5,
-                            MultipartFile rightImg6, String role) throws IOException;
+        String uploadImages(Integer ticketNo, MultipartFile frontImg1, MultipartFile backImg2, MultipartFile topImg3,
+                            MultipartFile bottomImg4, MultipartFile leftImg5, MultipartFile rightImg6,
+                            String role,String truckStatus) throws IOException;
 
-        Map<String, byte[]> downloadImages(Integer ticketNo, String role, String companyId, String siteId);
+        Map<String, byte[]> downloadImages(Integer ticketNo, String role, String companyId, String siteId,String truckStatus);
 
 
 }

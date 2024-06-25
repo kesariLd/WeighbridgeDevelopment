@@ -35,7 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
-@RequestMapping()
+@RequestMapping("api/v1/camera")
 public class UploadController {
 
     @Value("${nextcloud.base-url}")
@@ -63,7 +63,7 @@ public class UploadController {
             @RequestParam(value = "rightImg6",required = false) MultipartFile rightImg6,
             @RequestParam("role") String role) throws IOException {
 
-        String response = cameraService.uploadImages(ticketNo, frontImg1, backImg2, topImg3, bottomImg4, leftImg5, rightImg6, role);
+        String response = cameraService.uploadImages(ticketNo, frontImg1, backImg2, topImg3, bottomImg4, leftImg5, rightImg6, role,"IN");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     //    @PostMapping
@@ -97,14 +97,15 @@ public class UploadController {
             }
         }
     }
-    @GetMapping("/downloadImages")
+    @GetMapping("/get")
     public ResponseEntity<Map<String, byte[]>> downloadImages(
             @RequestParam Integer ticketNo,
             @RequestParam String role,
             @RequestParam(required = false) String companyId,
-            @RequestParam(required = false) String siteId) {
+            @RequestParam(required = false) String siteId,
+            @RequestParam(required = false) String truckStatus) {
 
-        Map<String, byte[]> imagesMap = cameraService.downloadImages(ticketNo, role, companyId, siteId);
+        Map<String, byte[]> imagesMap = cameraService.downloadImages(ticketNo, role, companyId, siteId,truckStatus);
 
 
         return ResponseEntity.ok()
