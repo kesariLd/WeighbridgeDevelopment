@@ -169,7 +169,7 @@ public class WeighmentTransactionServiceImpl implements WeighmentTransactionServ
                 weighmentTicketNo.setTareWeight(temporaryWeight);
                 weighmentTicketNo.setGrossWeight(secondWeight);
             }
-            double netWeight = Math.abs(temporaryWeight - secondWeight)/1000;
+            double netWeight = Math.abs(temporaryWeight - secondWeight);
             weighmentTicketNo.setNetWeight(netWeight);
 
             weighmentTransactionRepository.save(weighmentTicketNo);
